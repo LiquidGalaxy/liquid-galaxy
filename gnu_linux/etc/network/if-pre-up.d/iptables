@@ -1,0 +1,16 @@
+#!/bin/sh
+
+IPTABLES_CMD=`which iptables-restore`
+IPTABLES_CFG=/etc/iptables.conf
+
+if [ ! -x $IPTABLES_CMD ]; then
+	logger -p $SYSLOG_FACILITY "firewall: cannot execute $IPTABLES_CMD"
+        exit 1
+fi
+
+if [ ! -f $IPTABLES_CFG ]; then
+	logger -p $SYSLOG_FACILITY "firewall: no configuration $IPTABLES_CFG"
+        exit 1
+fi
+
+$IPTABLES_CMD < $IPTABLES_CFG

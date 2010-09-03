@@ -1,0 +1,19 @@
+127.0.0.1    localhost.localdomain    localhost 
+127.0.1.1    lgX.liquid.local         lgX          kh.google.com
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+
+10.42.42.1      lg1
+10.42.42.2      lg2
+10.42.42.3      lg3
+10.42.42.4      lg4
+10.42.42.5      lg5
+10.42.42.6      lg6
+10.42.42.7      lg7
+10.42.42.8      lg8

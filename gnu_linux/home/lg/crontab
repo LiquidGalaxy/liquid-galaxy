@@ -1,0 +1,2 @@
+# Clean up remaining ControlMaster sockets on reboot
+@reboot rm -f ${HOME}/.ssh/ctl/*

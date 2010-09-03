@@ -1,0 +1,37 @@
+== WITHIN THIS REPOSITORY ==
+
+The "gnu_linux" directory contains example configuration files to aid
+with setup of various software pieces. The philosophy employed was
+one of letting the underlying distribution simplify the overall setup.
+
+This meant leveraging the default behavior of "Xsession", the 
+"alternatives" system, and various hook or "$product.d" directories.
+
+== ON THE SYSTEM ==
+
+NOTE: with SVN, it is up to the client to handle symlinks. If your client
+doesn't handle symlinks, you might end up with some duplicate files with
+various names, but things should still work fine.
+
+The following tree represents the suggested directory hierarchy 
+within the "lg" user's home directory:
+
+/home/lg
+|-- bin
+|-- earth
+|   |-- builds
+|   |   |-- latest -> ./5.2.X.XXXX-X
+|   |   `-- 5.2.X.XXXX-X
+|   |-- config
+|   |   |-- master
+|   |   `-- slave
+|   `-- scripts
+|-- etc
+|-- media
+    `-- images
+        |-- backgrounds
+        `-- google
+
+Using example scripts and tools within this repo, there should also be a "/lg"
+directory on the system owned by "lg" user.
+

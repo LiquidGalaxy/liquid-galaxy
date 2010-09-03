@@ -1,0 +1,5 @@
+This directory should exist so that ssh can create ControlMaster sockets for
+connection to LG systems.
+
+The system will work fine without this, but will be faster to run commands with
+this.

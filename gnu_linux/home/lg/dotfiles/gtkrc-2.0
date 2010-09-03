@@ -1,0 +1,11 @@
+include "/usr/share/themes/Shiki-Wise/gtk-2.0/gtkrc"
+
+style "user-font" {
+	font_name = "Georgia 9"
+}
+
+widget_class "*" style "user-font"
+
+gtk-font-name="Georgia 9"
+
+include "/home/lg/.gtkrc.mine"

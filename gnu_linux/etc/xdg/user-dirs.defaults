@@ -1,0 +1,12 @@
+##
+# Default settings for user directories
+#
+# The values are relative pathnames from the home directory and
+# will be translated on a per-path-element basis into the users locale
+#
+# this file is specific for Liquid Galaxy systems
+DOWNLOAD=downloads
+TEMPLATES=media/templates
+DOCUMENTS=media/documents
+PICTURES=media/images
+VIDEOS=media/videos

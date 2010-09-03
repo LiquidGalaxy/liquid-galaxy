@@ -1,0 +1,7 @@
+*font: -*-georgia-medium-r-normal-*-12-*-*-*-*-*-iso9959-1
+Xft.dpi:       96
+Xft.antialias: true
+Xft.hinting:   true
+Xft.hintstyle: hintslight
+Xft.lcdfilter: lcddefault
+Xft.rgba:      rgb

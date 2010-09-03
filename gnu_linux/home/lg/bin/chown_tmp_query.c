@@ -1,0 +1,31 @@
+/*
+* Copyright 2010 Google Inc.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+/*
+** This can be executed by scripts or web servers to allow the user running
+** Google Earth to read and then delete the query file. This will need to be
+** setuid in order to actually change the ownership.
+*/
+
+
+#include <string.h>
+#include <unistd.h>
+//using namespace std;
+
+void main() {
+  const char* filename = "/tmp/query.txt";
+  chown(filename, 1000,1000);
+}

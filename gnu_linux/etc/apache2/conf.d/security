@@ -1,0 +1,4 @@
+# replace the default file within conf.d for apache2
+ServerTokens Prod
+ServerSignature Off
+TraceEnable Off

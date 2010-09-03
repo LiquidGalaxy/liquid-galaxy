@@ -1,0 +1,12 @@
+HashKnownHosts no
+ForwardAgent yes
+Compression yes
+ControlMaster auto
+ControlPath ~/.ssh/ctl/master-%r@%h:%p
+
+Host localhost lg*
+    IdentityFile ~/.ssh/lg-id_rsa
+    ConnectTimeout 1
+    ServerAliveInterval 10
+    StrictHostKeyChecking ask
+    PreferredAuthentications publickey

@@ -1,0 +1,11 @@
+--- include/linux/hid.h.original	2010-07-28 02:06:55.000000000 -0400
++++ include/linux/hid.h	2010-08-16 12:59:42.614492050 -0400
+@@ -663,7 +663,7 @@
+ 
+ /* Applications from HID Usage Tables 4/8/99 Version 1.1 */
+ /* We ignore a few input applications that are not widely used */
+-#define IS_INPUT_APPLICATION(a) (((a >= 0x00010000) && (a <= 0x00010008)) || (a == 0x00010080) || (a == 0x000c0001) || (a == 0x000d0002))
++#define IS_INPUT_APPLICATION(a) (((a >= 0x00010000) && (a <= 0x00010008)) || (a == 0x00010080) || (a == 0x000c0001) || (a >= 0xd0002 && a <= 0xd0006))
+ 
+ /* HID core API */
+ 
