@@ -1,0 +1,180 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: black;
+  color: white;
+  font-family: arial, sans-serif;
+  font-size: 110%;
+  margin: 0;
+  overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+#status {
+  background-color: yellow;
+  color: black;
+  left: 35%;
+  margin: -40 auto;
+  opacity: 0;
+  position: absolute;
+  text-align: center;
+  width: 30%;
+  z-index: 3;
+  -webkit-border-radius: 5px;
+  -webkit-transition: opacity .5s linear .5s;
+}
+.touchscreen {
+  margin: 80 auto;
+  text-align: center;
+  width: 90%;
+}
+.welcome {
+  background-color: #808080;
+  color: #EEE9E9;
+  left: 30%;
+  padding: 5px;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  width: 40%;
+  -webkit-border-radius: 5px;
+}
+.earth>img, .moon>img, .mars>img, .keyboard>img {
+  height: 220px;
+  width: 220px;
+  -webkit-transform: scale(1.0);
+  -webkit-transition-duration: .5s;
+}
+.earth:hover>img, .moon:hover>img, .mars:hover>img, .keyboard:hover>img {
+  cursor: hand;
+  cursor: pointer;
+  -webkit-transform: scale(1.1);
+  -webkit-transition-duration: .5s;
+}
+.title {
+  cursor: hand;
+  cursor: pointer;
+  font-size: 200%;
+  opacity: 0;
+  position: relative;
+  text-align: center;
+  top: 130px;
+  width: 240px;
+  z-index: 1;
+  -webkit-transition: opacity .5s linear;
+}
+.earth:hover>.title, .moon:hover>.title, .mars:hover>.title {
+  opacity: 1;
+  -webkit-transition: opacity .5s linear;
+}
+.expand {
+  background-color: #C2DFFF;
+  left: 10%;
+  opacity: 0;
+  padding: 6 0 6 0;
+  position: absolute;
+  text-align: center;
+  top: 370px;
+  width: 80%;
+  z-index: -1;
+  -webkit-border-radius: 5px;
+  -webkit-transition: z-index 0s linear .5s, opacity .5s linear;
+}
+.earth, .moon, .mars, .keyboard {
+  display: inline-table;
+  height: 240px;
+  width: 240px;
+}
+.earth:hover>.expand, .moon:hover>.expand, .mars:hover>.expand, .keyboard:hover>.expand {
+  opacity: 1;
+  z-index: 1;
+  -webkit-transition: opacity .5s linear .3s;
+}
+.location {
+  background-color: #B4CFEC;
+  border: 1px solid gray;
+  color: #150517;
+  cursor: hand;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1.3em;
+  margin: 14px;
+  padding: 20px 0 20px 0;
+  text-align: center;
+  vertical-align: middle;
+  width: 260px;
+  -webkit-border-radius: 5px;
+  -webkit-transform: scale(1.0);
+  -webkit-transition-duration: .25s;
+}
+.location:hover {
+  -webkit-transform: scale(1.1);
+  -webkit-transition-duration: .25s;
+}
+.keyboard .expand {
+  text-align: center;
+}
+.keyboardRow1 {
+  margin: 10 0 20 0;
+}
+.keyboardRow2 {
+  margin: 0 70 10 0;
+}
+.keyboardRow3 {
+  margin: 0 40 10 0;
+}
+.keyboardRow4 {
+  margin: 0 60 10 0;
+}
+.keyboardRow5 {
+  margin: 0 0 10 0;
+}
+.keyboardRow6 {
+  margin: 0;
+}
+.keyboardKey {
+  background-color: black;
+  border-color: gray;
+  border-style: outset;
+  border-width: 3px;
+  color: white;
+  cursor: hand;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 2.4em;
+  height: 60px;
+  line-height: 60px;
+  margin: 3px;
+  text-align: center;
+  width: 60px;
+  -webkit-border-radius: 5px;
+}
+.keyboardKey:active, .keyboardKeyClear:active, .keyboardKeySearch:active, .keyboardKeySpace:active .keyboardKeyBackspace:active {
+  background-color: gray;
+}
+.keyboardEntry {
+  height: 70px;
+  font-size: 3em;
+  vertical-align: middle;
+  width: 500;
+}
+.keyboardKeyClear {
+  height: 64px;
+  line-height: 64px;
+  vertical-align: middle;
+  width: 120px;
+}
+.keyboardKeySearch {
+  height: 64px;
+  line-height: 64px;
+  vertical-align: middle;
+  width: 140px;
+}
+.keyboardKeySpace {
+  width: 600px;
+}
+.keyboardKeyBackspace {
+  width: 100px;
+}

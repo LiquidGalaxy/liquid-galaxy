@@ -7,6 +7,10 @@ one of letting the underlying distribution simplify the overall setup.
 This meant leveraging the default behavior of "Xsession", the 
 "alternatives" system, and various hook or "$product.d" directories.
 
+The "php-interface" directory contains an example collection of code
+used to provide a touchscreen interface for selecting queries and coordinates
+to be consumed by Google Earth. Place everything into a WebServer's Docroot.
+
 == ON THE SYSTEM ==
 
 NOTE: with SVN, it is up to the client to handle symlinks. If your client
