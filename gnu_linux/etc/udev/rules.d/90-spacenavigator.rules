@@ -1,8 +1,5 @@
-# jholt, grundler, mutex: 6/30/2009 hacking spacenavigator support
-# into google earth.
-
-# Set up the space navigator to always have a symlink of /dev/input/spacenavigator
-# XXX: not sure if plugdev is the right group to use.
+# Set up the space navigator to always have a symlink
+# of /dev/input/spacenavigator
 # XXX: 0644 will probably prevent earth from turning on the LED
 
 KERNEL=="event[0-9]*", SYSFS{idVendor}=="046d", SYSFS{idProduct}=="c626", MODE="0664", GROUP="plugdev", SYMLINK+="input/spacenavigator"
