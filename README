@@ -31,7 +31,7 @@ within the "lg" user's home directory:
 |   |   `-- slave
 |   `-- scripts
 |-- etc
-|-- media
+`-- media
     `-- images
         |-- backgrounds
         `-- google

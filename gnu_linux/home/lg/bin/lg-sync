@@ -19,9 +19,24 @@
 # source common configuration (gets rsync options)
 . ${HOME}/etc/shell.conf
 
+if [[ ${#@} -lt 2 ]]; then
+    echo "This sync is a bit dangerous! Be sure to at least provide SRC and DEST:
+\$ $0 SRC DEST
+"
+    exit 1
+fi
+
+if [[ "$1" == "--really-sync" ]]; then
+    shift
+else
+    echo "THIS WILL BE A \"DRY RUN\" sync unless the _first_ argument is \"--really-sync\"!"
+    echo "rsync options are configured within \"${HOME}/etc/shell.conf\"."
+    sleep 1
+    RSYNCOPTS="-n $RSYNCOPTS"
+fi
+self=$( hostname )
 specified_source=$1
 specified_destination=$2
-self=$( hostname )
 
 for lg in $LG_SCREENS; do
     if [[ "$lg" = "$self" ]]; then
