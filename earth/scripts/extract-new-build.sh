@@ -23,7 +23,7 @@
 # grab XDG user dir vars
 test -f ${XDG_CONFIG_HOME:-${HOME}/.config}/user-dirs.dirs && source ${XDG_CONFIG_HOME:-${HOME}/.config}/user-dirs.dirs
 
-TMPROOT=${TMPDIR:=/tmp}
+TMPROOT=${TMPDIR:-/tmp}
 BUILDBIN="${XDG_DOWNLOAD_DIR}/GoogleEarthLinux.bin"
 BUILDDIR="${HOME}/earth/builds"
 

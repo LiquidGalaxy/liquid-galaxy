@@ -40,6 +40,9 @@ fi
 cp -a ${EARTHDIR}/config/$DIR/* ${HOME}/.config/Google/
   
 while true ; do
+    if [[ "$DIR" == "master" ]]; then
+        lg-run killall googleearth-bin
+    fi
     [ -w $SPACENAVDEV ] && ${HOME}/bin/led-enable ${SPACENAVDEV} 1
 
     cd ${EARTHDIR}/builds/latest
@@ -52,4 +55,4 @@ while true ; do
 
     [ -w $SPACENAVDEV ] && ${HOME}/bin/led-enable ${SPACENAVDEV} 0
     sleep 5
-done;
+done
