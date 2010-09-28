@@ -15,7 +15,7 @@
 
 . ${HOME}/etc/shell.conf
 
-PLANET=$1
+PLANET=${1:-earth}
 # set the planet using both old:
 lg-run "echo $PLANET >/lg/planet"
 # and new methods:

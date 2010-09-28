@@ -14,14 +14,14 @@
 # limitations under the License.
 
 if (isset($_REQUEST['planet']) and ($_REQUEST['planet'] != '')) { 
-  $handle = @fopen("/tmp/query.txt", "w");
+  $handle = @fopen("/tmp/query_php.txt", "w");
   if ($handle) {
     fwrite($handle, "planet=" . $_REQUEST['planet']);
   }
   exec('/lg/chown_tmp_query');
   echo "Going to " . ucwords($_REQUEST['planet']);
 } elseif (isset($_REQUEST['query']) and ($_REQUEST['query'] != '') and isset($_REQUEST['name']) and ($_REQUEST['name'] != '')) {
-  $handle = @fopen("/tmp/query.txt", "w");
+  $handle = @fopen("/tmp/query_php.txt", "w");
   if ($handle) {
     fwrite($handle, $_REQUEST['query']);
   }
