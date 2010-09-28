@@ -92,6 +92,17 @@ body {
   z-index: 1;
   -webkit-transition: opacity .5s linear .3s;
 }
+.relaunch {
+  cursor: hand;
+  left: 80%;
+  top: 90%;
+  padding: 3px;
+  opacity: 1;
+  position: absolute;
+  text-align: right;
+  width: 20%;
+  z-index: 3;
+}
 .location {
   background-color: #B4CFEC;
   border: 1px solid gray;

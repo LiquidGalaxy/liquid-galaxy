@@ -20,6 +20,9 @@ if (isset($_REQUEST['planet']) and ($_REQUEST['planet'] != '')) {
   }
   exec('/lg/chown_tmp_query');
   echo "Going to " . ucwords($_REQUEST['planet']);
+} elseif (isset($_REQUEST['query']) and ($_REQUEST['query'] == 'relaunch')) {
+  exec('/usr/bin/sudo -H -u lg /home/lg/bin/lg-sudo-bg service lxdm restart');
+  echo "Attempting relaunch";
 } elseif (isset($_REQUEST['query']) and ($_REQUEST['query'] != '') and isset($_REQUEST['name']) and ($_REQUEST['name'] != '')) {
   $handle = @fopen("/tmp/query_php.txt", "w");
   if ($handle) {

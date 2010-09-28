@@ -101,6 +101,9 @@ if ($handle) {
       <div class="welcome">
         Welcome to the Liquid Galaxy by Google
       </div>
+      <div class="relaunch">
+        <div class="location" onclick="changeQuery('relaunch', 'Relaunch');">Relaunch</div>
+      </div>
     </div>
   </body>
 </html>
