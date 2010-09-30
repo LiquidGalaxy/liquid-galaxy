@@ -48,6 +48,7 @@ while true ; do
     cd ${EARTHDIR}/builds/latest
     rm -f ${HOME}/.googleearth/Cache/db* # important: otherwise we get random broken tiles
     rm -rf ${HOME}/.googleearth/Temp/*
+	rm -f /tmp/query.txt
     echo "running earth"
     PLANET="`cat /lg/planet`"
     ${SCRIPDIR}/set-planet.sh $PLANET
