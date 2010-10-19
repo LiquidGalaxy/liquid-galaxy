@@ -24,13 +24,12 @@ echo "MY FRAME = \"${FRAME_NO}\"."
 
 if [[ $FRAME_NO = 0 ]]; then
     # a kiosk browser-based experience on a second display, 
-    # and the tcl search interface below are mutually exclusive.
-    # uncomment one
+    # and the earth.tcl search interface below are mutually exclusive.
+    # -- uncomment the one you like --
     if [[ "${DISPLAY##*\.}" = "1" ]]; then
 #        echo "launching kiosk browser on second screen"
 #        sed -i -e 's/exited_cleanly.*/exited_cleanly\":\ true/' ${HOME}/.config/chromium/Default/Preferences && \
 #        rm -f ${HOME}/.config/chromium/Singleton*
-#        chromium --disable-session-storage --kiosk localhost:81 &
 #        gnome-www-browser --disable-session-storage --kiosk localhost:81 &
         exit
     fi
@@ -38,7 +37,7 @@ if [[ $FRAME_NO = 0 ]]; then
     nitrogen --set-zoom-fill ${XDG_PICTURES_DIR}/backgrounds/lg-bg-${FRAME_NO}.png &
     ${SCRIPDIR}/launch-earth.sh &
     sleep 3
-    ${HOME}/bin/earth.tcl &
+#    ${HOME}/bin/earth.tcl &
 elif [[ $FRAME_NO -ge 1 ]]; then
     nitrogen --set-zoom-fill ${XDG_PICTURES_DIR}/backgrounds/lg-bg-${FRAME_NO}.png &
 else
