@@ -19,7 +19,7 @@ GRUB_GFXMODE=1280x1024x24
 GRUB_GFXPAYLOAD_LINUX=1280x1024x24
 
 # Uncomment if you don't want GRUB to pass "root=UUID=xxx" parameter to Linux
-#GRUB_DISABLE_LINUX_UuID=true
+#GRUB_DISABLE_LINUX_UUID=true
 
 # Uncomment to disable generation of recovery mode menu entries
 #GRUB_DISABLE_LINUX_RECOVERY="true"
