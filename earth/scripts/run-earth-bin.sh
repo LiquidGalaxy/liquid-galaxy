@@ -48,14 +48,11 @@ while true ; do
     cd ${EARTHDIR}/builds/latest
     rm -f ${HOME}/.googleearth/Cache/db* # important: otherwise we get random broken tiles
     rm -rf ${HOME}/.googleearth/Temp/*
-
-    # be sure the cursor is over the touchscreen interface
-    xdotool mousemove --screen 1 1900 1000
-
+    rm -f /tmp/query.txt
+    DISPLAY=:0 xdotool mousemove -screen 1 1910 1190
     echo "running earth"
     PLANET="`cat /lg/planet`"
     ${SCRIPDIR}/set-planet.sh $PLANET
-    rm -f /tmp/query.txt
     ./googleearth --fullscreen
 
     [ -w $SPACENAVDEV ] && ${HOME}/bin/led-enable ${SPACENAVDEV} 0
