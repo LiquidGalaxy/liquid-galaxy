@@ -1,0 +1,62 @@
+#!/bin/bash
+# Copyright 2010 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# source common configuration
+. ${HOME}/etc/shell.conf
+
+URLENCLAYER=$1
+LAYERTF=${2:-toggle}
+LAYERPATH="${HOME}/earth/config"
+LAYERGROUPS=( master slave )
+LAYERFILE="GECommonSettings.conf"
+
+if [[ -z $URLENCLAYER ]]; then
+    echo "Please give me a URL-encoded layer name (portion after the LAST \"\\\".
+    $0 Country%20Names
+" >&2
+    exit 1
+fi
+
+#function urldecode() {
+#    local thing="$@"
+#    echo "$thing" | sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g' | xargs echo -e
+#}
+
+#function kmlencode() {
+#    local thing="$@"
+#    echo "$thing" | sed -e 's:\ :%20:g' -e 's/:/%3A/g'
+#}
+
+function groupact() {
+    local action="$@"
+    for group in ${LAYERGROUPS[*]}; do
+        $action ${LAYERPATH}/${group}/${LAYERFILE}
+    done
+}
+
+function layertoggle() {
+    local layer="$@"
+    groupact sed -i --follow-symlinks \
+        -e "s:$layer=true:$layer=befalse:g" \
+        -e "s:$layer=false:$layer=betrue:g" \
+        -e "s:$layer=befalse:$layer=false:g" \
+        -e "s:$layer=betrue:$layer=true:g"
+}
+
+if layertoggle $URLENCLAYER; then
+    lg-sync --really-sync $LAYERPATH $( dirname $LAYERPATH ) && \
+    lg-sudo-bg service lxdm restart
+fi
+
