@@ -1,0 +1,1996 @@
+;;; Default blend efficiencies.
+;;; Heavily favor GPU skinning for unknown hardware.
+SETTINGS {
+    CPUVertexBlendEfficiency = 1.0
+    GPUVertexShaderPerfRating = 4.0
+    GPUTLPerfRating = 1.0
+
+    Connection/disableRequestBatching = true
+
+    ; Use this to provide general help for updating drivers.
+    ; This is shown when software rendering is active (no OGL drivers)
+    updateDriverGeneralInfoUrl = www.keyhole.com/drivers.html
+
+    ; This tells Alchemy to release its references to images
+    ; once they are loaded into texture memory.  The only draw-back
+    ; to doing this is that igVisualContext::getTextureSource() no longer
+    ; works.
+    discardOriginalTextureImages = true
+
+    ; Enable texture pooling in the visual context.  Configure the pool to hold
+    ; at most 128 textures and accept textures no smaller than 32x32 and no
+    ; larger than 256x256.
+    enableTexturePooling = true
+    texturePoolCapacity = 128
+    texturePoolMinDimension = 32
+    ;texturePoolMaxDimension = 256
+
+    ; Enable hardware compression for images.
+    Render/hardwareTextureCompression = true
+
+    ViewSync/send = ##MASTER##
+    ViewSync/receive = ##SLAVE##
+    ViewSync/hostname = 10.42.42.255
+    ViewSync/port = 45678
+    ViewSync/yawOffset = ##YAW##
+    ViewSync/pitchOffset = 0
+    ViewSync/rollOffset = 0
+    ViewSync/horizFov = ##FOV##
+    ViewSync/queryFile = /tmp/query.txt
+
+    SpaceNavigator/gutterValue = 0.1
+
+    SpaceNavigator/device = ##NAV##
+    SpaceNavigator/sensitivityPitch = 0.01
+    SpaceNavigator/sensitivityRoll = 0.001
+    SpaceNavigator/sensitivityYaw = 0.0035
+    SpaceNavigator/sensitivityX = 0.25
+    SpaceNavigator/sensitivityY = 0.25
+    SpaceNavigator/sensitivityZ = 0.02
+
+    SpaceNavigator/zeroPitch = 0.0
+    SpaceNavigator/zeroRoll = 0.0
+    SpaceNavigator/zeroYaw = 0.0
+    SpaceNavigator/zeroX = 0.0
+    SpaceNavigator/zeroY = 0.0
+    SpaceNavigator/zeroZ = 0.0
+
+    useSoftwareVertexBlendingForCustomShaders = false
+
+    ; This controls the building parameters if performance quality
+    ; is enabled. It is disabled by default.
+    PerformanceQuality/minNumBuildings = 50
+    PerformanceQuality/minBuildingPerfScore = 0.5
+    PerformanceQuality/maxNumBuildings = 150
+    PerformanceQuality/maxBuildingPerfScore = 2.0
+    PerformanceQuality/buildingScalingPower  = 1
+}
+
+CPU_VENDOR = amd {
+    CPU_TYPE >= athlon {
+        SETTINGS {
+            CPUVertexBlendEfficiency = 1.0
+    }}
+}
+CPU_VENDOR = intel {
+    CPU_TYPE >= pentium_3 {
+        SETTINGS {
+            CPUVertexBlendEfficiency = 1.0
+    }}
+    CPU_TYPE >= pentium_4 {
+        SETTINGS {
+            CPUVertexBlendEfficiency = 1.2
+    }}
+}
+
+
+;
+; Software driver database.
+;
+; Defaults:
+;    largeTextureSupport  = true
+;    scaleEarthSupport    = false
+;    fogSupport           = true
+;    disableVertexArrays  = false (OGL only)
+;
+;
+
+;;;;;;;;;
+; Turn on line and point smoothing for workstation OGL cards.
+VENDOR >= ATI {
+    CHIPSET >= ATI Fire {
+        SETTINGS {
+            Render/pointAndLineSmoothEnable = true
+    }}
+    CHIPSET >= Fire {
+        SETTINGS {
+            Render/pointAndLineSmoothEnable = true
+    }}
+    CHIPSET >= ATI MOBILITY FIRE {
+        SETTINGS {
+            Render/pointAndLineSmoothEnable = true
+    }}
+    CHIPSET >= MOBILITY Fire {
+        SETTINGS {
+            Render/pointAndLineSmoothEnable = true
+    }}
+}
+VENDOR >= NVIDIA {
+    CHIPSET >= Quadro {
+        SETTINGS {
+            Render/pointAndLineSmoothEnable = true
+    }}
+    CHIPSET >= NVIDIA Quadro {
+        SETTINGS {
+            Render/pointAndLineSmoothEnable = true
+    }}
+}
+
+OS = linux {
+    SETTINGS {
+        onlyOGL = true
+    }
+
+    ; Check for Software Mesa...
+    VENDOR >= Mesa {
+        SETTINGS {
+            OGLsoftwareEmulated = true
+            ; Classic atmosphere
+            Atmosphere/atmosphereLevel = 0
+            WaterSurface/waterSurfaceUsingShaders = false
+            Precipitation/usePrecipitationShader = false
+            SpeedTree/useBillboardsOnly = true
+            ; Turn off VBO support for OGL for Mesa.
+            enableVertexBufferObjects = false
+        }
+    }
+
+    ; Brian Paul wrote Mesa, some versions have him as the GL_VENDOR string.
+    VENDOR >= Brian Paul {
+        SETTINGS {
+            OGLsoftwareEmulated = true
+            ; Classic atmosphere
+            Atmosphere/atmosphereLevel = 0
+            WaterSurface/waterSurfaceUsingShaders = false
+            Precipitation/usePrecipitationShader = false
+            SpeedTree/useBillboardsOnly = true
+            ; Turn off VBO support for OGL for Mesa.
+            enableVertexBufferObjects = false
+        }
+    }
+
+    VENDOR >= ATI {
+        SETTINGS {
+            ; P.S. 2/20/07
+            ; Enable mipmaps by default on all ATI cards.
+            enableMipmaps = true
+            ; Turn on VBO support for OGL for ati and nvidia.
+            enableVertexBufferObjects = true
+            ; Only use VBOs for some of the vertex arrays.
+            geometryUsesVBOByDefault = false
+        }
+    }
+    VENDOR >= NVIDIA {
+        SETTINGS {
+            ; P.S. 2/20/07
+            ; Enable mipmaps by default on all nVidia cards.
+            enableMipmaps = true
+            ; Turn on VBO support for OGL for ati and nvidia.
+            enableVertexBufferObjects = true
+            ; Only use VBOs for some of the vertex arrays.
+            geometryUsesVBOByDefault = false
+        }
+    }
+    VENDOR >= Intel {
+        SETTINGS {
+            ; Classic atmosphere
+            Atmosphere/atmosphereLevel = 0
+            WaterSurface/waterSurfaceUsingShaders = false
+            Precipitation/usePrecipitationShader = false
+            SpeedTree/useBillboardsOnly = true
+            ; Turn off VBO support for OGL for intel.. roads/labels do not showup.
+            enableVertexBufferObjects = false
+        }
+    }
+
+    ; Intel drivers show a 3rd party for the vendor string, but
+    ; can be identified by "Mesa DRI Intel" in the chipset (at least
+    ; for GM965 driver that was tested).
+    CHIPSET >= Mesa DRI Intel {
+        SETTINGS {
+            ; B.A. 4/3/08
+            ; Filled polygons are confirmed broken on an Intel GM965.
+            ; This setting disables filled polygons for all Intel cards, which
+            ; seems reasonable since most Intel cards also have problems
+            ; drawing filled polygons on OGL Windows.  See bug #1096613.
+            Render/fillPolysEnable = false
+            ; Turn off VBO support for OGL.
+            enableVertexBufferObjects = false
+        }
+    }
+}
+
+OS = macos {
+    SETTINGS {
+        onlyOGL = true
+        enableMipmaps = true
+        ; Turn off VBO support for OGL on Mac.
+        enableVertexBufferObjects = false
+    }
+
+    SETTINGS {
+        ; The plugin on Mac is slower than on windows because it needs
+        ; to do extra work (buffer copies, etc.).  Reduce the computed
+        ; performance score by 40% to account for this.
+        PerformanceQuality/systemPerfScoreScale = 0.6
+    }
+
+    VENDOR >= ATI {
+
+        CHIPSET >= ATI Rage 128 Pro {
+            SETTINGS {
+                ; B.B. - 1/29/06
+                ; economize as much as possible
+                enableMipmaps = false
+
+                ; B.B. - 1/29/06
+                ; reduce VRAM strain
+                Render/detailAreaMax = 256
+
+                ; B.B. - 2/2/06
+                ; based on the "Rage 128 OpenGL" failing
+                Render/fillPolysEnable = false
+
+                ; B.B. - 2/2/06
+                ; based on Radeon 7000 failing
+                Render/maxTextureSize = 1024
+
+                ; B.B. - 2/6/06
+                ; all text appears as white - labels, status bar and copyrights
+                cantRun = true
+        }}
+        CHIPSET >= ATI Rage 128 OpenGL Engine {
+            SETTINGS {
+                ; B.B. - 2/2/06
+                ; increase framerate - untested
+                Render/detailAreaRec = 256
+
+                ; B.B. - 2/4/06
+                ; fill polys swaps channels in lower left corner - external testing
+                ; reducing fillPolysMaxTex to 256 swapped channels across all tiles
+                Render/fillPolysEnable = false
+        }}
+        CHIPSET >= ATI Radeon OpenGL Engine {
+            SETTINGS {
+                ; B.B. - 2/2/06
+                ; copied from Radeon 7000 settings - untested
+                Render/detailAreaRec = 256
+
+                ; B.B. - 2/2/06
+                ; based on external testing
+                Render/maxTextureSize = 1024
+        }}
+        CHIPSET >= ATI Radeon 7000 {
+            SETTINGS {
+                ; B.B. - 1/31/06
+                ; +40% on framerate, 1k works ok
+                Render/detailAreaRec = 256
+
+                ; B.B. - 1/31/06
+                ; 2k textures fail, overlaps frame buffer
+                ; remove the following line and load a 2k x 2k
+                ; texture for really cool effects
+                Render/maxTextureSize = 1024
+        }}
+        CHIPSET >= ATI Mobility Radeon 7500 {
+        }
+        CHIPSET >= ATI Radeon 8500 {   ; 64MB
+            SETTINGS {
+                ; B.B. - 2/8/06
+                ; Occasionally locks computer on tilted views
+                cantRun = true
+        }}
+        CHIPSET >= ATI Radeon 9200 {
+            SETTINGS {
+                ; Classic atmosphere
+                Atmosphere/atmosphereLevel = 0
+                WaterSurface/waterSurfaceUsingShaders = false
+                Precipitation/usePrecipitationShader = false
+                SpeedTree/useBillboardsOnly = true
+        }}
+        CHIPSET >= ATI Radeon 9600 XT OpenGL Engine {
+            SETTINGS {
+                ; B.B. - 2/22/06
+                ; 2k textures fail - reported by user
+                Render/maxTextureSize = 1024
+        }}
+        CHIPSET >= ATI Radeon 9700 {
+            SETTINGS {
+                ; enable mipmaps on ATI Radeon cards
+                enableMipmaps = true
+        }}
+        CHIPSET >= ATI Radeon 9800 {
+            SETTINGS {
+        }}
+    }
+
+
+
+    VENDOR >= NVIDIA {
+
+        CHIPSET >= NVIDIA GeForce 2 MX { ; 32MB
+            SETTINGS {
+                ; B.B. - 2/2/06
+                ; based on external testing - no overlay is shown
+                Render/maxTextureSize = 1024
+
+                ; 'thick' lines limited to ~2 pixel width
+        }}
+        CHIPSET >= NVIDIA GeForce4 MX {
+            SETTINGS {
+                ; b/1636265
+                enableMipmaps = false
+                Render/maxTextureSize = 1024
+        }}
+        CHIPSET >= NVIDIA GeForce FX 5200 {
+            SETTINGS {
+              ; Classic atmosphere
+              Atmosphere/atmosphereLevel = 0
+              WaterSurface/waterSurfaceUsingShaders = false
+              Precipitation/usePrecipitationShader = false
+              SpeedTree/useBillboardsOnly = true
+        }}
+    }
+
+    VENDOR >= Intel {
+        SETTINGS {
+            ; Classic atmosphere
+            Atmosphere/atmosphereLevel = 0
+            WaterSurface/waterSurfaceUsingShaders = false
+            Precipitation/usePrecipitationShader = false
+            SpeedTree/useBillboardsOnly = true
+        }
+    }
+}
+
+
+OS = win_nt {    ; win_nt, win_2k, win_xp...
+
+    ;=============================================================================
+    ; DIRECTX 8 & 9
+    ;=============================================================================
+
+    PLATFORM >= dx {
+        SETTINGS {
+            multiThreaded = true
+
+            ; Don't use dynamic vertex buffers by default.
+            ; This should allow maximum performance for static content.
+            useDynamicVertexBuffersByDefault = false
+
+            ; vertex buffers in Alchemy/DX are slow. Most cards
+            ; that can do without them will disable that feature
+            ; F.B. - 7/12/04
+            autoVertexBuffers = false
+
+            ; Solves an exit with DX8 and very fast PCs.
+            ; D.K. - 4/23/2002
+            forceVertexShaderBlending = true
+
+            ; Render polygons using orthographic approach on all DX systems due
+            ; to transform issues in projective texture matrices.
+            Render/PolygonOrthographicFrustum = true
+        }
+        
+        PLATFORM = dx9 {
+            SETTINGS {
+                ; B.A. 07/06/2009 - Use the vertex buffer path for all cards.
+                ; Many cards seem to have problems with DrawPrimitiveUP(),
+                ; probably because it's not used by many other applications.
+                disableDrawPrimUP = true
+            }
+        }
+        PLATFORM = dx8 {
+            SETTINGS {
+                ; B.A. 07/06/2009 - Use vertex buffers for DX 8.
+                ; Don't want to use Draw*PrimitiveUP because of compatibility
+                ; problems, and emulation (disableDrawPrimUP) is not
+                ; implemented for DX 8.
+                autoVertexBuffers = true
+            }
+        }
+
+
+        VENDOR = 0000121A {                     ; 3dfx
+            ;
+            ; 3.0: no global settings for 3dfx cards (only for Voodoo3)
+            ;
+            SETTINGS {
+                manufacturerUrl       = www.3dfx.com
+                manufacturerDriverUrl = www.voodoofiles.com/3dfxhelp.asp
+
+                ; 3dfx cards cannot support textures larger than 256
+                largeTextureSupport = false
+
+                ; 3dfx cards cannot support tiny textured polygons.
+                scaleEarthSupport    = true
+
+                ; Tex Coord Source Camera pos broken
+                disableTexCoordSrcCpos = true
+
+                ; never use multi-texturing
+                maxTexStages = 1
+            }
+
+            CHIPSET >= 00000005 {   ; Voodoo 3
+                SETTINGS {
+
+                ;
+                ; imported from 3.0
+                ;
+
+                disableTexCoordSrcCpos = true ; Tex Coord Source Camera pos broken
+                maxTexStages = 1 ; never use multi-texturing
+            }}
+        }
+
+
+
+        VENDOR = 00003D3D {                     ; 3dlabs
+            CHIPSET >= 0000000C {   ; Oxygen VX1
+                SETTINGS {
+                    ; A.P. - 6/10/06
+                    ; Overlay leakage fix.  Also inexplicably fixes the clamped
+                    ; filled polygon corruption as well.
+                    Render/forceEdgedOverlays = true
+            }}
+        }
+
+
+
+        VENDOR = 00001002 {                     ; ATI
+
+            ;
+            ; 3.0: no global settings for ATI cards
+            ;
+            SETTINGS {
+                manufacturerUrl       = www.ati.com
+                manufacturerDriverUrl = www.ati.com/support
+
+                ; Fixes the text flashing problem
+                ; D.K. - 11/5/2001
+                ; does not work in Alchemy 3.0
+                ; useMaterialVertexColorEmulation = true
+
+                ; enable mipmaps for all ATI cards
+                enableMipmaps = true
+            }
+
+            SETTINGS {
+                manufacturerUrl       = www.ati.com
+                manufacturerDriverUrl = support.ati.com/ics/support/default.asp?deptID=894&task=knowledge&folderID=27
+            }
+            
+            
+            ;
+            ; The Radeon 2100 and prior cards are considered "legacy" by AMD, 
+            ; and no longer receive regular driver updates (for any OS), and
+            ; aren't officially supported on Win7.  Disabling vertex buffers
+            ; in Alchemy prevents a crash on these cards in Win7.
+            ;
+            ; The PCI ID ranges 0x3XXX, 0x4XXX, 0x5XXX, and 0x7XXX cover the
+            ; entire range of these cards without including any of the newer
+            ; cards.
+            ; 
+            ; (5/18/2010 - see bug #2656130)
+            ;
+            OS_VERSION >= 6.1 { ; Win7
+                CHIPSET >= 00003   {
+                    SETTINGS {
+                        autoVertexBuffers = false
+                        disableDrawPrimUP = false
+                }}
+                CHIPSET >= 00003   {
+                    SETTINGS {
+                        autoVertexBuffers = false
+                        disableDrawPrimUP = false
+                }}
+                CHIPSET >= 00004   {
+                    SETTINGS {
+                        autoVertexBuffers = false
+                        disableDrawPrimUP = false
+                }}
+                CHIPSET >= 00005   {
+                    SETTINGS {
+                        autoVertexBuffers = false
+                        disableDrawPrimUP = false
+                }}
+                CHIPSET >= 00007   {
+                    SETTINGS {
+                        autoVertexBuffers = false
+                        disableDrawPrimUP = false
+                }}
+            }
+
+            ;
+            ; RV280
+            ;
+            CHIPSET >= 000059   {   ; Radeon 9200
+                SETTINGS {
+                    ; B.B. - 10/7/04
+                    ; passes KAT in DX/OGL while fullscreen with max detail, didn't text anisotropy
+                    ; Classic atmosphere
+                    Atmosphere/atmosphereLevel = 0
+                    WaterSurface/waterSurfaceUsingShaders = false
+                    Precipitation/usePrecipitationShader = false
+                    SpeedTree/useBillboardsOnly = true
+            }}
+
+            ;
+            ; RV250
+            ;
+            CHIPSET >= 00004C6  {   ; Radeon Mobility {9000,9200}
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+
+            ;
+            ; R100
+            ;
+            CHIPSET >= 000054 {     ; Rage 128 Pro II {Ultra, Rage Fury Pro,TF,TL,TR,TS,TT,TU}
+                SETTINGS {
+                    ; B.B. 7/26/04
+                    ; Mip Mapping works fine in the KAT tests with 3 1Kx1K RGB textures
+                    enableMipmaps = true
+
+                    ; J.H. 6/10/06
+                    ; add this to fix the overlay leakage problem
+                    Render/forceEdgedOverlays = true
+
+                    ; B.B. 7/26/04
+                    ; white roads/borders on Rage Fury Pro when atmosphere not visible
+                    ; copied to all other R100 cards
+                    ; J.H. 6/10/06
+                    ; disable this line to make the clamped filled polygons fill
+                    ; properly (still flickers, however)
+                    ; Render/noTexturingWorkaround = true
+
+                    ; J.H. 6/10/06
+                    ; recommend disabling clamped filled polygons as they flicker.
+                    ; In 3.0 client, the polygons were displayed in solid white.
+                    Render/fillPolysEnable = false
+
+                    ; B.B. 7/26/04
+                    ; needs speedup
+                    Render/fillPolysMaxTex = 512
+            }}
+            CHIPSET >= 000053 {     ; 3D Rage Pro 128 {SF,SG,SH,SK,SL,SM}
+                SETTINGS {
+                    ; A.P. 6/7/06
+                    ; Fix leakage for "Overlay Leakage" overlay - White leakage
+                    Render/forceEdgedOverlays = true
+
+                    ; A.P. 6/7/06
+                    ; Combined with the above setting, commenting out the below
+                    ; causes the polygons to fill properly,
+                    ; but the color flickers between proper color and white
+                    ;enableMipmaps = true
+                    ;Render/noTexturingWorkaround = true
+                    ;Render/fillPolysEnable = true
+                    Render/fillPolysMaxTex = 512
+
+                    ; A.P. 6/7/06
+                    ; Until and unless the above flicker issue is fixed, recommend
+                    ; disable fill polygons. In 3.0.0762 release, the polygons were
+                    ; filled, but white.
+                    Render/fillPolysEnable = false
+            }}
+            CHIPSET >= 000052 {     ; 3D Rage Pro 128 {RF,RG,RK,RL}
+                SETTINGS {
+                    ; A.P. 6/7/06
+                    ; Fix leakage for "Overlay Leakage" overlay - White leakage
+                    Render/forceEdgedOverlays = true
+
+                    ; A.P. 6/7/06
+                    ; Combined with the above setting, commenting out the below
+                    ; causes the polygons to fill properly,
+                    ; but the color flickers between proper color and white
+                    ;enableMipmaps = true
+                    ;Render/noTexturingWorkaround = true
+                    ;Render/fillPolysEnable = true
+                    Render/fillPolysMaxTex = 512
+
+                    ; A.P. 6/7/06
+                    ; Until and unless the above flicker issue is fixed,
+                    ; recommend disable fill polygons. In 3.0.0762 release,
+                    ; the polygons were filled, but white.
+                    Render/fillPolysEnable = false
+            }}
+            CHIPSET >= 00005147 {   ; Radeon 7000
+                SETTINGS {
+                    enableMipmaps = false
+                    Render/noTexturingWorkaround = true
+                    Render/fillPolysEnable = true
+                    Render/fillPolysMaxTex = 512
+            }}
+            CHIPSET >= 00005146 {   ; Radeon R100
+                SETTINGS {
+                    enableMipmaps = false
+                    Render/noTexturingWorkaround = true
+                    Render/fillPolysEnable = true
+                    Render/fillPolysMaxTex = 512
+            }}
+            CHIPSET >= 00005145 {   ; Radeon R100
+                SETTINGS {
+                    Render/noTexturingWorkaround = true
+            }}
+
+
+            ;
+            ; fifth generation cards
+            ;
+            CHIPSET >= 000050 {     ; 3D Rage Pro 128 {Rage Fury Maxx,PB,PC,PD,PE,PF,PG,PH,PI,PJ,PK,PL,PM,PN,PO,PP,PQ,PR,PS,PT,PU,PV,PW,PX}
+                SETTINGS {
+                    ; B.B. 6/18/04
+                    ; Mip Mapping works fine in the KAT tests with 3 1Kx1K RGB textures
+                    enableMipmaps = true
+
+                    ; B.B. 6/18/04
+                    ; exhibits white line problem - ok when fill poly visible
+                    Render/noTexturingWorkaround = true
+                    Render/fillPolysEnable = false
+            }}
+            CHIPSET >= 00004D4 {    ; 3D Rage Mobility 128 (mobile Rage 128 Pro)
+                SETTINGS {
+                    enableMipmaps = true
+                    Render/noTexturingWorkaround = true
+                    Render/fillPolysEnable = false
+            }}
+            CHIPSET >= 00004C52 {   ; 3D Rage Mobility M (or IBM OEM)
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004C51 {   ; 3D Rage LT Pro PCI
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004C50 {   ; 3D Rage LT Pro
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004C4 {    ; 3D Rage LT Pro (possibly: 3D Rage Mobility L AGP 2x, IBM OEM, Toshiba Satellite 1730, 1735, 1750, 1755)
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 0000475 {    ; 3D Rage {||,3D Charger,XL,XC}
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 0000474 {    ; 3D Rage
+                SETTINGS {
+                    cantRun = true
+            }}
+
+
+            ;
+            ; fourth generation cards
+            ;
+            CHIPSET >= 00004C54 {   ; mach64 264LT (2MB)
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004654 {   ; 215VT (64bit, EDO)
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004554 {   ; 210888ET
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004758 {   ; 210888GX
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004358 {   ; 210888CX
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00004354 {   ; 215CT222 (integrated RAMDAC)
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 0000565 {    ; 264VT, 264VT3, 264VT4
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= 00005354 {   ; 264VT
+                SETTINGS {
+                    cantRun = true
+            }}
+
+
+            ;
+            ; third generation cards
+            ;
+            CHIPSET >= 00004158 {   ; Mach32 68800AX
+                SETTINGS {
+                    cantRun = true
+            }}
+        }
+
+
+
+        VENDOR = 0000104C {                     ; ELSA
+            SETTINGS {
+                ; ** not mentioned in 3.0 - inherit defaults **
+                manufacturerUrl       = www.elsa.com
+                manufacturerDriverUrl = www.elsa.com/EN/Support/driver_gladiac.asp
+            }
+            CHIPSET = 00003D07-0A351048-00000011 { ; ELSA GLoria Synergy
+                SETTINGS {
+                    cantrun = true
+            }}
+        }
+
+
+
+        VENDOR = 00008086 {                     ; Intel
+            SETTINGS {
+                ; ** not mentioned in 3.0 - inherit defaults **
+                manufacturerUrl       = www.intel.com
+                manufacturerDriverUrl = support.intel.com/support/graphics
+
+                ; fixes colored lines appearing as white
+                ; B.B. - 6/15/2004
+                Render/noTexturingWorkaround = true
+
+                ; Fixes alpha blending for roads
+                ; D.K. - 11/2/2001
+
+                ; most likely source of problems in Alchemy 3.0
+                ; (see comment for S3 cards below). Use default
+                ; F.B. - 2/13/2004
+                ; useMaterialVertexColorEmulation = true
+
+
+                ; FB 7/14/04
+                ; Most intel chips don't support mipmaps. Only enable if tested.
+                ; Symptom of overlays -> white but not unitex (as in OGL)
+                enableMipmaps = false
+
+                ; Classic atmosphere
+                Atmosphere/atmosphereLevel = 0
+                WaterSurface/waterSurfaceUsingShaders = false
+                Precipitation/usePrecipitationShader = false
+                SpeedTree/useBillboardsOnly = true
+            }
+
+            CHIPSET >= 00002582 {   ; Intel 915                             (PIV northbridge)
+                SETTINGS {
+                    recommendDX = true
+            }}
+            CHIPSET >= 00002572 {   ; Intel 865 {G,GV}                      (PIV northbridge)
+                SETTINGS {
+            }}
+            CHIPSET >= 00003582 {   ; Intel 852 {GM,i852/855}
+                SETTINGS {
+            }}
+            CHIPSET >= 00002562 {   ; Intel 845G
+                SETTINGS {
+                    recommendDX = true
+            }}
+            CHIPSET >= 0000113 {    ; Intel 815 {CGC, Chipset AGP Bridge}   (PII/PIII northbridge)
+                SETTINGS {
+            }}
+            CHIPSET >= 0000712 {    ; Intel 810 {,E,DC-100,DC-133,-M}       (PII northbridge)
+                SETTINGS {
+            }}
+        }
+
+
+
+        VENDOR = 0000102B {                     ; Matrox
+
+            SETTINGS {
+                manufacturerUrl       = www.matrox.com
+                manufacturerDriverUrl = www.matrox.com/mga/support/drivers/latest/home.cfm
+
+                ; Tex Coord Source Camera pos broken
+                disableTexCoordSrcCpos = true
+            }
+
+            CHIPSET >= 00002527 {   ; G550
+                SETTINGS {
+                    ; B.B. 06/15/2004 - Fixes colored lines appearing as white.
+                    ; B.A. 07/06/2009 - Moved this setting from all Matrox cards
+                    ; to specific older cards (see bug #1966719).
+                    Render/noTexturingWorkaround = true
+            }}
+            CHIPSET >= 00000525 {   ; G400, G400HD, G450, G450HD
+                SETTINGS {
+                    ; imported from 3.0
+                    disableTexCoordSrcCpos = true Tex Coord Source Camera pos broken
+
+                    ; J.H. - 6/8/06
+                    ; Adding this setting displays polygons correctly on the G450
+                    ; and G400 cards
+                    Render/maxTextureSize = 1024
+                    Render/forceEdgedOverlays = true
+
+                    ; J.H. - 6/8/06
+                    ; For the 450 Millenium card, the fillPolysMax must be limited
+                    ; to 512 to display polygons correctly
+                    ; A.P. - 7/11/06
+                    ; This setting now also works for the 400 Millennium card.
+                    Render/fillPolysMaxTex = 512
+
+                    ; B.B. 06/15/2004 - Fixes colored lines appearing as white.
+                    ; B.A. 07/06/2009 - Moved this setting from all Matrox cards
+                    ; to specific older cards (see bug #1966719).
+                    Render/noTexturingWorkaround = true
+            }}
+            CHIPSET >= 00000521 {   ; Millenium G200
+                SETTINGS {
+                    ; B.B. 06/15/2004 - Fixes colored lines appearing as white.
+                    ; B.A. 07/06/2009 - Moved this setting from all Matrox cards
+                    ; to specific older cards (see bug #1966719).
+                    Render/noTexturingWorkaround = true
+            }}
+            CHIPSET >= 00000527 {   ; Parhelia-512
+                SETTINGS {
+                    enableMipMaps = false
+                    disableAnisotropicFiltering = true
+                    Render/fillPolysEnable = false
+
+                    ; B.B. 06/15/2004 - Fixes colored lines appearing as white.
+                    ; B.A. 07/06/2009 - Moved this setting from all Matrox cards
+                    ; to specific older cards (see bug #1966719).
+                    Render/noTexturingWorkaround = true
+            }}
+        }
+
+        VENDOR = 000010C8 {                     ; NeoMagic Corp.
+            CHIPSET >= 00000016 { ; MagicMedia256XL+
+                SETTINGS {
+                    manufacturerUrl       = www.neomagic.com
+                    manufacturerDriverUrl = www.neomagic.com/product/enduser.asp
+
+                    ; Card can not handle non-square textures,
+                    ; but some driver versions report that it can.
+                    Render/forceSquareTextures = true
+            }}
+        }
+
+
+
+        VENDOR = 000010DE {                     ; nVidia
+            SETTINGS {
+                manufacturerUrl       = www.nvidia.com
+                manufacturerDriverUrl = www.nvidia.com/content/drivers/drivers.asp
+
+                ; enable mipmaps by default on all nVidia cards.
+                enableMipmaps = true
+            }
+            DRIVER = 00006.00013.00010.02958 {
+                SETTINGS {
+                    ; Windows XP - SP2 drivers
+                }
+            }
+
+            DRIVER = 00007.00015.00010.09759 {
+                SETTINGS {
+                    ; Windows Vista nVidia drivers that have poor shader
+                    ; support.
+                    ; Classic atmosphere
+                    Atmosphere/atmosphereLevel = 0
+                    WaterSurface/waterSurfaceUsingShaders = false
+                    Precipitation/usePrecipitationShader = false
+                    SpeedTree/useBillboardsOnly = true
+                }
+            }
+
+            ;
+            ; 3.0: the following 2 chipsets (TNT & TNT2 64) are not specified
+            ;
+            CHIPSET >= 00000020 {   ; RIVA TNT
+                ; D.K. - 6/13/2001
+                SETTINGS {
+                    ; Seems to help the TNT to work
+                    forceVertexBuffers = true
+
+                    ; turn off mipmaps on lower-end cards
+                    enableMipmaps = false
+
+                    ; B.B. - 4/6/2005, limit on basis of GeForce 256
+                    Render/maxTextureSize = 1024
+                    Render/fillPolysMaxTex = 512
+
+                    ; A.P. - 6/6/06
+                    ; recommendOGL = true ; This would be the preferred setting,
+                    ; but it currently does not work.
+                    ; Use this until recommendOGL = true functionality is restored
+                    ;forceOGL = true
+            }}
+            CHIPSET >= 0000002D {   ; NVIDIA RIVA TNT2 Model 64/Model 64 Pro
+                SETTINGS {
+                    ; Fixes a geometry corruption with indexed arrays
+                    ; D.K. - 12/18/2001
+                    forceVertexBuffers = true
+
+                    ; turn off mipmaps on lower-end cards
+                    enableMipmaps = false
+
+                    ; B.B. - 4/6/2005, limit on basis of GeForce 256
+                    Render/maxTextureSize = 1024
+                    Render/fillPolysMaxTex = 512
+                }
+            }
+
+            CHIPSET >= 00000100 {   ; GeForce 256
+                SETTINGS {
+                    GPUVertexShaderPerfRating = 1.0
+                    GPUTLPerfRating = 1.0
+
+                    ; B.B. - 4/6/2005, 2 fps -> 22 fps
+                    Render/fillPolysEnable = true
+                    Render/fillPolysMaxTex = 512
+
+                    ; B.B. - 4/6/2005, flaky with textures > 1K (runs out of VRAM)
+                    Render/maxTextureSize = 1024
+            }}
+            ;
+            ; imported from 3.0
+            ;
+            CHIPSET >= 00000200 {   ; GeForce3
+                SETTINGS {
+                    GPUVertexShaderPerfRating = 1.0
+                    GPUTLPerfRating = 1.0
+            }}
+            CHIPSET >= 00000201 {   ; GeForce3 Ti 200
+                SETTINGS {
+                    GPUVertexShaderPerfRating = 0.9 ; just a guess
+                    GPUTLPerfRating = 0.95
+            }}
+            CHIPSET >= 00000202 {   ; GeForce3 Ti 500
+                SETTINGS {
+                    GPUVertexShaderPerfRating = 1.2  ; just a guess
+                    GPUTLPerfRating = 1.1
+            }}
+            CHIPSET >= 00000250 {   ; GeForce4 Ti 4600
+                SETTINGS {
+                    GPUVertexShaderPerfRating = 2.1
+                    GPUTLPerfRating = 1.5
+            }}
+            CHIPSET >= 00000251 {   ; GeForce4 Ti 4400
+                SETTINGS {
+                    GPUVertexShaderPerfRating = 1.5 ; just a guess
+                    GPUTLPerfRating = 1.3
+            }}
+            CHIPSET >= 00000253 {   ; GeForce4 Ti 4200
+                SETTINGS {
+                    GPUVertexShaderPerfRating = 1.4 ; just a guess
+                    GPUTLPerfRating = 1.1
+            }}
+            CHIPSET >= 0000031 {   ; GeForce FX 5200
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= 0000032 {   ; GeForce FX 5200
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= 0000034 {   ; GeForce FX 5700
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= 0x00FD {     ; Quadro NVS 280 PCI-E (64MB)
+                SETTINGS {
+                    ; B.B. - 4/29/05
+                    ; 4k by 4k textures thrashes VRAM (.35fps), ok with 4kx4k b&w
+                    Render/maxTextureSize = 2048
+            }}
+            CHIPSET >= 000001D3 {     ; GeForce 7300 SE/7200 GS
+                SETTINGS {
+                    ; Classic atmosphere
+                    Atmosphere/atmosphereLevel = 0
+                    WaterSurface/waterSurfaceUsingShaders = false
+                    Precipitation/usePrecipitationShader = false
+                    SpeedTree/useBillboardsOnly = true
+                }
+            }
+        }
+
+
+
+        VENDOR = 00005333 {                     ; S3
+            SETTINGS {
+                ; ** not mentioned in 3.0 - inherit defaults **
+                manufacturerUrl       = www.s3graphics.com
+                manufacturerDriverUrl = www.s3graphics.com/drivers.jsp
+
+                ; Fixes the borders fading problem
+                ; D.K. - 9/27/2002
+                ; Alchemy 3.0: this flag no longer works,
+                ; because the client makes a call that disables
+                ; material vertex color emulation.
+
+                ; F.B. - 2/13/2004
+                ; useMaterialVertexColorEmulation = true
+
+                ; B.B. - 6/15/2004
+                ; fixes colored lines appearing as white (DX only)
+                Render/noTexturingWorkaround = true
+
+                ; B.B. - 6/24/2004, ProSavage
+                ; it appears that the card clamps to the average of the outermost
+                ; two pixels when s > 1 or t > 1, clamp to 1 pixel for s < 0, t < 0
+                Render/olay2EdgeTransparency = true
+
+                ; B.B. - 6/24/2004, ProSavage
+                ; scaling done inside driver which dumps pixels (no blending)
+                ; causes double pixel transparency to be reduced to a single pixel
+                Render/forceSquareTextures = true
+
+                ; B.B. - 9/30/04, ProSavage
+                ; borders are frequently obscured by terrain for distant earth
+                Render/distantDrawOffsetScale = 0.3
+            }
+            CHIPSET >= 00009102 {   ; Savage2000
+            }
+            CHIPSET >= 00008E04 {   ; S3 Graphics DeltaChromeS4 Nitro
+                SETTINGS {
+                    ; A.P. - 7/11/06 - This setting is sufficient to fix the
+                    ; polygon issue.
+                    Render/fillPolysMaxTex = 512
+
+                    ; A.P. - 7/11/06 - All of the below is no longer valid.
+
+                    ; A.P. - 6/9/06
+                    ; Clamp filled polygons fix
+                    ; STANDARD SET did not fix the polygons, nor did the
+                    ; MaxTextureSize 1024/512 with fillPolysMaxTex 512
+                    ; Only setting fillPolysMaxTex to 256 made the polys fill
+                    ; correctly, aside from fuzzy borders.
+                    ;Render/fillPolysMaxTex = 256
+            }}
+            CHIPSET >= 00008D04 {   ; ProSavage DDR (32MB)
+                SETTINGS {
+                    ; B.B. - 9/24/04
+                    ; for slanted view, 140ms in DX, 100ms in OGL
+                    ; but OGL has missing atmosphere and fill poly problems
+
+                    ; B.B. - 10/5/04
+                    ; otherwise reduces client to 4fps
+                    Render/fillPolysMaxTex = 256
+
+                    ; B.B. - 10/5/04
+                    ; fill polys include scattered transparent vertical lines
+                    Render/fillPolysEnable = false
+            }}
+            CHIPSET >= 00009102 {   ; Savage2000
+            }
+            CHIPSET >= 00008C {     ; IXC (8C2E), IX - w/MV (8C12)
+                SETTINGS {
+                    fogSupport = false
+
+                    ; B.B. - 10/4/04, IXC
+                    ; larger textures load as white
+                    Render/maxTextureSize = 1024
+
+                    ; B.B. - 10/5/04, IXC
+                    ; reduces client to 1.5fps, fixes atmosphere when visible
+                    Render/fillPolysMaxTex = 256
+
+                    ; B.B. - 10/5/04, IXC
+                    ; fill polys include scattered transparent vertical lines
+                    Render/fillPolysEnable = false
+            }}
+        }
+
+
+
+        VENDOR = 00001039 {                     ; SIS
+            SETTINGS {
+                ; B.B. 4/7/05, includes ActiveX control to identify card and
+                ; correct driver to download, I hope this becomes more widely adopted
+                manufacturerUrl       = www.sis.com
+                manufacturerDriverUrl = www.sis.com/support/support_prodid.htm
+
+                ; same as S3, Matrox and Intel
+                Render/noTexturingWorkaround = true
+
+                ; F.B. - 08/04/2004, 315
+                ; driver reports max texture size of 2kx2k, but
+                ; really can't display textures larger than 1kx1k
+                Render/maxTextureSize = 1024
+            }
+
+            CHIPSET >= 00006330 {     ; SiS 661 / SiS 741 / SiS 760
+                SETTINGS {
+                    ; A.P. - 6/9/06  SiS 661, SiS 741, and SiS 760 report 0x6330
+                    ; in the DxDiag files.
+
+                    ; A.P. - 6/9/06  SiS 741, polygons worked fine in 3.0.0762
+                    ; release with no modifications needed.
+
+                    ; J.H. - 6/8/06
+                    ; Limiting maxTextureSize shows polygons correctly
+                    ; Limiting Max Poly Texture size to 512 for SiS 661 works
+                    ; A.P. - 7/12/06 - This setting now works for all three cards
+                    ; (661, 741, 760)
+                    Render/fillPolysMaxTex = 512
+            }}
+            CHIPSET >= 00006325 {     ; SiS 650GL
+                SETTINGS {
+                    ; J.H. - 6/8/06
+                    ; Limiting Max Poly Texture size to 512 for SiS 650 works
+                    Render/fillPolysMaxTex = 512
+            }}
+            CHIPSET >= 00006300 {     ; SiS 630/730
+                SETTINGS {
+                    ; A.P. - 6/5/06
+                    ; Overlay fix for leaking overlays
+                    Render/forceEdgedOverlays = true
+                    Render/olay2EdgeTransparency = true
+
+                    ; A.P. - 6/7/06
+                    ; Clamp-filled polygons corrupted in both current and 3.0.0762
+                    ; release build
+                    ; Render/noTexturingWorkaround = false ; This setting causes
+                    ; polygons to fill correctly, but show as the wrong color (white)
+                    ; Polygons show as colored outline, as expected.
+                    Render/fillPolysEnable = false
+            }}
+            CHIPSET >= 00000330 {     ; Xabre 200 / 400
+                SETTINGS {
+                    ; A.P. - 7/12/06
+                    ; This setting is now sufficient to fix the polygons for both
+                    ; the Xabre 200 and Xabre 400.  Setting 256 is no longer needed.
+                    Render/fillPolysMaxTex = 512
+
+                    ; A.P. - 7/12/06
+                    ; The below is no longer valid.
+
+                    ; J.H. - 6/9/06
+                    ; Changing the Filled Max Texture Size for Polys to 256 is
+                    ; needed to display polygons fully filled in the 4.0 client
+                    ; for both Xabre 200 and 400 cards. I attempted setting
+                    ; polysMax to 512 with varying maxTextureSizes and
+                    ; combinations of the standard set and nothing worked.
+                    ; This issue is a regression from the 3.0 client as
+                    ; Polygons looked more sharp
+                    ;Render/fillPolysMaxTex = 256
+            }}
+            CHIPSET >= 00000325 {     ; IXC (8C2E), IX - w/MV (8C12), SiS 315_315E
+                SETTINGS {
+                    ; B.B. - 5/8/06
+                    ; fill polys 1/4 filled and not transparent
+                    ;Render/fillPolysEnable = false
+
+                    ; B.B. - 5/8/06
+                    ; transparent texture is shown as opaque white, edges clamped ok
+                    Render/forceEdgedOverlays = true
+
+                    ; A.P. - 7/12/06
+                    ; This setting will fix the polygons for SiS 315
+                    Render/fillPolysMaxTex = 512
+            }}
+            CHIPSET >= 00000300 {     ; SiS 300/305
+                SETTINGS {
+                    ; A.P. - 6/7/06
+                    ; Overlay fix for leaking overlays
+                    Render/forceEdgedOverlays = true
+                    Render/olay2EdgeTransparency = true
+
+                    ; A.P. - 6/7/06
+                    ; Clamp-filled polygons corrupted in both current and 3.0.0762
+                    ; release build enableMipmaps = false ; This setting seems to
+                    ; have no effect on the polygons (still white box)
+                    ; Render/noTexturingWorkaround = false ; This setting seems to
+                    ; have no effect on the polygons (still white box)
+                    ; The two above settings used together or each separately seemed
+                    ; to have no effect on the polygons (still white box)
+                    ; Polygons show as colored outline, as expected.
+                    Render/fillPolysEnable = false
+            }}
+        }
+    } ; END of DirectX
+
+
+
+    ;=============================================================================
+    ; OPENGL
+    ;=============================================================================
+
+    PLATFORM = ogl {
+        ;
+        ; 3.0: usingOGL no longer needed, it seems
+        ;
+        SETTINGS {
+            usingOGL = true
+            ; Turn on VBO support for OGL.
+            enableVertexBufferObjects = true
+            ; Only use VBOs for some of the vertex arrays.
+            geometryUsesVBOByDefault = false
+        }
+
+        VENDOR >= 3Dfx {
+            SETTINGS {
+                manufacturerUrl       = www.3dfx.com
+                manufacturerDriverUrl = www.voodoofiles.com/3dfxhelp.asp
+
+                ; 3dfx cards cannot support textures larger than 256
+                largeTextureSupport = false
+
+                ; 3dfx cards cannot support tiny textured polygons.
+                scaleEarthSupport    = true
+
+                ;
+                ; imported from 3.0
+                ;
+                ; avoid
+                noVAcolor = true
+                ; never use 3dfx multitextures (broken in too many cases)
+                maxTexStages = 1
+            }
+        }
+
+
+
+        VENDOR >= 3Dlabs {
+            SETTINGS {
+                manufacturerUrl       = www.3dlabs.com
+                manufacturerDriverUrl = www.3dlabs.com/support/drivers
+            }
+
+            CHIPSET = PERMIDIA2 {
+                ; ** not mentioned in 3.0 - inherit defaults **
+                SETTINGS {
+                    ; D.K. - 6/13/2001
+                    ; Permidia cards cannot support textures larger than 256
+                    largeTextureSupport = false
+
+                    ; avoid
+                    noVAcolor = true
+            }}
+            CHIPSET >= WildCat {
+                SETTINGS {
+                    ; B.M. - 7/15/04
+                    ; textures -> white with mipmaps on
+            }}
+            CHIPSET >= GLINT { ; Oxygen VX1
+                SETTINGS {
+                    ; A.P. - 6/10/06
+                    ; OpenGL has vast issues
+                    forceDX = true
+            }}
+        }
+
+
+
+        VENDOR >= ATI {
+
+            SETTINGS {
+                manufacturerUrl       = www.ati.com
+                manufacturerDriverUrl = www.ati.com/support
+
+                ;
+                ; imported from 3.0
+                ;
+
+                ; Radeon cards starting beginning with the 8500 fall into a slow path
+                ; when putting vertex arrays in display lists
+                noVertexArraysInDLists = true
+
+                ; Radeon drivers don't always bind vertex arrays correctly in shader
+                ; mode.
+                brokenVertexShaderVertexArrayBind = true
+
+                ; B.A. 2/23/07
+                ; enable mipmaps on ATI cards
+                enableMipmaps = true
+            }
+
+            ; B.B. 7/30/04 - device name not confirmed
+            CHIPSET >= 340 {        ; IGP (Pentium IV northBridge)
+                SETTINGS {
+                    recommendDX = true
+            }}
+            CHIPSET >= ATI MOBILITY FIREGL V5 {
+                SETTINGS {
+                ; B.A. Rendering filled polys on OGL causes BSOD
+                ; on T60P laptop with Mobility FireGL v5200
+                ; (see bug #13601).
+                Render/fillPolysEnable = false
+                recommendDX = true
+            }}
+            CHIPSET >= MOBILITY FireGL V3200 {
+                DRIVER = 00006.00014.00010.06497 {
+                    SETTINGS {
+                        ; These drivers have a hard time with shaders.
+                        recommendDX = true
+                        ; Classic atmosphere
+                        Atmosphere/atmosphereLevel = 0
+                        WaterSurface/waterSurfaceUsingShaders = false
+                        Precipitation/usePrecipitationShader = false
+                        SpeedTree/useBillboardsOnly = true
+            }}}
+            CHIPSET >= RAGE 128 {   ; {Pro,M3,A21}
+                SETTINGS {
+                    enableMipmaps = false
+                    recommendDX = true
+            }}
+            CHIPSET >= FireMV 2400 {
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= MOBILITY MOBILITY FIRE GL 7800 {
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= ATI MOBILITY RADEON XPRESS { ; Radeon xpress series
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= MOBILITY RADEON Xpress { ; Radeon xpress series
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= MOBILITY RADEON 7500 {
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= MOBILITY RADEON 9 { ; Radeon 9xxx series
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= MOBILITY/RADEON 9 { ; Radeon 9xxx series
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+
+
+            ;
+            ; fifth generation
+            ;
+            CHIPSET >= RAGE Pro {
+                SETTINGS {
+                    disableTXADD = true
+                    ; imported from 3.0: disable feature for this chipset only,
+                    ; instead of all ATI cards as was done before
+                    disableVertexArrays = true
+
+                    enableMipmaps = false
+                    forceDX = true
+            }}
+            CHIPSET >= XPERT {      ; {98, 99, @PLAY, @WORK, LCD, XL} (8MB, XL is 4MB)
+                                    ; also XPERT 2000 & XPERT 2000 Pro
+                SETTINGS {
+                    ; B.B. 7/22/05 - just a reminder of the setting
+                    Render/detailAreaMax = 256
+
+                    cantrun = true
+            }}
+            CHIPSET >= XPERT 128 {
+                SETTINGS {
+                    disableTXADD = true
+                    ; imported from 3.0: disable feature for this chipset only,
+                    ; instead of all ATI cards as was done before
+                    disableVertexArrays = true
+
+                    enableMipmaps = false
+                    forceDX = true
+                    cantrun = false
+            }}
+            CHIPSET >= Rage Mobility { ; (8MB)
+                SETTINGS {
+                    cantRun = true
+            }}
+            CHIPSET >= Radeon 7 {   ; 7xxx series (7000:32MB, 7200:)
+                SETTINGS {
+                    ; B.B. 7/7/05 - need glBlend crash fix in Alchemy
+                    recommendDX = true
+                    Render/fillPolysEnable = false
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on this card.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RADEON XPRESS {   ; Xpress series (200, 1250, ...)
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= ATI RADEON XPRESS {   ; Xpress series (200, 1250, ...)
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RADEON X300 {   ; RADEON X300 Series
+                SETTINGS {
+                    ; B.A. 5/4/09 - Crash when using VBOs to render filled polygons.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RADEON X550 {   ; RADEON X550 Series
+                SETTINGS {
+                    ; B.A. 5/4/09 - Crash when using VBOs to render filled polygons.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RADEON X600 {   ; RADEON X600 Series
+                SETTINGS {
+                    ; B.A. 5/4/09 - Crash when using VBOs to render filled polygons.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= ATI RADEON X1200 {   ; Xpress 1200
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= ATI RADEON X1250 {   ; Xpress 1250
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= ATI RADEON X1270 {   ; Xpress 1270
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RADEON XPRESS 200 {   ; Integrated chipset
+                SETTINGS {
+                    ; Classic atmosphere
+                    Atmosphere/atmosphereLevel = 0
+                    WaterSurface/waterSurfaceUsingShaders = false
+                    Precipitation/usePrecipitationShader = false
+                    SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= RADEON 8500 {
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RADEON 9 {   ; 9000, 9100, 9200, 9250, 9600, 9700, 9800
+                SETTINGS {
+                    ; B.A. 5/4/09 - Old ATI drivers crash when using VBOs on these cards.
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RADEON 9200 {   ; 9200
+                SETTINGS {
+                    ; Classic atmosphere
+                    Atmosphere/atmosphereLevel = 0
+                    WaterSurface/waterSurfaceUsingShaders = false
+                    Precipitation/usePrecipitationShader = false
+                    SpeedTree/useBillboardsOnly = true
+            }}
+        }
+
+
+
+        VENDOR >= Intel {
+            SETTINGS {
+                manufacturerUrl       = www.intel.com
+                manufacturerDriverUrl = support.intel.com/support/graphics
+
+                ; NEEDS TESTING - B.B. - 6/26/04
+                ; anisotropic filtering is busted on Intel graphics chips
+                ; this will turn it off even if the hardware claims to support it
+                disableAnisotropicFiltering = true
+
+                ; B.B. - 6/26/04
+                ; improve performance for fill polys by limiting quality
+                ; e.g. 865 takes ~160ms to copy 1K texture from backbuffer, ~40ms with 512
+                Render/fillPolysMaxTex = 512
+
+                ; F.B. - 7/14/04
+                ; Most intel chips don't support mipmaps. Only enable if tested.
+                ; Symptom of overlays -> white and also unitex (unlike DX)
+                enableMipmaps = false
+
+                ; B.B. - 7/14/04
+                ; saw one case where OGL drivers go from 15fps to 1fps
+                ; using 2k instead of 1k textures, couldn't be reproduced.
+                ; Render/maxTextureSize = 1024
+
+                ; B.B. - 9/29/05
+                ; confirmed as not working on 865
+                Render/fillPolysUseBackBuffer = true
+
+                ; Classic atmosphere
+                Atmosphere/atmosphereLevel = 0
+                WaterSurface/waterSurfaceUsingShaders = false
+                Precipitation/usePrecipitationShader = false
+                SpeedTree/useBillboardsOnly = true
+            }
+
+            CHIPSET >= Intel 915 {  ;                                       (PIV northbridge)
+                SETTINGS {
+            }}
+            CHIPSET >= Intel 865 {  ; Intel 865 {G,GV}                      (PIV northbridge)
+                SETTINGS {
+                    ; B.B. - 6/24/04
+                    ; good on the 865G
+                    enableMipmaps = true
+            }}
+            CHIPSET >= Intel 845 {  ; Intel 845G
+                SETTINGS {
+                    ; B.B. - 7/14/04
+                    ; all textures -> white
+                    enableMipmaps = false
+
+                    ; B.B. - 9/2/04
+                    ; forceSleep causes texturing problems
+                    Render/forceSleep = false
+            }}
+            CHIPSET >= Intel 85 {   ; Intel {GM,i852/855}
+                SETTINGS {
+            }}
+            CHIPSET >= Intel 82 {   ; Intel {GM/GME 825xx}
+                SETTINGS {
+                    ; F.B. - 7/14/04
+                    ; all textures -> white
+                    enableMipmaps = false
+            }}
+            CHIPSET >= Intel 81 {   ; Intel 815 {CGC, Chipset AGP Bridge}   (PII/PIII northbridge)
+                                    ; Intel 810 {,E,DC-100,DC-133,-M}       (PII northbridge)
+                SETTINGS {
+            }}
+        }
+
+
+
+        VENDOR >= Matrox {
+            SETTINGS {
+                manufacturerUrl       = www.matrox.com
+                manufacturerDriverUrl = www.matrox.com/mga/support/drivers/latest/home.cfm
+
+                ; Apparently, Matrox cards don't like vertex arrays
+                ; 3.0: vertex arrays only disabled on G400 cards, not G200
+                disableVertexArrays = true
+
+                ; B.B. - 7/19/04, Matrox G450
+                ; G400/G450: copying backbuffer takes ~500ms for 1k by 1k
+                Render/fillPolysMaxTex = 512
+
+                ; B.B. - 9/21/04, Matrox G450
+                ; G450HD: driver clamps 2k by 256 textures halfway
+                Render/forceSquareTextures = true
+
+                ; B.B. - 7/1/2005
+                ; based on BA's advice on Matrox's historical OpenGL drivers
+                recommendDX = true
+            }
+
+            CHIPSET >= Matrox G550 { ; G.K. - 6/03/06 - G550 reports itself as G400
+            SETTINGS {
+            }}
+            CHIPSET >= Matrox G450 { ; G450HD reports itself as a G400 card
+                SETTINGS {
+            }}
+            CHIPSET >= Matrox G400 {
+                SETTINGS {
+                    ; G.K. - 6/03/06 - G450 and above report as G400
+                    forceDX = true
+            }}
+            CHIPSET >= Matrox G200 {
+            }
+            CHIPSET >= Parhelia {   ; 512 (128MB)
+                SETTINGS {
+                    enableMipMaps = false
+                    disableAnisotropicFiltering = true
+                    Render/fillPolysEnable = false
+            }}
+        }
+
+
+
+        ;
+        ; Detection of non HW accelerated OGL cards
+        ;
+        VENDOR >= Microsoft {
+            SETTINGS {
+                ; B.B. 8/19/04
+                ; note this means a software renderer is being used, it's not a Keyhole setting
+                OGLsoftwareEmulated = true
+
+                ; B.B. 3/30/05
+                ; fill polys disable anyway, no chance for anisotropic filtering
+                disableAnisotropicFiltering = true
+                Render/fillPolysEnable = false
+                ; Classic atmosphere
+                Atmosphere/atmosphereLevel = 0
+                WaterSurface/waterSurfaceUsingShaders = false
+                Precipitation/usePrecipitationShader = false
+                SpeedTree/useBillboardsOnly = true
+            }
+        }
+
+
+
+        VENDOR >= NVIDIA {
+            SETTINGS {
+                manufacturerUrl       = www.nvidia.com
+                manufacturerDriverUrl = www.nvidia.com/content/drivers/drivers.asp
+
+                ; enable mipmaps on nVidia cards
+                enableMipmaps = true
+            }
+            CHIPSET >= GeForce 256 {
+                SETTINGS {
+                    ; B.B. - 10/8/04
+                    ; 2kx2k and higher textures fail in OGL
+                    Render/maxTextureSize = 1024
+
+                    ; B.B. - 4/6/2005, on the basis of DX performance
+                    Render/fillPolysEnable = true
+                    Render/fillPolysMaxTex = 512
+
+                    ; B.A. - 4/1/09 - bug #1749137
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= RIVA TNT {
+                SETTINGS {
+                    ; D.K. - 6/13/2001
+                    ; disable mipmaps for lower-end TNT cards
+                    enableMipmaps = false
+
+                    ; B.B. - 4/7/2005, on the basis of GeForce 256
+                    Render/maxTextureSize = 1024
+                    Render/fillPolysEnable = true
+                    Render/fillPolysMaxTex = 512
+
+                    ; A.P. - 6/6/06, fix for artifacts
+                    Render/detailAreaMax = 256
+                    Render/maxTextureSize = 512
+
+                    ; B.A. - 4/1/09 - bug #1749137
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= GeForce2 {
+                SETTINGS {
+                    ; B.A. - 4/1/09 - bug #1749137
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= GeForce3 {
+                SETTINGS {
+                    ; B.A. - 4/1/09 - bug #1749137
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= GeForce4 {
+                SETTINGS {
+                    ; B.A. - 4/1/09 - bug #1749137
+                    enableVertexBufferObjects = false
+            }}
+            CHIPSET >= GeForce4 420 Go {   ; (16MB)
+                DRIVER = 00006.00013.00010.02846 {
+                    SETTINGS {
+                        ; B.B. - 7/8/05
+                        ; laptop forced to use old driver from laptop manufacturer
+                        ; problem may still exist on other driver versions
+                        Render/fillPolysEnable = false
+                        recommendDX = true
+            }}}
+            CHIPSET >= GeForce FX 5200 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= GeForce FX Go5200 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= GeForce 6100 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= GeForce FX 5700 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= Quadro FX 500 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= Quadro FX Go1000 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= Quadro FX 1100 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= GeForce 6150 {
+                SETTINGS {
+                  ; Classic atmosphere
+                  Atmosphere/atmosphereLevel = 0
+                  WaterSurface/waterSurfaceUsingShaders = false
+                  Precipitation/usePrecipitationShader = false
+                  SpeedTree/useBillboardsOnly = true
+            }}
+            CHIPSET >= Quadro NVS 280 PCI-E {   ; (64MB)
+                SETTINGS {
+                    ; B.B. - 4/29/05
+                    ; 4k by 4k textures thrashes VRAM (.35fps), ok with 4kx4k b&w
+                    Render/maxTextureSize = 2048
+                    ; Classic atmosphere
+                    Atmosphere/atmosphereLevel = 0
+                    WaterSurface/waterSurfaceUsingShaders = false
+                    Precipitation/usePrecipitationShader = false
+                    SpeedTree/useBillboardsOnly = true
+            }}
+        }
+
+
+
+        VENDOR >= S3 {
+            SETTINGS {
+                manufacturerUrl       = www.s3graphics.com
+                manufacturerDriverUrl = www.s3graphics.com/drivers.jsp
+
+                ; ** not mentioned in 3.0 - inherit defaults **
+                ; The S3 chips do not support vertex arrays.
+                disableVertexArrays = true
+
+                ; B.B. - 9/24/04, ProSavage, SuperSavage IXC
+                ; card clamps to the average of the outermost two pixels
+                ; when s > 1 or t > 1, clamp to 1 pixel for s < 0, t < 0
+                Render/olay2EdgeTransparency = true
+
+                ; B.B. - 9/27/04, ProSavage, SuperSavage IXC
+                ; rec DX because of missing atmosphere and busted fill polys even if it's slightly
+                ; lower performance. Also with OGL it gets slower the more you use the app.
+                recommendDX = true
+
+                ; B.B. - 9/30/04, ProSavage, SuperSavage IXC
+                ; borders are frequently obscured by terrain for distant earth
+                Render/distantDrawOffsetScale = 0.3
+            }
+
+            CHIPSET >= VIA/S3G UniChrome IGP {
+                SETTINGS {
+                    ; JH - 6/06/06 - VIA/S3G cards crash at startup
+                    forceDX = true
+            }}
+            CHIPSET >= Savage2000 {
+                SETTINGS {
+                    cantTexSubImage = true
+            }}
+            CHIPSET >= SavageMX {
+                SETTINGS {
+                    fogSupport = false
+            }}
+            CHIPSET >= ProSavage {
+                SETTINGS {
+                    ; B.B. - 10/5/04
+                    ; reduces client to 1fps, fixes atmosphere when visible
+                    Render/fillPolysMaxTex = 256
+
+                    ; B.B. - 10/5/04
+                    ; fill polys include scattered vertical gaps
+                    Render/fillPolysEnable = true
+            }}
+            CHIPSET >= SuperSavage {    ; IXC (laptop), IX, w/MV
+                SETTINGS {
+                    ; B.B. - 10/4/04, IXC
+                    ; missing atmosphere
+
+                    ; B.B. - 10/5/04, IXC
+                    ; reduces client to 1fps, fixes atmosphere when visible
+                    Render/fillPolysMaxTex = 256
+
+                    ; B.B. - 10/5/04, IXC
+                    ; fill polys include scattered transparent vertical lines
+                    Render/fillPolysEnable = false
+            }}
+        }
+
+
+
+        VENDOR >= SIS {
+            SETTINGS {
+                ; B.B. 4/7/05
+                manufacturerUrl       = www.sis.com
+                manufacturerDriverUrl = www.sis.com/support/support_prodid.htm
+
+                ; ** not mentioned in 3.0 - inherit defaults **
+                ; B.B. - 6/24/04, ProSavage DDR
+                ; forceSquareTextures not required
+
+                ; OGL drivers do not edge_clamp textures, may crash
+                forceDX = true
+            }
+        }
+
+
+
+        VENDOR >= Trident {
+            CHIPSET >= Trident Video Accelerator Blade 3D {
+                SETTINGS {
+                    ; B.B. - 10/3/05
+                    ; bbs users reported green screens in OGL
+                    recommendDX = true
+            }}
+        }
+
+
+
+        VENDOR >= XGI {
+            CHIPSET >= XGI Volari {   ; XGI V3XT
+                SETTINGS {
+                    ; A.P. - 6/12/06
+                    ; Fix for overlay leakage in OGL
+                    Render/forceEdgedOverlays = true
+
+                    ; A.P. - 6/12/06
+                    ; Clamp Filled polygons are broken in OGL.  When enabled,
+                    ; they fill the 3dview completely with a solid color, which
+                    ; does NOT go away even when the polygon is disabled. Only
+                    ; by restarting the client will the issue clear up. Same
+                    ; thing happens in the 3.0 client as well.  Suggested fix
+                    ; is to recommend DirectX, in which polygons seem to work fine.
+                    recommendDX = true
+            }}
+        }
+    } ; END of OpenGL
+
+  ; G.V. - 4/3/07
+  ; Switch to DX on startup for ATI cards running certain old drivers (6.14.10.6404 - 6.14.10.6483)
+  ; as the client crashes for these configurations in OpenGL (see Bug 11866)
+  ; Do this outside of "PLATFORM {..}" as PLATFORM has not been set yet
+  VENDOR >= 00001002 { ; ATI
+
+    DRIVER = 00006.00014.00010.06404 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06414 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06422 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06430 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06436 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06444 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06451 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06458 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06462 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06467 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06476 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    DRIVER = 00006.00014.00010.06483 {
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+    ; B.A. 6/3/10
+    ; The latest ATI drivers (10.5) cause BSOD on WinXP for X2 cards in OGL mode
+    ; (bug #2732507).  These cards also have problems in OGL mode under
+    ; Vista and Win7 (bug #2793850).
+    CHIPSET >= 00009441 { ;ATI Radeon HD 4870 X2
+        SETTINGS {
+            forceDX = true
+    }}
+    CHIPSET >= 00009443 { ;ATI Radeon HD 4850 X2
+        SETTINGS {
+            forceDX = true
+    }}
+    CHIPSET >= 00009506 { ;ATI Mobility Radeon HD 3850 X2
+        SETTINGS {
+            forceDX = true
+    }}
+    CHIPSET >= 00009509 { ;ATI Mobility Radeon HD 3870 X2
+        SETTINGS {
+            forceDX = true
+    }}
+    CHIPSET >= 0000950F { ;ATI RADEON HD 3870 X2
+        SETTINGS {
+            forceDX = true
+    }}
+    CHIPSET >= 00009513 { ;ATI Radeon HD 3850 X2
+        SETTINGS {
+            forceDX = true
+    }}
+    CHIPSET >= 0000958A { ;ATI Radeon HD 2600 X2 Series
+        SETTINGS {
+            forceDX = true
+    }}
+  } ; END ATI
+
+
+  VENDOR >= 000010DE { ; nVidia
+    CHIPSET >= 00000020 {   ; RIVA TNT
+      ; B.B. - 4/17/2007
+      ; crash viewing denver, works fine in DX
+      SETTINGS {
+        switchToDXOnStartup = true
+      }
+    }
+  } ; END nVidia
+
+
+} ; END of win_nt
+
