@@ -30,6 +30,10 @@ BUILDDIR="${HOME}/earth/builds"
 # Test earth build binary and find version
 if [[ -r $BUILDBIN ]]; then
     BUILDVER=$( head -n 10 $BUILDBIN | awk '/^label=/ { gsub (/\"+$/,"",$NF); print $NF}' )
+    # Also make it executable
+    if [[ ! -x $BUILDBIN ]]; then
+        chmod -v +x $BUILDBIN
+    fi
 else
     echo "$0: Cannot read: \"${BUILDBIN}\"."
     exit 1
