@@ -2,9 +2,12 @@
 
 (echo -n "squidmon Start: "; date)>>/home/lg/tmp/squidmon.log
 
+smallfile="http://www.endpoint.com/robots.txt"
+
 while :; do
     /home/lg/bin/lg-run "\
-    if [[ -n \"\$( pgrep -f 'sbin\/squid3' )\" ]]; then
+    if [[ -n \"\$( pgrep -f 'sbin\/squid3' )\" ]] \
+    && ( wget -q -t 1 -T 6 -O /dev/null --header='Host: www.endpoint.com' \"$smallfile\" ); then
         echo -n \".squidok.\";
      else
      date >&2
