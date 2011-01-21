@@ -18,5 +18,5 @@
 for lg in $LG_SCREENS ; do
     echo
     echo $lg:
-    ssh -x root@$lg "$*"
+    ssh -tt -x root@$lg "$*"
 done
