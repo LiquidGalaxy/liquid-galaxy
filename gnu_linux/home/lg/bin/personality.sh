@@ -19,11 +19,17 @@ if [[ $UID -ne 0 ]] ; then
 fi
 
 SCREEN=$1
+TUPLE=${2:-42}
 
 if [[ ( $SCREEN -lt 1 ) || ( $SCREEN -gt 8 ) ]] ; then
     echo invalid screen number $SCREEN
     echo please choose a number 1..8
     exit 2
+fi
+# with this multiple galaxies can exist on shared copper
+if [[ -z $TUPLE ]]; then
+    echo no third tuple specified,
+    echo using default 42... \"10.42.42.0/24\"
 fi
 
 echo lg$SCREEN > /etc/hostname
@@ -33,7 +39,7 @@ cat >/etc/network/if-up.d/99-lg_alias <<EOF
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 # This file created automatically by $0
 # to define an alias where lg systems can communicate
-ifconfig eth0:0 10.42.42.${SCREEN} netmask 255.255.255.0
+ifconfig eth0:0 10.42.${TUPLE}.${SCREEN} netmask 255.255.255.0
 # end of file
 EOF
 

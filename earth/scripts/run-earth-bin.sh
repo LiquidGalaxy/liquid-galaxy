@@ -54,7 +54,7 @@ while true ; do
     echo "running earth"
 #    PLANET="`cat /lg/planet`"
 #    ${SCRIPDIR}/set-planet.sh $PLANET
-    ./googleearth --fullscreen
+    ./googleearth -style cleanlooks --fullscreen
 
     [ -w $SPACENAVDEV ] && ${HOME}/bin/led-enable ${SPACENAVDEV} 0
     sleep 5
