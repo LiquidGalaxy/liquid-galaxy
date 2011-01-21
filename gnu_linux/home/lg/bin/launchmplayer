@@ -1,0 +1,84 @@
+#!/bin/bash
+
+. ${HOME}/etc/shell.conf
+
+## anticipated situations to account for:
+# - mplayer already running with correct cropping (same size video)
+# - mplayer already running with incorrect cropping (new size video)
+# - mplayer not running
+# - launch directly into audio mode with slaved/stopped video
+
+#[[ ${#@} -lt 2 ]] && exit 3
+VIEWFRAMES=${1:-3}
+TOTALFRAMES=8
+VIDFILE=${2:-${CONTENTPATH}/ld2.avi}
+DEGROTATE=36
+DEGVIEWABLE=29
+DEGLOSSGAP=$(( ${DEGROTATE}-${DEGVIEWABLE} ))
+
+BCSCALE=3
+
+# try a last-ditch DISPLAY
+if [[ -z "$DISPLAY" ]]; then export DISPLAY=:0; fi
+if [[ $FRAME_NO -eq 0 ]]; then
+	MPLAYER_UDPOPT="-udp-master -udp-ip 10.42.42.255 -udp-port"
+else
+	MPLAYER_UDPOPT="-udp-slave -udp-port"
+fi
+
+# Re-organize frame numbers for left-to-right cropping
+[[ $FRAME_NO -gt $(( $TOTALFRAMES/2 )) ]] && FRAME_NO=$( echo "$FRAME_NO-$TOTALFRAMES" | bc )
+let FRAME_NO+=$((${VIEWFRAMES}/2))
+
+# mplayer -identify outputs ID_VIDEO_WIDTH and ID_VIDEO_HEIGHT among other items
+export `mplayer -quiet -ss 3 -frames 0 -vo null -ao null -identify "${VIDFILE}" 2>/dev/null | grep -e '\(WIDTH\|HEIGHT\)'`
+
+# exit early
+if [[ -z $ID_VIDEO_WIDTH  ]] || [[ -z $ID_VIDEO_HEIGHT ]]; then
+	echo "could not identify WIDTH/HEIGHT of ${VIDFILE}" >&2
+	exit 2
+fi
+killall -9 mplayer; #sleep 1
+
+WIDTH=$( echo "scale=$BCSCALE; (${ID_VIDEO_WIDTH}/(${DEGROTATE}*${VIEWFRAMES}))*${DEGVIEWABLE}" | bc -l )
+#WIDTH=$( echo "scale=$BCSCALE; ((${ID_VIDEO_WIDTH}/(${DEGROTATE}*${VIEWFRAMES}))*${DEGVIEWABLE})+(((${ID_VIDEO_WIDTH}/(${DEGROTATE}*${VIEWFRAMES}))*(${DEGLOSSGAP}))/2)" | bc -l )
+#HEIGHT=$( echo "scale=$BCSCALE; (${ID_VIDEO_WIDTH}/${ID_VIDEO_HEIGHT})*${WIDTH}" | bc -l )
+HEIGHT=$( echo "scale=$BCSCALE; ${WIDTH}*1.777" | bc -l )
+
+echo "cropped WIDTH: \"${WIDTH}\""
+echo "cropped HEIGHT: \"${HEIGHT}\""
+
+CROPX=$( echo "scale=$BCSCALE; (${FRAME_NO}*((${ID_VIDEO_WIDTH}/(${DEGROTATE}*${VIEWFRAMES}))*${DEGROTATE}))+(((${ID_VIDEO_WIDTH}/(${DEGROTATE}*${VIEWFRAMES}))*(${DEGLOSSGAP}))/2)" | bc -l )
+#CROPX=$( echo "scale=$BCSCALE; (${FRAME_NO}*((${ID_VIDEO_WIDTH}/(${DEGROTATE}*${VIEWFRAMES}))*${DEGROTATE}))" | bc -l )
+CROPY=$( echo "scale=$BCSCALE; (${ID_VIDEO_HEIGHT}-${HEIGHT})/2" | bc -l )
+
+echo "CROPX from left: \"${CROPX}\""
+echo "CROPY from bottom: \"${CROPY}\""
+
+echo "--totaling `echo \"scale=$BCSCALE; ${CROPX}+${WIDTH}\" | bc -l` of ${ID_VIDEO_WIDTH}--"
+# research use of "-vf expand=" filter for playing "extra"/out-of-bounds video
+
+#   -ao alsa:device=asym51 -softvol \
+#    -vf screenshot,rectangle,crop=${WIDTH%%.*}::${CROPX%%.*}: \
+#    -vf screenshot,rectangle,crop=${WIDTH%%.*}:${HEIGHT%%.*}:${CROPX%%.*}:${CROPY%%.*} \
+mplayer \
+    -quiet -nocache -osdlevel 0 \
+    -nomouseinput -nograbpointer \
+    -noconsolecontrols -idle -slave -input nodefault-bindings:file=${MPVIDEOCTL} \
+    ${MPLAYER_UDPOPT} ${MPLAYER_PORT}\
+    -ao alsa \
+    -vo vdpau,xv -fs \
+    -vf screenshot,rectangle,crop=${WIDTH%%.*}:${HEIGHT%%.*}:${CROPX%%.*}:${CROPY%%.*} \
+    -loop 0 "${VIDFILE}" \
+    2>${HOME}/tmp/mpvideo.err | while read line; do echo $line | grep ^ANS >>${HOME}/tmp/mpvideo.log; done &
+
+let MPLAYER_PORT=${MPLAYER_PORT}+1
+mplayer \
+    -quiet -nocache -osdlevel 0 \
+    -nomouseinput -nograbpointer \
+    -noconsolecontrols -idle -slave -input nodefault-bindings:file=${MPAUDIOCTL} \
+    ${MPLAYER_UDPOPT} ${MPLAYER_PORT} \
+    -ao alsa \
+    -vo null \
+    -loop 0 "${VIDFILE}" \
+    2>${HOME}/tmp/mpaudio.err | while read line; do echo $line | grep ^ANS >>${HOME}/tmp/mpaudio.log; done &
