@@ -34,7 +34,7 @@ fi
 
 echo lg$SCREEN > /etc/hostname
 
-cat >/etc/network/if-up.d/99-lg_alias <<EOF
+cat >/etc/network/if-up.d/${TUPLE}-lg_alias <<EOF
 #!/bin/sh
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 # This file created automatically by $0
@@ -43,11 +43,11 @@ ifconfig eth0:0 10.42.${TUPLE}.${SCREEN} netmask 255.255.255.0
 # end of file
 EOF
 
-chmod 0755 /etc/network/if-up.d/99-lg_alias
+chmod 0755 /etc/network/if-up.d/${TUPLE}-lg_alias
 
 FRAME=`expr $1 - 1`
 
 echo $SCREEN > /lg/screen
 echo $FRAME > /lg/frame
 
-echo "You may want to reboot now."
+echo "You may want to reboot now. Adjust /etc/hosts and /etc/iptables.conf if you selected a special third tuple."

@@ -30,7 +30,7 @@ SETTINGS {
 
     ViewSync/send = ##MASTER##
     ViewSync/receive = ##SLAVE##
-    ViewSync/hostname = 10.42.42.255
+    ViewSync/hostname = ##VSYNCHOST##
     ViewSync/port = 45678
     ViewSync/yawOffset = ##YAW##
     ViewSync/pitchOffset = 0

@@ -33,11 +33,13 @@ FOV="36.5"
 YAW_AMOUNT="-42"
 
 YAW="$(echo $FRAME_NO '*' $YAW_AMOUNT | bc)"
+VSYNCHOST="$( awk '/^ifconfig/ {print $3}' /etc/network/if-up.d/*-lg_alias )"
 
 cd ${EARTHDIR} || exit 1
 
 echo "MASTER: $MASTER"
 echo "SLAVE: $SLAVE"
+echo "VSYNCHOST: $VSYNCHOST"
 echo "YAW: $YAW"
 echo "FOV: $FOV"
 echo "NAV: $SPACENAVDEV"
@@ -48,6 +50,7 @@ chmod 644 builds/latest/drivers.ini
 cat ${EARTHDIR}/config/drivers_template.ini |\
   sed -e "s/##MASTER##/$MASTER/" \
   -e "s/##SLAVE##/$SLAVE/" \
+  -e "s/##VSYNCHOST##/$VSYNCHOST/" \
   -e "s/##YAW##/$YAW/" \
   -e "s/##FOV##/$FOV/" \
   -e "s:##NAV##:$SPACENAVDEV:" > builds/latest/drivers.ini
