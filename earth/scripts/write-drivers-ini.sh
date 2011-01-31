@@ -33,7 +33,9 @@ FOV="36.5"
 YAW_AMOUNT="-42"
 
 YAW="$(echo $FRAME_NO '*' $YAW_AMOUNT | bc)"
-VSYNCHOST="$( awk '/^ifconfig/ {print $3}' /etc/network/if-up.d/*-lg_alias )"
+MYIPALIAS="$( awk '/^ifconfig/ {print $3}' /etc/network/if-up.d/*-lg_alias )"
+VSYNCHOST="${MYIPALIAS%.*}"
+VSYNCHOST="10.42.${VSYNCHOST##*.}.255"
 
 cd ${EARTHDIR} || exit 1
 
