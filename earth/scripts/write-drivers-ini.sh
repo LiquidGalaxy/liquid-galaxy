@@ -34,8 +34,8 @@ YAW_AMOUNT="-42"
 
 YAW="$(echo $FRAME_NO '*' $YAW_AMOUNT | bc)"
 MYIPALIAS="$( awk '/^ifconfig/ {print $3}' /etc/network/if-up.d/*-lg_alias )"
-VSYNCHOST="${MYIPALIAS%.*}"
-VSYNCHOST="10.42.${VSYNCHOST##*.}.255"
+VSYNCCHOP="${MYIPALIAS%.*}"
+VSYNCHOST="10.42.${VSYNCCHOP##*.}.255"
 
 cd ${EARTHDIR} || exit 1
 
