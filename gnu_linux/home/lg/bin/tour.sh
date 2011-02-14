@@ -16,6 +16,7 @@
 list=${1:-/var/www/queries.txt}
 out=/tmp/query.txt
 
-query=$(shuf -n 1 $list | cut -d @ -f 3)
+# if you'd like to tour the moon or mars, replace "earth" in this awk cmd
+query=$( awk -F'@' '/^earth/ {print $NF}' $list | shuf -n 1 )
 echo q=$query
 echo $query > $out
