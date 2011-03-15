@@ -28,7 +28,7 @@ if [[ $FRAME_NO = 0 ]]; then
     # -- uncomment the one you like --
     if [[ "${DISPLAY##*\.}" = "1" ]]; then
         echo "launching kiosk browser on second screen"
-        sed -i -e 's/exited_cleanly.*/exited_cleanly\":\ true/' ${HOME}/.config/chromium/Default/Preferences && \
+        sed -i -e 's/exited_cleanly.*/exited_cleanly\":\ true,/' ${HOME}/.config/chromium/Default/Preferences && \
         rm -f ${HOME}/.config/chromium/Singleton*
         gnome-www-browser --disable-session-storage --kiosk --no-first-run localhost:81 &
         exit
