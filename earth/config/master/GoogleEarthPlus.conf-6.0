@@ -37,6 +37,7 @@ shown_LeftPanel=false
 shown_RenderFrame=true
 shown_Ruler=false
 SMode=true
+StreetViewNotificationShown=true
 SwoopEnabled=true
 ThrownDragEnabled=false
 TimeAnimSpeed=100
