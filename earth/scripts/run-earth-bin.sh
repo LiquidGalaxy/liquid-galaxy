@@ -38,6 +38,7 @@ else
     DIR=slave
 fi
 cp -a ${EARTHDIR}/config/$DIR/* ${HOME}/.config/Google/
+cp -a ${EARTHDIR}/config/myplaces.kml ${HOME}/.googleearth/
   
 while true ; do
     if [[ "$DIR" == "master" ]]; then
