@@ -1,5 +1,3 @@
 # creates symlinks for the Acer T230H
-#SUBSYSTEM=="input", KERNEL=="event*", ATTRS{idVendor}=="0408", ATTRS{idProduct}=="3000", SYMLINK+="input/quanta_touch"
-#SUBSYSTEM=="usb", ATTRS{idVendor}=="0408", ATTRS{idProduct}=="3000", SYMLINK+="usb/quanta_touch"
-SUBSYSTEM=="input", KERNEL=="event*", ATTRS{idVendor}=="0408", ATTRS{idProduct}=="3001", SYMLINK+="input/quanta_touch"
-SUBSYSTEM=="usb", ATTRS{idVendor}=="0408", ATTRS{idProduct}=="3001", SYMLINK+="usb/quanta_touch"
+SUBSYSTEM=="input", KERNEL=="event[0-9]*", ATTRS{idVendor}=="0408", ATTRS{idProduct}=="300[0-9]", SYMLINK+="input/quanta_touch"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0408", ATTRS{idProduct}=="300[0-9]", SYMLINK+="usb/quanta_touch"

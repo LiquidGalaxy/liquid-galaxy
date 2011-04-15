@@ -5,7 +5,7 @@
 # See the man page for details on how to write a sudoers file.
 #
 
-Defaults	env_reset
+Defaults          env_reset
 Defaults:www-data !requiretty
 
 # Host alias specification
@@ -30,3 +30,5 @@ root	ALL=(ALL) ALL
 
 # BE SURE TO USE "-H" in the sudo call to set HOME
 www-data ALL=(lg) NOPASSWD: /home/lg/bin/lg-sudo-bg service lxdm restart
+www-data ALL=(lg) NOPASSWD: /home/lg/bin/lg-run-bg
+www-data ALL=(lg) NOPASSWD: /home/lg/bin/mp-control

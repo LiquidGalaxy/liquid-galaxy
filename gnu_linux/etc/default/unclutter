@@ -6,4 +6,4 @@
 START_UNCLUTTER="true"
 
 # Options passed to unclutter, see 'man unclutter' for details.
-EXTRA_OPTS="-idle 7 -jitter 6 -root"
+EXTRA_OPTS="-idle 7 -jitter 6 -root -notclass ioquake3.x86_64"

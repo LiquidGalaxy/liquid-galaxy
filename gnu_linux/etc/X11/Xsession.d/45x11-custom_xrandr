@@ -1,3 +1,4 @@
 /usr/bin/xrandr --screen 0 --output default --mode 1920x1080 --pos 0x0 --rotate right
+/usr/bin/nvidia-settings -c :0 --assign=:0/SyncToVBlank=1
 
 # vim:set ai et sts=2 sw=2 tw=80:
