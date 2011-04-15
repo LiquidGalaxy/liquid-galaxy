@@ -41,13 +41,20 @@ body {
   width: 40%;
   -webkit-border-radius: 5px;
 }
-.earth>img, .moon>img, .mars>img, .keyboard>img {
+.earth>img, .moon>img, .mars>img, .keyboard>img, .layers>img {
   height: 220px;
   width: 220px;
   -webkit-transform: scale(1.0);
   -webkit-transition-duration: .5s;
 }
-.earth:hover>img, .moon:hover>img, .mars:hover>img, .keyboard:hover>img {
+.appctl>img {
+  top: 0px;
+  height: 64px;
+  width: 64px;
+  -webkit-transform: scale(1.0);
+  -webkit-transition-duration: .5s;
+}
+.earth:hover>img, .moon:hover>img, .mars:hover>img, .keyboard:hover>img, .layers:hover>img, .appctl:hover>img {
   cursor: hand;
   cursor: pointer;
   -webkit-transform: scale(1.1);
@@ -65,7 +72,19 @@ body {
   z-index: 1;
   -webkit-transition: opacity .5s linear;
 }
-.earth:hover>.title, .moon:hover>.title, .mars:hover>.title {
+.appctl>.title {
+  cursor: hand;
+  cursor: pointer;
+  font-size: 100%;
+  opacity: 0;
+  position: relative;
+  text-align: center;
+  top: 30px;
+  width: 64px;
+  z-index: 1;
+  -webkit-transition: opacity .5s linear;
+}
+.earth:hover>.title, .moon:hover>.title, .mars:hover>.title, .layers:hover>.title, .appctl:hover>.title {
   opacity: 1;
   -webkit-transition: opacity .5s linear;
 }
@@ -82,15 +101,81 @@ body {
   -webkit-border-radius: 5px;
   -webkit-transition: z-index 0s linear .5s, opacity .5s linear;
 }
-.earth, .moon, .mars, .keyboard {
+.expand_active {
+  background-color: #C2DFFF;
+  left: 10%;
+  padding: 6 0 6 0;
+  position: absolute;
+  text-align: center;
+  top: 370px;
+  width: 80%;
+  opacity: 1;
+  z-index: 1; 
+  -webkit-border-radius: 5px;
+  -webkit-transition: z-index 0s linear .5s, opacity .5s linear;
+}
+.expand_inactive {
+  background-color: #C2DFFF;
+  left: 10%;
+  padding: 6 0 6 0;
+  position: absolute;
+  text-align: center;
+  top: 370px;
+  width: 80%;
+  opacity: 0;
+  z-index: -1;
+  -webkit-border-radius: 5px;
+  -webkit-transition: z-index 0s linear .5s, opacity .5s linear;
+}
+.earth, .moon, .mars, .keyboard, .layers {
   display: inline-table;
   height: 240px;
   width: 240px;
 }
-.earth:hover>.expand, .moon:hover>.expand, .mars:hover>.expand, .keyboard:hover>.expand {
+.appctl {
+  display: inline-table;
+  height: 60px;
+  width: 100%;
+}
+.earth:hover>.expand, .moon:hover>.expand, .mars:hover>.expand, .keyboard:hover>.expand, .layers:hover>.expand {
   opacity: 1;
   z-index: 1;
   -webkit-transition: opacity .5s linear .3s;
+}
+.ctlpanel {
+  background-color: #C2DFFF;
+  cursor: hand;
+  left: 1%;
+  top: 82%;
+  padding: 0px;
+  opacity: 1;
+  position: absolute;
+  text-align: left;
+  vertical-align: middle;
+  width: 40%;
+  z-index: 3;
+  -webkit-border-radius: 5px;
+}
+.ctlbutton {
+  background-color: #B4CFEC;
+  border: 1px solid gray;
+  color: #150517;
+  cursor: hand;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1.3em;
+  margin: 1px;
+  padding: 1px 0px 1px 0px;
+  text-align: center;
+  vertical-align: middle;
+  width: 110px;
+  -webkit-border-radius: 5px;
+  -webkit-transform: scale(1.0);
+  -webkit-transition-duration: .25s;
+}
+.ctlbutton:hover {
+  -webkit-transform: scale(1.1);
+  -webkit-transition-duration: .25s;
 }
 .relaunch {
   cursor: hand;
@@ -111,8 +196,8 @@ body {
   cursor: pointer;
   display: inline-block;
   font-size: 1.3em;
-  margin: 14px;
-  padding: 20px 0 20px 0;
+  margin: 10px;
+  padding: 12px 8px 12px 8px;
   text-align: center;
   vertical-align: middle;
   width: 260px;
@@ -121,6 +206,49 @@ body {
   -webkit-transition-duration: .25s;
 }
 .location:hover {
+  -webkit-transform: scale(1.1);
+  -webkit-transition-duration: .25s;
+}
+.kml_off {
+  background-color: #6FC;
+  background-position: center right;
+  border: 1px solid gray;
+  color: #150517;
+  cursor: hand;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1.0em;
+  margin: 14px;
+  padding: 20px 0 20px 0;
+  text-align: center;
+  vertical-align: middle;
+  width: 320px;
+  -webkit-border-radius: 5px;
+  -webkit-transform: scale(1.0);
+  -webkit-transition-duration: .25s;
+}
+.kml_on {
+  background-color: #FF9;
+  background-image: url("check.png");
+  background-size: 48 px;
+  background-repeat: no-repeat;
+  background-position: center left;
+  border: 1px solid gray;
+  color: #150517;
+  cursor: hand;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1.0em;
+  margin: 14px;
+  padding: 20px 0 20px 0;
+  text-align: center;
+  vertical-align: middle;
+  width: 320px;
+  -webkit-border-radius: 5px;
+  -webkit-transform: scale(1.0);
+  -webkit-transition-duration: .25s;
+}
+.kml_on:hover , .kml_off:hover  {
   -webkit-transform: scale(1.1);
   -webkit-transition-duration: .25s;
 }

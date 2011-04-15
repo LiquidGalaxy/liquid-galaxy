@@ -1,0 +1,137 @@
+#!/bin/bash
+# Copyright 2010 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Simulates user-input in order to drop into streetview
+# You probably want "StreetViewNotificationShown=true" in your GoogleEarthPlus.conf
+# 
+# Mon Mar 21 12:34:30 EDT 2011
+# - Kiel C <kiel@endpoint.com>
+#
+
+trap "exit 1" INT
+
+. ${HOME}/etc/shell.conf
+
+export DISPLAY=:0
+
+## VARS
+# beginning click-drag
+COORDX_BEG=1033
+COORDY_BEG=195
+# ending click-drag
+COORDX_END=540
+COORDY_END=1895
+
+# grab XDG user dir vars
+test -f ${XDG_CONFIG_HOME:-${HOME}/.config}/user-dirs.dirs && source ${XDG_CONFIG_HOME:-${HOME}/.config}/user-dirs.dirs
+
+## FUNC
+usage() {
+    echo "
+When executed without any arguments, I will try to load streetview.
+Be sure you're in a good spot for it!
+
+Other CMDline options are as follows:
+    fwd: move forward while in streetview
+    rev: move backward while in streetview
+    left: turn left while in streetview
+    right: turn right while in streetview
+    unload: get outta streetview (assuming the button is visible).
+
+"
+    exit 1
+}
+
+master() {
+    if [[ $FRAME_NO = 0 ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+## PRE-REQ
+
+## CMDLINE loop
+while [[ -n "$1" ]]; do
+    case $1 in
+        fwd)
+            if( master ); then
+                xdotool mousemove --sync --screen 0 33 33
+                xdotool keydown Prior
+                sleep .5
+                xdotool keyup Prior
+                xdotool mousemove --sync --screen 1 33 33
+            fi
+            exit 0
+            ;;
+        rev)
+            if( master ); then
+                xdotool mousemove --sync --screen 0 33 33
+                xdotool keydown Next
+                sleep .5
+                xdotool keyup Next
+                xdotool mousemove --sync --screen 1 33 33
+            fi
+            exit 0
+            ;;
+        left)
+            if( master ); then
+                xdotool mousemove --sync --screen 0 33 33
+                xdotool keydown Left
+                sleep .5
+                xdotool keyup Left
+                xdotool mousemove --sync --screen 1 33 33
+            fi
+            exit 0
+            ;;
+        right)
+            if( master ); then
+                xdotool mousemove --sync --screen 0 33 33
+                xdotool keydown Right
+                sleep .5
+                xdotool keyup Right
+                xdotool mousemove --sync --screen 1 33 33
+            fi
+            exit 0
+            ;;
+        unload)
+            if( master ); then
+                xdotool mousemove --sync --screen 0 33 33
+                xdotool mousemove -screen 0 1025 40 click 1
+                xdoret=$?
+                xdotool mousemove --sync --screen 1 33 33
+            fi
+            exit $xdoret
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+## FINAL ACTION
+# load streetview
+xdotool mousemove --sync --screen 0 33 33
+xdotool mousemove --sync --screen 0 $COORDX_BEG $COORDY_BEG
+xdotool mousedown 1
+xdotool mousemove --sync --screen 0 $COORDX_END $COORDY_END
+xdotool mouseup 1
+xdotool mousemove --sync --screen 1 33 33
+# 
+
+exit 0

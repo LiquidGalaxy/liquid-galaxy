@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$queries = array('earth' => array(), 'moon' => array(), 'mars' => array());
+include "sync_inc.php";
+
+$queries = array('earth' => array(), 'moon' => array(), 'mars' => array(), 'layers' => array());
 $delimiter = "@";
 $handle = @fopen("queries.txt", "r");
 if ($handle) {
@@ -26,11 +28,40 @@ if ($handle) {
   }
   fclose($handle);
 }
+
+$KML_SYS_PATH = '/var/www/kml/';
+$KML_SERVER_BASE = 'http://lg1:81/kml/';
+
+$FILE_FILTER = '*.km[l|z]';
+
+$kml_files = array('earth' => array(), 'moon' => array(), 'mars' => array());
+foreach (array_keys($kml_files) as $planet) {
+  $planet_kml_path = $KML_SYS_PATH . $planet . "/" . $FILE_FILTER;
+  foreach (glob($planet_kml_path) as $file) {
+    $basename = str_replace('_', ' ', explode('.', basename($file)));
+    $kml_files[$planet][$basename[0]] = str_replace($KML_SYS_PATH, $KML_SERVER_BASE, $file);
+  }
+}
+
+$kml_data_file = 'kmls.txt';
+$existing_kml_url_list = array_values(getKmlListUrls($kml_data_file));
+
 ?>
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script type="text/javascript" src="javascript.js"></script>
+    <script type="text/javascript">       
+      function clearKmls() {
+        showAndHideStatus();
+        <?php  $i = 0; foreach ($kml_files['earth'] as $kml_name => $kml_file) { ?>
+          submitRequest('sync_touchscreen.php?touch_action=delete&touch_kml=<?php echo $kml_file; ?>');
+          document.getElementById('kml_<?php echo $i; ?>').className='kml_off';
+        <?php ++$i; } ?>
+        showAndHideStatus();
+      }
+    </script>
+    
     <title>Liquid Galaxy</title>
   </head>
   <body>
@@ -63,6 +94,24 @@ if ($handle) {
           <? } ?>
         </div>
       </div>
+      <div class="layers">
+        <div class="title" onclick="changePlanet('earth');">Data Layers</div>
+        <img src="gis_layers.png" />
+        <div class="expand">
+          <?php foreach (array_values($queries['layers']) as $layer) { ?>
+            <div class="location" onclick="changeLayer('<?php echo $layer[1]; ?>', '<?php echo $layer[0]; ?>');"><?php echo $layer[0]; ?></div>
+          <? } ?>
+        </div>
+      </div>
+      <!--// <div class="sview">
+        <div class="title" onclick="changeQuery('sview');">StreetView</div>
+        <img onclick="changeQuery('sview');" src="pegman.png" />
+        <div class="expand">
+          <?php #foreach (array_values($queries['sview']) as $query) { ?>
+            <div class="location" onclick="changeQuery('<?php echo $query[1]; ?>', '<?php echo $query[0]; ?>');"><?php echo $query[0]; ?></div>
+          <? #} ?>
+        </div>
+      </div> //-->
       <div class="keyboard">
         <div class="title">&nbsp;</div>
         <img src="keyboard.png" />
@@ -100,6 +149,31 @@ if ($handle) {
       </div>
       <div class="welcome">
         Welcome to the Liquid Galaxy by Google
+      </div>
+      <div class="ctlpanel">
+        <div class="appctl">
+	<!--//
+          <div class="title" onclick="changeQuery('sview', 'StreetView');">StreetView</div>
+	//-->
+          <img onclick="changeQuery('sview', 'StreetView');" src="pegman.png" />
+          <div class="ctlbutton" onclick="changeQuery('sview-left', 'SV LEFT');">LEFT</div>
+          <div class="ctlbutton" onclick="changeQuery('sview-rev', 'SV REV');">REV</div>
+          <div class="ctlbutton" onclick="changeQuery('sview-fwd', 'SV FWD');">FWD</div>
+          <div class="ctlbutton" onclick="changeQuery('sview-right', 'SV RIGHT');">RIGHT</div>
+          <div class="ctlbutton" onclick="changeQuery('sview-un', 'SV UNLOAD');">Unload</div>
+        </div>
+        <div class="appctl">
+	<!--//
+          <div class="title" onclick="changeQuery('mpctl-launch', 'MPlayer');">MPlayer</div>
+	//-->
+          <img onclick="changeQuery('mpctl', 'MPlayer');" src="mplayer.png" />
+          <div class="ctlbutton" onclick="changeQuery('mpctl-prev', 'MP PREV');">PREV</div>
+          <div class="ctlbutton" onclick="changeQuery('mpctl-rev', 'MP REV');">REV</div>
+          <div class="ctlbutton" onclick="changeQuery('mpctl-fwd', 'MP FWD');">FWD</div>
+          <div class="ctlbutton" onclick="changeQuery('mpctl-next', 'MP NEXT');">NEXT</div>
+          <div class="ctlbutton" onclick="changeQuery('mpctl-pause', 'MP PAUSE');">PAUSE</div>
+          <div class="ctlbutton" onclick="changeQuery('mpctl-stop', 'MP STOP');">STOP</div>
+        </div>
       </div>
       <div class="relaunch">
         <div class="location" onclick="changeQuery('relaunch', 'Relaunch');">Relaunch</div>
