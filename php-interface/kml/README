@@ -1,0 +1,4 @@
+Placed new directories within this one to organize the kml you want apache to serve.
+
+New kml "layers" should be added to /var/www/queries.txt in this format:
+layers@${Layer Name}@${lg1:81/kml/newdir/layer.kmz}
