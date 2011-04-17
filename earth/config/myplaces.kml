@@ -4,7 +4,6 @@
     <name>My Places</name>
     <Folder>
         <name>KML Sync</name>
-        <open>0</open>
         <Style>
             <ListStyle>
                     <listItemType>check</listItemType>
@@ -21,14 +20,15 @@
             </ListStyle>
         </Style>
         <NetworkLink>
+                <name>Master KML</name>
                 <Link>
                         <href>http://lg1:81/kml/master.kml</href>
                 </Link>
         </NetworkLink>
         <NetworkLink>
-                <name>update</name>
+                <name>KML Update</name>
                 <Link>
-                        <href>http://lg1:81/ee/sync_nlc.php</href>
+                        <href>http://lg1:81/sync_nlc.php</href>
                         <refreshMode>onInterval</refreshMode>
                         <refreshInterval>1</refreshInterval>
                 </Link>
