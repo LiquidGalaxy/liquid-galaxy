@@ -17,6 +17,7 @@ if (isset($_REQUEST['planet']) and ($_REQUEST['planet'] != '')) {
   $handle = @fopen("/tmp/query_php.txt", "w");
   if ($handle) {
     fwrite($handle, "planet=" . $_REQUEST['planet']);
+    fclose($handle);
   }
   exec('/lg/chown_tmp_query');
   echo "Going to " . ucwords($_REQUEST['planet']);
@@ -78,6 +79,7 @@ if (isset($_REQUEST['planet']) and ($_REQUEST['planet'] != '')) {
   $handle = @fopen("/tmp/query_php.txt", "w");
   if ($handle) {
     fwrite($handle, $_REQUEST['query']);
+    fclose($handle);
   }
   exec('/lg/chown_tmp_query');
   echo "Going to " . $_REQUEST['name'];
@@ -111,7 +113,7 @@ if (isset($_REQUEST['planet']) and ($_REQUEST['planet'] != '')) {
   $handle = @fopen($layerfilename, "wb");
   if ($handle) {
     fwrite($handle, implode(PHP_EOL, $layerarray));
+    fclose($handle);
   }
-  fclose($handle);
 }
 ?>
