@@ -48,13 +48,17 @@ main(int argc, char **argv) {
 
     if (event_data->type == EV_KEY) {
       printf("button press\n");
+    } else if (event_data->type == EV_SYN) {
+      // EV_SYN type may be quite useful for some devices
+      // identifies the sent data complete and therefore apply-able
+      printf("sync event\n");
     } else if (event_data->type == EV_REL ||
                event_data->type == EV_ABS) {
 
       int axis = event_data->code;
       int amount = event_data->value;
 
-      printf("Axis %d amount %d\n", axis, amount);
+      printf("Axis: %d Amount: %d\n", axis, amount);
 
       switch(axis) {
         case 0:
@@ -83,7 +87,9 @@ main(int argc, char **argv) {
       printf("Most recent values: x=%d,y=%d,z=%d,yaw=%d,pitch=%d,roll=%d\n",
              x,y,z,yaw,pitch,roll);
     } else {
-      printf("Unknown event type.\n");
+      int evtype = event_data->type;
+
+      printf("Unknown event type \"%d\".\n", evtype);
     }
   }
 }
