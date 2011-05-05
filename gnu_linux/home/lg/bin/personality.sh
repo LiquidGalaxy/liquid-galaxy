@@ -50,4 +50,10 @@ FRAME=`expr $1 - 1`
 echo $SCREEN > /lg/screen
 echo $FRAME > /lg/frame
 
-echo "You may want to reboot now. Adjust /etc/hosts and /etc/iptables.conf if you selected a special third tuple."
+echo "You may want to reboot now.
+
+Adjust the following files (lets use sed):
+  /etc/hosts
+  /etc/iptables.conf
+  /etc/ssh/ssh_known_hosts
+ if you selected a special third tuple."

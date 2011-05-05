@@ -16,6 +16,7 @@
 """
 Executes applied command periodically while Space Navigator isn't touched.
 It can be used to add screensaver-ish application to Liquid Galaxy.
+Can also use dpms to put displays to sleep after a longer period of neglect.
 """
 
 import fcntl
@@ -24,14 +25,23 @@ import sys
 import time
 
 # Config
-check_per = 40
-wait_for_trigger = 2
+wake_check_per = 2
+tour_check_per = 40
+tour_wait_for_trigger = 2
+sleep_wait_for_trigger = 40
 
-def Touched(path):
+# Commands
+wake_cmd = ">/dev/null /home/lg/bin/lg-run-bg /usr/bin/xset -display :0 dpms force on"
+sleep_cmd = ">/dev/null /home/lg/bin/lg-run-bg /usr/bin/xset -display :0 dpms force standby"
+
+def Touched(path, runmode):
   f = open(path)
   fd = f.fileno()
   fcntl.fcntl(fd, fcntl.F_SETFL, os.O_NONBLOCK)
-  time.sleep(check_per)
+  if runmode == 1:
+    time.sleep(tour_check_per)
+  elif runmode == 2:
+    time.sleep(wake_check_per)
   try:
     f.read(10000)
     return True
@@ -47,14 +57,22 @@ def main():
     sys.exit(1)
   
   cmd = sys.argv[1]
+  runmode = 1 # 1 = tour, 2 = displaysleep
   cnt = 0
   while True:
-    if Touched("/dev/input/spacenavigator"):
+    if Touched("/dev/input/spacenavigator", runmode):
       cnt = 0
       print "Touched."
+      if runmode == 2:
+        os.system(wake_cmd)
+      runmode = 1
     else:
       cnt += 1
-      if cnt >= wait_for_trigger:
+      if cnt >= sleep_wait_for_trigger:
+        runmode = 2
+        print sleep_cmd
+        os.system(sleep_cmd)
+      elif cnt >= tour_wait_for_trigger:
         print cmd
         os.system(cmd)
       else:
