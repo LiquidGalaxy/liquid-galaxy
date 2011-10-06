@@ -32,9 +32,22 @@ fi
 # However, doing it on each system spreads the load a little and 
 # reduces byte count transfered over the wire a bit.
 for lg in $LG_SCREENS; do
-    ssh lg@${lg} "
-echo -en \"\$(hostname) GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/text;
-DISPLAY=$display import -window root miff:- | composite -gravity south -geometry +0+3 miff:/tmp/text miff:- -resize 600 miff:-
+    ssh lg@${lg} "(
+upSeconds=\$(</proc/uptime)
+upSeconds=\${upSeconds%%.*}
+let mins=\$((\${upSeconds}/60%60))
+let hours=\$((\${upSeconds}/3600%24))
+let days=\$((\${upSeconds}/86400))
+
+echo -en \"\$(hostname) up: \"
+if [ \"\${days}\" -ne \"0\" ]
+then
+   echo -en \"\${days}d \"
+fi
+echo -en \"\${hours}h \${mins}m\"
+) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img;
+echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img;
+DISPLAY=$display import -window root miff:- | composite -gravity north -geometry +0+3 miff:/tmp/header-img miff:- -resize 600 miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img miff:- miff:-
 " >${tempdir}/${lg}.miff
 done
 montage -monitor -background black -tile 8x1 -geometry +5+0 \

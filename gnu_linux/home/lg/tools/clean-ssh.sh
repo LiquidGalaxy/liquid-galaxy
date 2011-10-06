@@ -56,9 +56,7 @@ host_pubrsa=$( awk '{print $1 " " $2}' /etc/ssh/ssh_host_rsa_key.pub )
 # first "localhost"
 sudo sh -c "echo \"localhost,lgX,127.0.0.1 $host_pubrsa\" >> $KNOWN_HOSTS"
 # then lg list
-for sys in `seq 1 8`; do
-    sudo sh -c "echo \"lg${sys},10.42.42.$sys $host_pubrsa\" >> $KNOWN_HOSTS"
-done
+sudo sh -c "echo \"lg*,10.42.*.* $host_pubrsa\" >> $KNOWN_HOSTS"
 
 # ensure permissions and dir/file exists using safe operations
 mkdir -p ${HOME}/.ssh

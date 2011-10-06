@@ -1,0 +1,30 @@
+#!/bin/bash
+# Copyright 2011 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+LOG_FILE="${HOME}/tmp/squid-purge.log"
+echo "Purge: $(date)" >${LOG_FILE}
+
+echo "Killing Squid-related Procs"
+lg-sudo-bg "killall -9 squidmon.sh; squid3 -k kill" >>${LOG_FILE} 2>>${LOG_FILE}
+echo "Moving Old Cache"
+lg-sudo-bg "mkdir -v /var/spool/squid3/oldcache; mv -vf /var/spool/squid3/* /var/spool/squid3/oldcache/" >>${LOG_FILE} 2>>${LOG_FILE}
+echo "Waiting for dust to settle" & sleep 3
+echo "Starting squid with Clean Cache"
+lg-sudo-bg "service squid3 start" >>${LOG_FILE} 2>>${LOG_FILE}
+echo "Purging \"oldcache\" dir"
+lg-sudo-bg "rm -rf /var/spool/squid3/oldcache" >>${LOG_FILE} 2>>${LOG_FILE}
+echo "Starting a new Squid Monitor"
+lg-run-bg "screen -S squidmon -d -m \${HOME}/bin/squidmon.sh" >>${LOG_FILE} 2>>${LOG_FILE}
+

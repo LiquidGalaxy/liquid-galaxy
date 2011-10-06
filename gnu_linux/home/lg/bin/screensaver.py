@@ -51,8 +51,8 @@ def Touched(path, runmode):
 def main():
   if len(sys.argv) != 2:
     print "Usage:", sys.argv[0], "<command>"
-    print "<command> will be called every", check_per, "seconds",
-    print "after", (check_per * wait_for_trigger), "seconds"
+    print "<command> will be called every", tour_check_per, "seconds",
+    print "after", (tour_check_per * wait_for_trigger), "seconds"
     print "if spacenavigator is not touched."
     sys.exit(1)
   
