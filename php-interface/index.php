@@ -150,11 +150,10 @@ $existing_kml_url_list = array_values(getKmlListUrls($kml_data_file));
       <div class="welcome">
         Welcome to the Liquid Galaxy by Google
       </div>
+	<!--//
       <div class="ctlpanel">
         <div class="appctl">
-	<!--//
           <div class="title" onclick="changeQuery('sview', 'StreetView');">StreetView</div>
-	//-->
           <img onclick="changeQuery('sview', 'StreetView');" src="pegman.png" />
           <div class="ctlbutton" onclick="changeQuery('sview-left', 'SV LEFT');">LEFT</div>
           <div class="ctlbutton" onclick="changeQuery('sview-rev', 'SV REV');">REV</div>
@@ -163,9 +162,7 @@ $existing_kml_url_list = array_values(getKmlListUrls($kml_data_file));
           <div class="ctlbutton" onclick="changeQuery('sview-un', 'SV UNLOAD');">Unload</div>
         </div>
         <div class="appctl">
-	<!--//
           <div class="title" onclick="changeQuery('mpctl-launch', 'MPlayer');">MPlayer</div>
-	//-->
           <img onclick="changeQuery('mpctl', 'MPlayer');" src="mplayer.png" />
           <div class="ctlbutton" onclick="changeQuery('mpctl-prev', 'MP PREV');">PREV</div>
           <div class="ctlbutton" onclick="changeQuery('mpctl-rev', 'MP REV');">REV</div>
@@ -175,6 +172,7 @@ $existing_kml_url_list = array_values(getKmlListUrls($kml_data_file));
           <div class="ctlbutton" onclick="changeQuery('mpctl-stop', 'MP STOP');">STOP</div>
         </div>
       </div>
+	//-->
       <div class="relaunch">
         <div class="location" onclick="changeQuery('relaunch', 'Relaunch');">Relaunch</div>
       </div>
