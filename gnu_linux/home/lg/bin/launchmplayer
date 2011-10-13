@@ -10,24 +10,26 @@
 
 #[[ ${#@} -lt 2 ]] && exit 3
 VIEWFRAMES=${1:-3}
-TOTALFRAMES=8
-VIDFILE=${2:-${CONTENTPATH}/ld2.avi}
+VIDFILE=${2:-${XDG_VIDEOS_DIR}/default.mp4}
 DEGROTATE=36
 DEGVIEWABLE=29
 DEGLOSSGAP=$(( ${DEGROTATE}-${DEGVIEWABLE} ))
+MPLAYER_VFOPT="-vf screenshot"
 
 BCSCALE=3
 
 # try a last-ditch DISPLAY
 if [[ -z "$DISPLAY" ]]; then export DISPLAY=:0; fi
 if [[ $FRAME_NO -eq 0 ]]; then
-	MPLAYER_UDPOPT="-udp-master -udp-ip 10.42.42.255 -udp-port"
+	MPLAYER_UDPOPT="-udp-master -udp-ip 10.42.${LG_OCTET}.255 -udp-port"
+	MPLAYER_AOOPT="-ao alsa"
 else
 	MPLAYER_UDPOPT="-udp-slave -udp-port"
+	MPLAYER_AOOPT="-ao null"
 fi
 
 # Re-organize frame numbers for left-to-right cropping
-[[ $FRAME_NO -gt $(( $TOTALFRAMES/2 )) ]] && FRAME_NO=$( echo "$FRAME_NO-$TOTALFRAMES" | bc )
+[[ $FRAME_NO -gt $(( $LG_FRAMES_MAX/2 )) ]] && FRAME_NO=$( echo "$FRAME_NO-$LG_FRAMES_MAX" | bc )
 let FRAME_NO+=$((${VIEWFRAMES}/2))
 
 # mplayer -identify outputs ID_VIDEO_WIDTH and ID_VIDEO_HEIGHT among other items
@@ -35,7 +37,7 @@ export `mplayer -quiet -ss 3 -frames 0 -vo null -ao null -identify "${VIDFILE}" 
 
 # exit early
 if [[ -z $ID_VIDEO_WIDTH  ]] || [[ -z $ID_VIDEO_HEIGHT ]]; then
-	echo "could not identify WIDTH/HEIGHT of ${VIDFILE}" >&2
+	logger -p local3.err -s "$0: could not identify WIDTH/HEIGHT of ${VIDFILE}"
 	exit 2
 fi
 killall -9 mplayer; #sleep 1
@@ -58,6 +60,10 @@ echo "CROPY from bottom: \"${CROPY}\""
 echo "--totaling `echo \"scale=$BCSCALE; ${CROPX}+${WIDTH}\" | bc -l` of ${ID_VIDEO_WIDTH}--"
 # research use of "-vf expand=" filter for playing "extra"/out-of-bounds video
 
+if [[ ${ID_VIDEO_WIDTH} -gt 1080 ]]; then
+    MPLAYER_VFOPT="${MPLAYER_VFOPT},rectangle,crop=${WIDTH%%.*}:${HEIGHT%%.*}:${CROPX%%.*}:${CROPY%%.*}"
+fi
+
 #   -ao alsa:device=asym51 -softvol \
 #    -vf screenshot,rectangle,crop=${WIDTH%%.*}::${CROPX%%.*}: \
 #    -vf screenshot,rectangle,crop=${WIDTH%%.*}:${HEIGHT%%.*}:${CROPX%%.*}:${CROPY%%.*} \
@@ -66,9 +72,9 @@ mplayer \
     -nomouseinput -nograbpointer \
     -noconsolecontrols -idle -slave -input nodefault-bindings:file=${MPVIDEOCTL} \
     ${MPLAYER_UDPOPT} ${MPLAYER_PORT}\
-    -ao alsa \
+    ${MPLAYER_AOOPT} \
     -vo vdpau,xv -fs \
-    -vf screenshot,rectangle,crop=${WIDTH%%.*}:${HEIGHT%%.*}:${CROPX%%.*}:${CROPY%%.*} \
+    ${MPLAYER_VFOPT} \
     -loop 0 "${VIDFILE}" \
     2>${HOME}/tmp/mpvideo.err | while read line; do echo $line | grep ^ANS >>${HOME}/tmp/mpvideo.log; done &
 
@@ -78,7 +84,7 @@ mplayer \
     -nomouseinput -nograbpointer \
     -noconsolecontrols -idle -slave -input nodefault-bindings:file=${MPAUDIOCTL} \
     ${MPLAYER_UDPOPT} ${MPLAYER_PORT} \
-    -ao alsa \
+    ${MPLAYER_AOOPT} \
     -vo null \
     -loop 0 "${VIDFILE}" \
     2>${HOME}/tmp/mpaudio.err | while read line; do echo $line | grep ^ANS >>${HOME}/tmp/mpaudio.log; done &
