@@ -10,3 +10,4 @@ TEMPLATES=media/templates
 DOCUMENTS=media/documents
 PICTURES=media/images
 VIDEOS=media/videos
+PLS=media/pls

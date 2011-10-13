@@ -54,6 +54,7 @@ echo "You may want to reboot now.
 
 Adjust the following files (lets use sed):
   /etc/hosts
+  /etc/hosts.squid
   /etc/iptables.conf
   /etc/ssh/ssh_known_hosts
- if you selected a special third tuple."
+ if you selected a special third octet."
