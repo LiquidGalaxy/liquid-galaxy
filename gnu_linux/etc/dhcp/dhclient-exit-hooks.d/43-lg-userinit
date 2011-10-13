@@ -1,0 +1,13 @@
+LG_USER=lg
+LG_HOME=/home/${LG_USER}
+LG_BIN=${LG_HOME}/bin
+LG_PERSONA=/lg/personavars.txt
+
+echo "$0: $( date ) - user init called" >/tmp/initialize-users.out
+
+if [ "$reason" = "BOUND" -a -r "${LG_PERSONA}" ]; then
+    logger -p local3.info -i -s "$0: Initializing users via ${LG_BIN}/initialize-users" 2>>/tmp/initialize-users.err 1>>/tmp/initialize-users.out
+    ${LG_BIN}/initialize-users 2>>/tmp/initialize-users.err 1>>/tmp/initialize-users.out
+else
+    logger -p local3.err -i -s "$0: not BOUND or ${LG_PERSONA} not readable" 2>>/tmp/initialize-users.err 1>>/tmp/initialize-users.out
+fi

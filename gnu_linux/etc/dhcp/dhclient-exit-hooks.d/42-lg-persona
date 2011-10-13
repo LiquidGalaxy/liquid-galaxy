@@ -1,0 +1,19 @@
+LG_USER=lg
+LG_HOME=/home/${LG_USER}
+LG_BIN=${LG_HOME}/bin
+LG_IDENTITY=${LG_HOME}/.ssh/lg-id_rsa
+LG_PERSONA=/lg/personavars.txt
+CURL_AGENT="$( ssh-keygen -l -f ${LG_IDENTITY}.pub | cut -d' ' -f2 | tr -d ':' )"
+CURL_RETRY=3
+CURL_PROTO="http://"
+
+if [ "$reason" = "BOUND" -a -n "$new_lg_persona_file" ]; then
+    if curl -f -A "LG-${CURL_AGENT}" --no-keepalive -o ${LG_PERSONA} -s --retry ${CURL_RETRY} ${CURL_PROTO}${new_lg_persona_host}${new_lg_persona_path}${new_lg_persona_file}; then
+    . ${LG_PERSONA}
+        ${LG_BIN}/personality.sh -i "${interface}" -p "${DHCP_PERSONALITY}" -o "${DHCP_OCTET}" | tee -a /tmp/personality.log
+    else
+        logger -p local3.err -i -s "$0: Could not collect personality from: \"${CURL_PROTO}${new_lg_persona_host}${new_lg_persona_path}${new_lg_persona_file}\"" | tee -a /tmp/personality.log
+    fi
+else
+     logger -p local3.err -i -s "$0: No Personality URL received from DHCP" | tee -a /tmp/personality.log
+fi
