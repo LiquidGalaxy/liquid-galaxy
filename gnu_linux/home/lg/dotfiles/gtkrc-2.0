@@ -1,11 +1,12 @@
-include "/usr/share/themes/Shiki-Wise/gtk-2.0/gtkrc"
+gtk-theme-name="Shiki-Wise"
+gtk-icon-theme-name="gnome-wise"
+gtk-font-name="Bitstream Vera Sans 9"
+gtk-toolbar-style=GTK_TOOLBAR_ICONS
+gtk-toolbar-icon-size=GTK_ICON_SIZE_SMALL_TOOLBAR
+gtk-cursor-theme-size=24
+gtk-button-images=TRUE
+gtk-menu-images=TRUE
+gtk-enable-event-sounds=TRUE
+gtk-enable-input-feedback-sounds=FALSE
 
-style "user-font" {
-	font_name = "Georgia 9"
-}
-
-widget_class "*" style "user-font"
-
-gtk-font-name="Georgia 9"
-
-include "/home/lg/.gtkrc.mine"
+include "/home/lg/.gtkrc-2.0.mine"

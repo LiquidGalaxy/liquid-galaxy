@@ -10,7 +10,12 @@ Key Left    A   SC  CursorMove -1 0
 Key Right   A   SC  CursorMove +1 +0
 Key Up      A   SC  CursorMove +0   -1
 Key Down    A   SC  CursorMove +0   +1
+
+# no menus on the root window
+Mouse 1 R A Nop
+Mouse 3 R A Nop
 DeskTopSize 3x3
+
 #PixmapPath /usr/include/X11/pixmaps/:/usr/share/icons/mini/
 #IconPath   /usr/include/X11/bitmaps/:/usr/share/icons/
 Style "*" BorderWidth 3, HandleWidth 3 
@@ -20,6 +25,7 @@ Style "FvwmBanner"   StaysOnTop
 Style "FvwmButtons"  NoTitle, NoHandles, Sticky, WindowListSkip,BorderWidth 5
 Style "*lock"        NoTitle, NoHandles, Sticky, WindowListSkip
 Style "earth.tcl"    NoTitle, NoHandles, FPGrabFocus
+Style "LGMPoverlay"  NoTitle, NoHandles, StaysOnTop, WindowListSkip
 
 EdgeScroll 100 100
 EdgeResistance 10000 100
@@ -27,7 +33,7 @@ EdgeResistance 10000 100
 AddToFunc "InitFunction" "I" Exec xsetroot -solid black &
 +                        "I" Exec xset dpms 0 0 0 -dpms s blank s noexpose s 0 0 &
 +                        "I" Exec xinput set-int-prop "3Dconnexion SpaceNavigator" "Device Enabled" 8 0 &
-+                        "I" Exec /home/lg/bin/startup-script.sh >/tmp/out 2>/tmp/err &
++                        "I" Exec /home/lg/bin/startup-script.sh 2>&1 >/tmp/out | logger -p local3.info -s 2>/tmp/err &
 +                        "I" Module FvwmPager 0 0
 +                        "I" Module FvwmAuto 600
 +                        "I" Module FvwmCommandS

@@ -1,4 +1,4 @@
-*font: -*-georgia-medium-r-normal-*-12-*-*-*-*-*-iso9959-1
+*font:         xft:Bitstream Vera Sans:pixelsize=9
 Xft.dpi:       96
 Xft.antialias: true
 Xft.hinting:   true
