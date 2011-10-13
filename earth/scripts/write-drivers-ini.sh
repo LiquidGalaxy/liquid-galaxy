@@ -36,12 +36,14 @@ YAW="$(echo $FRAME_NO '*' $YAW_AMOUNT | bc)"
 MYIPALIAS="$( awk '/^ifconfig/ {print $3}' /etc/network/if-up.d/*-lg_alias )"
 VSYNCCHOP="${MYIPALIAS%.*}"
 VSYNCHOST="10.42.${VSYNCCHOP##*.}.255"
+VSYNCPORT="$EARTH_PORT"
 
 cd ${EARTHDIR} || exit 1
 
 echo "MASTER: $MASTER"
 echo "SLAVE: $SLAVE"
 echo "VSYNCHOST: $VSYNCHOST"
+echo "VSYNCPORT: $VSYNCPORT"
 echo "YAW: $YAW"
 echo "FOV: $FOV"
 echo "NAV: $SPACENAVDEV"
@@ -53,6 +55,7 @@ cat ${EARTHDIR}/config/drivers_template.ini |\
   sed -e "s/##MASTER##/$MASTER/" \
   -e "s/##SLAVE##/$SLAVE/" \
   -e "s/##VSYNCHOST##/$VSYNCHOST/" \
+  -e "s/##VSYNCPORT##/$VSYNCPORT/" \
   -e "s/##YAW##/$YAW/" \
   -e "s/##FOV##/$FOV/" \
   -e "s:##NAV##:$SPACENAVDEV:" > builds/latest/drivers.ini
