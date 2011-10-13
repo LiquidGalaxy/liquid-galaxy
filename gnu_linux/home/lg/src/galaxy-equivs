@@ -1,0 +1,28 @@
+### Commented entries have reasonable defaults.
+### Uncomment to edit them.
+Section: misc
+Priority: optional
+Homepage: http://code.google.com/p/liquid-galaxy
+Standards-Version: 3.6.2
+
+Package: galaxy-equivs
+Version: 1.0
+Maintainer: kiel@endpoint.com
+# Pre-Depends: <comma-separated list of packages>
+# Depends: <comma-separated list of packages>
+# Recommends: <comma-separated list of packages>
+# Suggests: <comma-separated list of packages>
+Provides: metacity
+# Replaces: <comma-separated list of packages>
+# Architecture: all
+# Copyright: <copyright file; defaults to GPL2>
+# Changelog: <changelog file; defaults to a generic changelog>
+# Readme: <README.Debian file; defaults to a generic one>
+# Extra-Files: <comma-separated list of additional files for the doc directory>
+# Files: <pair of space-separated paths; First is file to include, second is destination>
+#  <more pairs, if there's more than one file to include. Notice the starting space>
+Description: inject packages not needed for galaxy setup
+ With this equivs package, we inject a few requirements to get 
+ certain things installed that we want, without installing their dependencies.
+ .
+ metacity is one we inject so we can install "gnome-colors" and "shiki-colors"
