@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<Folder>
+		<name>My Places</name>
+		<open>1</open>
+		<Style>
+			<ListStyle>
+				<listItemType>check</listItemType>
+				<ItemIcon>
+					<state>open</state>
+					<href>:/mysavedplaces_open.png</href>
+				</ItemIcon>
+				<ItemIcon>
+					<state>closed</state>
+					<href>:/mysavedplaces_closed.png</href>
+				</ItemIcon>
+				<bgColor>00ffffff</bgColor>
+				<maxSnippetLines>2</maxSnippetLines>
+			</ListStyle>
+		</Style>
+		<Folder>
+			<name>KML Sync</name>
+			<NetworkLink>
+				<name>Master KML</name>
+				<Link>
+					<href>http://##LG_PHPIFACE##/kml/master.kml</href>
+				</Link>
+			</NetworkLink>
+			<NetworkLink>
+				<name>KML Update</name>
+				<Link>
+					<href>http://##LG_PHPIFACE##/sync_nlc.php</href>
+					<refreshMode>onInterval</refreshMode>
+					<refreshInterval>1</refreshInterval>
+				</Link>
+			</NetworkLink>
+		</Folder>
+	</Folder>
+</Document>
+</kml>
