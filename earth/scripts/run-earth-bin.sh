@@ -55,7 +55,9 @@ while true ; do
     echo "running earth"
 #    PLANET="`cat /lg/planet`"
 #    ${SCRIPDIR}/set-planet.sh $PLANET
-    ./googleearth -style cleanlooks --fullscreen
+    # seems that GE Qt libraries were build without fontconfig support
+    # use "-font" to specify something _just_ for the Qt menus
+    ./googleearth -style cleanlooks --fullscreen -font '-adobe-helvetica-bold-r-normal-*-9-*-*-*-p-*-iso8859-1'
 
     [ -w $SPACENAVDEV ] && ${HOME}/bin/led-enable ${SPACENAVDEV} 0
     sleep 5
