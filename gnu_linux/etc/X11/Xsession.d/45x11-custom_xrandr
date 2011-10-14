@@ -1,4 +1,25 @@
-/usr/bin/xrandr --screen 0 --output default --mode 1920x1080 --pos 0x0 --rotate right
-/usr/bin/nvidia-settings -c :0 --assign=:0/SyncToVBlank=1
+# includes and vars
+if [ -r /lg/personavars.txt ]; then . /lg/personavars.txt; fi
+if [ -n "${DHCP_RANDR}" ]; then RANDR="${DHCP_RANDR}"; else RANDR="right"; fi
+LOGFILE=/tmp/${USER}_xrandr.log
+MYSCREEN=0
+
+date >${LOGFILE}
+if [ -n "${DHCP_LG_SCREEN_COUNT}" -a ${DHCP_LG_SCREEN_COUNT} -gt 1 ]; then
+    # if we have screens, loop 
+    logger -p local3.info "$0: executing xrandr for multiple screens, count \"${DHCP_LG_SCREEN_COUNT}\""
+    while [ ${MYSCREEN} -lt ${DHCP_LG_SCREEN_COUNT} ]; do
+        xrandr --verbose --screen ${MYSCREEN} --output default --mode 1920x1080 --pos 0x0 --rotate ${RANDR} | logger -s -p local3.err 2>>${LOGFILE} >>${LOGFILE}
+        MYSCREEN=$(( $MYSCREEN + 1 ))
+    done
+else
+    # otherwise, rotate only primary display
+    logger -p local3.info "$0: executing xrandr for basic screen setup"
+    xrandr --verbose --screen 0 --output default --mode 1920x1080 --pos 0x0 --rotate ${RANDR} | logger -s -p local3.err 2>>${LOGFILE} >>${LOGFILE}
+    xrandr --verbose --screen 1 --output default --mode 1920x1080 --pos 0x0 --rotate normal | logger -s -p local3.err 2>>${LOGFILE} >>${LOGFILE}
+fi
+
+# _try_ to get nvidia to sync to vblank
+/usr/bin/nvidia-settings -c ${DISPLAY} --assign=${DISPLAY}/SyncToVBlank=1
 
 # vim:set ai et sts=2 sw=2 tw=80:
