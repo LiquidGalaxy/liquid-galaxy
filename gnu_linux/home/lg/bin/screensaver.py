@@ -29,23 +29,33 @@ wake_check_per = 2
 tour_check_per = 40
 tour_wait_for_trigger = 2
 sleep_wait_for_trigger = 40
+# Input Devices
+space_nav = "/dev/input/spacenavigator"
+quanta_ts = "/dev/input/quanta_touch"
 
 # Commands
 wake_cmd = ">/dev/null /home/lg/bin/lg-run-bg /usr/bin/xset -display :0 dpms force on"
 sleep_cmd = ">/dev/null /home/lg/bin/lg-run-bg /usr/bin/xset -display :0 dpms force standby"
 
-def Touched(path, runmode):
-  f = open(path)
-  fd = f.fileno()
-  fcntl.fcntl(fd, fcntl.F_SETFL, os.O_NONBLOCK)
-  if runmode == 1:
-    time.sleep(tour_check_per)
-  elif runmode == 2:
-    time.sleep(wake_check_per)
-  try:
-    f.read(10000)
-    return True
-  except:
+def Touched(dev1, dev2, runmode):
+  # open file handles first
+  with open(dev1) as a, open(dev2) as b:
+    for dev in [a, b]:
+      fd = dev.fileno()
+      fcntl.fcntl(fd, fcntl.F_SETFL, os.O_NONBLOCK)
+    # then sleep and let input accumulate
+    if   runmode == 1:
+      time.sleep(tour_check_per)
+    elif runmode == 2:
+      time.sleep(wake_check_per)
+    # then read input data, if any
+    for dev in [a, b]:
+      try:
+        dev.read(6000)
+        return True
+      except IOError:
+        pass
+    # default to return False if no USB devs Touched
     return False
 
 def main():
@@ -53,14 +63,14 @@ def main():
     print "Usage:", sys.argv[0], "<command>"
     print "<command> will be called every", tour_check_per, "seconds",
     print "after", (tour_check_per * wait_for_trigger), "seconds"
-    print "if spacenavigator is not touched."
+    print "if USB devs are not touched."
     sys.exit(1)
   
   cmd = sys.argv[1]
   runmode = 1 # 1 = tour, 2 = displaysleep
   cnt = 0
   while True:
-    if Touched("/dev/input/spacenavigator", runmode):
+    if Touched(space_nav, quanta_ts, runmode):
       cnt = 0
       print "Touched."
       if runmode == 2:
