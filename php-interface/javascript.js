@@ -162,9 +162,17 @@ function enterKeySubmit(e) {
   }
 }
 
-function toggleExpand(on_obj, off_obj1, off_obj2, off_obj3){
+function toggleExpand(on_obj, off_obj1, off_obj2, off_obj3, off_obj4){
   document.getElementById(on_obj).className='expand_active';
   document.getElementById(off_obj1).className='expand_inactive';
   document.getElementById(off_obj2).className='expand_inactive';
   document.getElementById(off_obj3).className='expand_inactive';
+  document.getElementById(off_obj4).className='expand_inactive';
+}
+function noneExpand(off_obj, off_obj1, off_obj2, off_obj3, off_obj4){
+  document.getElementById(off_obj).className='expand_inactive';
+  document.getElementById(off_obj1).className='expand_inactive';
+  document.getElementById(off_obj2).className='expand_inactive';
+  document.getElementById(off_obj3).className='expand_inactive';
+  document.getElementById(off_obj4).className='expand_inactive';
 }
