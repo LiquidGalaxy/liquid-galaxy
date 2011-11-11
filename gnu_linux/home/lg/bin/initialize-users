@@ -20,7 +20,7 @@ while [ $MYSCREEN -lt ${LG_SCREEN_COUNT} ]; do
     newuser="lgS${MYSCREEN}"
     userdir="/home/${newuser}"
     useradd -c "Galaxy Screen ${MYSCREEN}" -d ${userdir} -g lg -m -s /bin/bash ${newuser}
-    sudo -u ${newuser} -H mkdir -p ${userdir}/{.config/Google,.googleearth}
+    sudo -u ${newuser} -H mkdir -p ${userdir}/{.config/Google,.googleearth,tmp}
     sudo -u ${newuser} -H rsync -a --delete --link-dest=${SKELHOME}/bin ${SKELHOME}/bin/ ${userdir}/bin
     sudo -u ${newuser} -H rsync -a --delete --link-dest=${SKELHOME}/etc ${SKELHOME}/etc/ ${userdir}/etc
     sudo -u ${newuser} -H rsync -a --delete --link-dest=${SKELHOME}/earth --exclude=**builds/* ${SKELHOME}/earth/ ${userdir}/earth

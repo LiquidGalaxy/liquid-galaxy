@@ -1,3 +1,5 @@
 # Clean up remaining ControlMaster sockets on reboot
 @reboot rm -f ${HOME}/.ssh/ctl/*:*
-@reboot screen -S squidmon -d -m /home/lg/bin/squidmon.sh
+# Screen windows for long-running tasks
+@reboot sleep 21; screen -S screensaver -d -m ${HOME}/bin/screensaver.py ${HOME}/bin/tour.sh
+@reboot sleep 33; screen -S squidmonitr -d -m ${HOME}/bin/squidmon.sh
