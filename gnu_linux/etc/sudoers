@@ -1,34 +1,4 @@
-# /etc/sudoers
-#
-# This file MUST be edited with the 'visudo' command as root.
-#
-# See the man page for details on how to write a sudoers file.
-#
-
-Defaults          env_reset
-Defaults:www-data !requiretty
-
-# Host alias specification
-
-# User alias specification
-
-# Cmnd alias specification
-
-# User privilege specification
-root	ALL=(ALL) ALL
-
-# Allow members of group sudo to execute any command after they have
-# provided their password
-# (Note that later entries override this, so you might need to move
-# it further down)
-%sudo ALL=(ALL) ALL
-#
+# Add this as-is near the end of /etc/sudoers
+# ORDER MATTERS: be sure this "include" is not overridden later
+# 
 #includedir /etc/sudoers.d
-
-# Members of the admin group may gain root privileges
-%admin ALL=(ALL) ALL
-
-# BE SURE TO USE "-H" in the sudo call to set HOME
-www-data ALL=(lg) NOPASSWD: /home/lg/bin/lg-sudo-bg service lxdm restart
-www-data ALL=(lg) NOPASSWD: /home/lg/bin/lg-run-bg
-www-data ALL=(lg) NOPASSWD: /home/lg/bin/mp-control
