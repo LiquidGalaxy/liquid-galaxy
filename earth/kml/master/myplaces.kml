@@ -44,7 +44,7 @@
 					<refreshInterval>1</refreshInterval>
 					<viewRefreshMode>onStop</viewRefreshMode>
 					<viewRefreshTime>1</viewRefreshTime>
-					<viewFormat>BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth];CAMERA=[cameraLon],[cameraLat],[cameraAlt],[lookatTilt],[lookatHeading]</viewFormat>
+					<viewFormat>BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth];CAMERA=[cameraLon],[cameraLat],[cameraAlt],[lookatTilt],[lookatHeading];LOOKAT=[lookatLon],[lookatLat],[lookatHeading],[lookatTilt],[lookatRange]</viewFormat>
 				</Link>
 			</NetworkLink>
 		</Folder>
