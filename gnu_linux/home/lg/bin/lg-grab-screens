@@ -31,7 +31,7 @@ fi
 # the resizing in the "-geometry" portion of the "montage" command.
 # However, doing it on each system spreads the load a little and 
 # reduces byte count transfered over the wire a bit.
-for lg in $LG_SCREENS; do
+for lg in $LG_FRAMES; do
     ssh lg@${lg} "(
 upSeconds=\$(</proc/uptime)
 upSeconds=\${upSeconds%%.*}
