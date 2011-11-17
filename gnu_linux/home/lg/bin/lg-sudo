@@ -15,7 +15,7 @@
 
 . ${HOME}/etc/shell.conf
 
-for lg in $LG_SCREENS ; do
+for lg in $LG_FRAMES ; do
     echo
     echo $lg:
     ssh -tt -x root@$lg "$*"

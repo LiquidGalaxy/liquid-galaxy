@@ -38,7 +38,7 @@ self=$( hostname )
 specified_source=$1
 specified_destination=$2
 
-for lg in $LG_SCREENS; do
+for lg in $LG_FRAMES; do
     if [[ "$lg" = "$self" ]]; then
         echo "skipping self"
     else

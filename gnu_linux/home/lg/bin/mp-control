@@ -21,7 +21,7 @@ if [[ "$1" == "master" ]]; then
         echo "$*" > $MPVIDEOCTL
     fi
 else
-    lg-run-bg "echo \"$*\" > $MPVIDEOCTL"
+    lg-run-bg "[ \$( cat /lg/frame ) -eq 0 ] && sleep .5; echo \"$*\" > $MPVIDEOCTL"
 fi
 
 exit 0
