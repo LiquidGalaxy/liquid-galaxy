@@ -17,7 +17,24 @@
 . ${HOME}/etc/shell.conf
 
 MODE=${1:-audio}
-LOAD=${2:-${CONTENTPATH}/flight}
+LOAD=${2:-${XDG_PLS_DIR}/default}
+
+ME="`basename $0`"
+if [[ "$( id -un )" == "lg" ]]; then
+    for screen in /home/lgS*; do
+        if [[ -d ${screen} ]]; then
+            screennum=${screen##/home/lgS}
+            logger -p local3.info -i "$0: launching $ME for my screen \"${screennum}\""
+            sudo -u lgS${screennum} -H DISPLAY=:0.${screennum} ${HOME}/bin/${ME} $@ &
+            unset screennum
+        fi
+    done
+fi
+
+SANITIZE_D=${DISPLAY//:/}
+[ -n "${SANITIZE_D##*\.}" -a ${SANITIZE_D##*\.} -ne 0 ] && export SCREEN_NO=${SANITIZE_D##*\.}
+
+[ -n "${SCREEN_NO}" -a ${SCREEN_NO} -ne 0 ] && LOAD="${LOAD//lg\//$( id -un )/}"
 
 # figure out control socket paths
 # currently just audio or video
@@ -33,13 +50,16 @@ else
 fi
 
 if [[ ! -p $thisCTL ]] && [[ ! -p $thatCTL ]]; then
+    logger -p local3.err "$0: Control pipes: \"$thisCTL\", and \"$thatCTL\" fail type checking."
     echo "Control pipes: \"$thisCTL\", and \"$thatCTL\" fail type checking." >&2
     exit 1
 fi
 
-function ctlstop() {
+function ctlsend() {
     local myctl="$1"
-    echo "stop" > $myctl
+    local mycmd="$2"
+    #echo "$mycmd" | tee $( dirname ${myctl} )/*${myctl##*_} >/dev/null
+    echo "$mycmd" > $myctl
 }
 
 ## find random percentage for fade-in
@@ -54,21 +74,21 @@ done
 
 # fade-out volume using the current mode
 for vol in `seq 0 10`; do
-    echo "step_property volume -5" > $thisCTL
+    ctlsend $thisCTL "step_property volume -5"
     sleep .1
 done
 
 # "Stop" the OTHER mode
-ctlstop $thatCTL
+[ $FRAME_NO -eq 0 ] && sleep .5; ctlsend $thatCTL "stop"
 
 # load new content and skip to a random percentage (on master, if audio)
-echo "loadlist $LOAD" > $thisCTL
+[ $FRAME_NO -eq 0 ] && sleep .5; ctlsend $thisCTL "loadlist $LOAD"
 if [[ $FRAME_NO == 0 ]] && [[ $MODE == audio ]]; then
-    echo "set_property percent_pos $RANDPERC" > $thisCTL
+    ctlsend $thisCTL "set_property percent_pos $RANDPERC"
 fi
 
 # fade-in volume using the current mode
 for vol in `seq 5 5 60`; do
-    echo "set_property volume $vol" > $thisCTL
+    ctlsend $thisCTL "set_property volume $vol"
     sleep .1
 done

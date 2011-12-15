@@ -20,6 +20,7 @@
 . ${HOME}/etc/shell.conf
 display=$1
 tempdir=${HOME}/tmp
+resize=600
 
 if [[ -z $display ]]; then
     echo "Please provide a display number as the first option, like:
@@ -27,11 +28,41 @@ if [[ -z $display ]]; then
     exit 1
 fi
 
+SANITIZE_D=${display//:/}
+if [[ ! "${SANITIZE_D}" =~ .\.. ]]; then
+
 # We could avoid the "convert -scale" on the remote system and include
 # the resizing in the "-geometry" portion of the "montage" command.
 # However, doing it on each system spreads the load a little and 
 # reduces byte count transfered over the wire a bit.
 for lg in $LG_FRAMES; do
+    for screen in {0..3}; do
+    echo -en "${lg}, screen \"${screen}\": "
+    grabfile="${tempdir}/${lg}.${screen}.miff"
+    ssh lg@${lg} "(
+upSeconds=\$(</proc/uptime)
+upSeconds=\${upSeconds%%.*}
+let mins=\$((\${upSeconds}/60%60))
+let hours=\$((\${upSeconds}/3600%24))
+let days=\$((\${upSeconds}/86400))
+
+echo -en \"\$(hostname).${screen} up: \"
+if [ \"\${days}\" -ne \"0\" ]
+then
+   echo -en \"\${days}d \"
+fi
+echo -en \"\${hours}h \${mins}m\"
+) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img;
+echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img;
+DISPLAY=${display}.${screen} xwd -root | composite -gravity north -geometry +0+3 miff:/tmp/header-img xwd:- -resize ${resize} miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img miff:- miff:-
+" >${grabfile} && MTAGE_FILES=( ${MTAGE_FILES[*]} ${grabfile} ); echo $?
+    done
+done
+
+else
+
+for lg in $LG_FRAMES; do
+    grabfile="${tempdir}/${lg}.${SANITIZE_D##*\.}.miff"
     ssh lg@${lg} "(
 upSeconds=\$(</proc/uptime)
 upSeconds=\${upSeconds%%.*}
@@ -47,18 +78,17 @@ fi
 echo -en \"\${hours}h \${mins}m\"
 ) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img;
 echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img;
-DISPLAY=$display import -window root miff:- | composite -gravity north -geometry +0+3 miff:/tmp/header-img miff:- -resize 600 miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img miff:- miff:-
-" >${tempdir}/${lg}.miff
+DISPLAY=${display} xwd -root | composite -gravity north -geometry +0+3 miff:/tmp/header-img xwd:- -resize ${resize} miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img miff:- miff:-
+" >${grabfile} && MTAGE_FILES=( ${MTAGE_FILES[*]} ${grabfile} )
 done
-montage -monitor -background black -tile 8x1 -geometry +5+0 \
-    ${tempdir}/lg6.miff \
-    ${tempdir}/lg7.miff \
-    ${tempdir}/lg8.miff \
-    ${tempdir}/lg1.miff \
-    ${tempdir}/lg2.miff \
-    ${tempdir}/lg3.miff \
-    ${tempdir}/lg4.miff \
-    ${tempdir}/lg5.miff \
-    ${tempdir}/lg-montage.png && rm -f ${tempdir}/lg?.miff
+fi
+
+echo "MTAGE FILES:
+ALL:   ${MTAGE_FILES[*]}
+COUNT: ${#MTAGE_FILES[*]}
+"
+montage -monitor -background black -tile ${#MTAGE_FILES[*]}x1 -geometry +5+0 \
+    ${MTAGE_FILES[*]} \
+    ${tempdir}/lg-montage.png && rm -f ${MTAGE_FILES[*]}
 
 exit 0
