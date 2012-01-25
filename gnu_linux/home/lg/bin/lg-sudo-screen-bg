@@ -1,0 +1,31 @@
+#!/bin/bash
+
+. ${HOME}/etc/shell.conf
+while [ $# -gt 0 ]; do
+    case $1 in
+        --hosts|-h)
+            shift
+            LG_FRAMES="$1"
+          ;;
+        *)
+            CMD="$CMD $1"
+          ;;
+    esac
+    shift
+done
+
+lg-sudo-ctl-master
+
+case ${TERM} in
+    screen*)
+	echo "new screen windows"
+        for lg in ${LG_FRAMES}; do
+            echo "${lg}:"
+            screen -t ${lg}-win ssh -tt -x root@${lg} "${CMD## }"
+        done
+    ;;
+    *)
+        echo "new screen session"
+        screen -S $( basename $0 ) -d -m $0 --hosts "${LG_FRAMES}" "${CMD## }"
+    ;;
+esac
