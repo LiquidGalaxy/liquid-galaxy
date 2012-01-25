@@ -1,0 +1,53 @@
+#!/bin/bash
+# Copyright 2011 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+. ${HOME}/etc/shell.conf
+
+MEDIA_DIR=${1:-/media}
+
+ME="`basename $0`"
+if [[ "$( id -un )" == "lg" ]]; then
+    for screen in /home/lgS*; do
+        if [[ -d ${screen} ]]; then
+            screennum=${screen##/home/lgS}
+            logger -p local3.info -i "$0: launching $ME for my screen \"${screennum}\""
+            sudo -u lgS${screennum} -H DISPLAY=:0.${screennum} ${HOME}/bin/${ME} $@ &
+            unset screennum
+        fi
+    done
+fi
+
+SANITIZE_D=${DISPLAY//:/}
+[ -n "${SANITIZE_D##*\.}" -a ${SANITIZE_D##*\.} -ne 0 ] && export SCREEN_NO=${SANITIZE_D##*\.}
+
+# example: lg7 with two displays also acts as lg6
+if [[ -n "${SCREEN_NO}" ]]; then
+    if [[ $FRAME_NO -gt $(( ${LG_FRAMES_MAX}/2 )) ]]; then
+        FRAME_NO=$((${FRAME_NO}-1))
+    else
+        FRAME_NO=$((${FRAME_NO}+1))
+    fi
+fi
+
+echo -n '' > ${XDG_PLS_DIR}/default.pls || exit 1
+for collection in `find ${MEDIA_DIR}/ -mindepth 1 -maxdepth 1 -type d \( ! -iname 'lost+found' \) -printf '%f\n' | sort`; do
+    echo -n '' > ${XDG_PLS_DIR}/${collection}.pls || exit 1
+    echo "${MEDIA_DIR}/${collection}/${FRAME_NO}.avi" >>${XDG_PLS_DIR}/default.pls
+    echo "${MEDIA_DIR}/${collection}/${FRAME_NO}.avi" >>${XDG_PLS_DIR}/${collection}.pls
+    ln -snf ${MEDIA_DIR}/${collection}/${FRAME_NO}.avi ${XDG_VIDEOS_DIR}/default
+    ln -snf ${XDG_PLS_DIR}/${collection}.pls ${XDG_PLS_DIR}/flight.pls
+    ln -snf ${XDG_PLS_DIR}/${collection}.pls ${XDG_PLS_DIR}/space.pls
+    ln -snf ${XDG_PLS_DIR}/${collection}.pls ${XDG_PLS_DIR}/ocean.pls
+done

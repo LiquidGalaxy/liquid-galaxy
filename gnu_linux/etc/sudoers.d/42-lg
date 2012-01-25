@@ -3,7 +3,8 @@ Defaults:www-data !requiretty # for PHP Interface
 
 # For multi-display support
 Runas_Alias LGSCR = lgS1, lgS2, lgS3, lgS4, lgS5, lgS6, lgS7, lgS8, lgS9
-lg    ALL=(LGSCR) NOPASSWD: /home/lg/earth/scripts/run-earth-bin.sh
+Cmnd_Alias  LAUNCHERS = /home/lg/earth/scripts/run-earth-bin.sh, /home/lg/bin/launchmplayer, /home/lg/bin/lg-pls-gen, /home/lg/bin/fadeswitch
+lg          ALL=(LGSCR) NOPASSWD: LAUNCHERS
 
 # BE SURE TO USE "-H" in the sudo call to set HOME
 www-data ALL=(lg) NOPASSWD: /home/lg/bin/lg-sudo-bg service lxdm restart
