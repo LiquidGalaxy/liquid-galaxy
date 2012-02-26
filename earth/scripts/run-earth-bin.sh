@@ -56,13 +56,15 @@ MYCFGDIR="${CONFGDIR}/${DIR}"
 # build the configuration file
 m4 -I${MYCFGDIR} ${MYCFGDIR}/GECommonSettings.conf.m4 > ${MYCFGDIR}/$( basename `readlink ${MYCFGDIR}/GECommonSettings.conf.m4` .m4 )
 # copying files AND potentially symlinks here
+mkdir -m 775 ${HOME}/.config/Google
+mkdir -m 700 ${HOME}/.googleearth
 cp -a ${MYCFGDIR}/*        ${HOME}/.config/Google/
 cp -a ${LGKMLDIR}/${DIR}/* ${HOME}/.googleearth/
 # expand the ##HOMEDIR## var in configs
 sed -i -e "s:##HOMEDIR##:${HOME}:g" ${HOME}/.config/Google/*.conf
 # expand LG_PHPIFACE (may contain ":" and "/") in kml files
 sed -i -e "s@##LG_PHPIFACE##@${LG_PHPIFACE}@g" ${HOME}/.googleearth/*.kml
-  
+
 while true ; do
     if [[ "$DIR" == "master" ]]; then
         lg-sudo killall googleearth-bin
