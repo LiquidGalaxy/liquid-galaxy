@@ -9,13 +9,11 @@
 // Bus 007 Device 004: ID 0510:1004 Sejin Electron, Inc.
 
 #include <sys/ioctl.h>
-#include <error.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <string.h>
 #include <linux/input.h>
 
 main(int argc, char **argv) {
@@ -46,19 +44,24 @@ main(int argc, char **argv) {
     } else {
     }
 
-    if (event_data->type == EV_KEY) {
-      printf("button press\n");
+    if (event_data->type == EV_MSC) {
+      printf("Misc Type: %u Value: %d\n", event_data->code, event_data->value);
+
+    } else if (event_data->type == EV_KEY) {
+      printf("Key/Button: %u State: %d\n", event_data->code, event_data->value);
+
     } else if (event_data->type == EV_SYN) {
       // EV_SYN type may be quite useful for some devices
       // identifies the sent data complete and therefore apply-able
-      printf("sync event\n");
+      printf("Sync Event\n");
+
     } else if (event_data->type == EV_REL ||
                event_data->type == EV_ABS) {
 
       int axis = event_data->code;
       int amount = event_data->value;
 
-      printf("Axis: %d Amount: %d\n", axis, amount);
+      printf("Axis: %u Amount: %d\n", axis, amount);
 
       switch(axis) {
         case 0:
@@ -89,7 +92,7 @@ main(int argc, char **argv) {
     } else {
       int evtype = event_data->type;
 
-      printf("Unknown event type \"%d\".\n", evtype);
+      printf("Unknown event type \"%u\".\n", evtype);
     }
   }
 }
