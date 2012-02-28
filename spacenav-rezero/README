@@ -1,0 +1,24 @@
+This app sends a feature report to the Space Navigator causing it to rezero.
+This implementation uses the freeware hidapi library to interface the hidraw
+API provided by the linux kernel.  Since the hidapi library is portable to
+Windows and OS X, it should be simple to port this app if desired.
+
+One caveat of using the hidraw API is that feature reports are not supported
+in kernels prior to 2.6.39 (according to the hidapi docs).  The libusb backend
+is also provided by hidapi, but it didn't work in my testing (it disabled my
+SpaceNav until I replugged it).
+
+hidapi (redistributed under the "original" license):
+http://www.signal11.us/oss/hidapi/
+
+3dconnexion's Windows rezero solution:
+http://www.3dconnexion.com/forum/viewtopic.php?t=1582
+
+This app requires libudev to build:
+$ sudo apt-get install libudev-dev
+
+To build:
+$ make
+
+Root permission is required to run the app:
+$ sudo ./spacenav-rezero
