@@ -1,19 +1,86 @@
 #!/bin/bash
+# Copyright 2010 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+##### lg-ctl-master
+# Establish intentional, explicit ssh ControlMaster sockets.
+# This allows subsequent ssh commands to ride an already-established socket,
+# making scripts that iterate through display nodes execute *much* faster.
+#
+# .ssh/config directives:
+# ControlPath ~/.ssh/ctl/master-%r@%h:%p
+
+ver=$(ssh -V 2>&1 |& tr -cd '[:digit:]' | cut -c1,2)
+if [ $ver -lt 54 ]; then
+  exit 0 # old versions of OpenSSH do not support this
+fi
 
 . ${HOME}/etc/shell.conf
 
-LG_USER="lg"
+user="lg"
+usage="Usage: `basename $0` [-h]elp [-u user] [-c]heck [-k]ill"
+export SSH_AUTH_SOCK=''
 
-LG_ARR=( $LG_FRAMES )
-if [ $( ls -1 ${HOME}/.ssh/ctl/*master*${LG_USER}@* 2>/dev/null | wc -l ) -lt ${#LG_ARR[*]} ]; then
-    echo "opening ControlMaster sockets: "
-    for lg in $LG_FRAMES; do
-        PROF=${lg##*lg}
-        2>&1 SSH_AUTH_SOCK='' ssh -TNf \
-        -o ControlMaster=yes -o ControlPersist=${SSH_PERSIST:-60} \
-        -o ClearAllForwardings=no -o ExitOnForwardFailure=yes \
-        -L 808${PROF}:localhost:80 ${LG_USER}@${lg} >&/dev/null &
-    done
-    sleep .5
+while getopts :hcku: opt; do
+  case $opt in
+    h)
+      echo $usage >&2
+      exit 0;;
+    c)
+      socket_cmd="check";;
+    k)
+      if test "$socket_cmd"; then
+        echo "Can't -[c]heck and -[k]ill at the same time!" >&2
+        echo $usage >&2
+        exit 1
+      else
+        socket_cmd="exit"
+      fi
+      ;;
+    u)
+      user=$OPTARG;;
+    \?)
+      echo "Invalid argument: -${OPTARG}" >&2
+      echo $usage >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG reguires an argument" >&2
+      echo $usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+if test "$socket_cmd"; then
+  for lg in $LG_FRAMES; do
+    ssh -al $user -o LogLevel=VERBOSE -o ControlMaster=no -O $socket_cmd $lg
+  done
+else
+  freshsocks=0
+  for lg in $LG_FRAMES; do
+    ssh -al $user -o ControlMaster=no -O check $lg >/dev/null 2>&1
+    if [ $? -gt 0 ]; then
+      { ### clear existing procs/sockets
+        pkill -f "^ssh -afMNTx.*-o ControlPersist.*${lg}$"
+        rm -f ${HOME}/.ssh/ctl/master-${user}@${lg}:22
+      } >&2
+      ssh -afMNTx -o LogLevel=QUIET -o ControlPersist=${SSH_PERSIST:-"yes"} ${user}@${lg} &
+      ((freshsocks++))
+    fi
+  done
+  [ $freshsocks -gt 0 ] && sleep .5 # no sleeping in stale socks
 fi
 
+exit 0
