@@ -15,8 +15,26 @@
 
 . ${HOME}/etc/shell.conf
 
+while [ $# -gt 0 ]; do
+  case $1 in
+    --hosts|-h)
+      shift
+      LG_FRAMES="$1"
+    ;;
+    *)
+      CMD="$CMD $1"
+    ;;
+  esac
+  shift
+done
+[ -z "${LG_FRAMES}" ] && echo "LG_FRAMES is empty" && exit 1
+
+${HOME}/bin/lg-ctl-master -u root
+
 for lg in $LG_FRAMES ; do
     echo
     echo $lg:
-    ssh -tt -x root@$lg "$*"
+    ssh -tt -x root@$lg "$CMD"
 done
+
+exit 0

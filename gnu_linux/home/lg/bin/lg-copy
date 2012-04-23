@@ -15,9 +15,25 @@
 
 . ${HOME}/etc/shell.conf
 
+while [ $# -gt 0 ]; do
+  case $1 in
+    --hosts|-h)
+      shift
+      LG_FRAMES="$1"
+    ;;
+    *)
+      FILES="$FILES $1"
+    ;;
+  esac
+  shift
+done
+[ -z "${LG_FRAMES}" ] && echo "LG_FRAMES is empty" && exit 1
+
+${HOME}/bin/lg-ctl-master
+
 # ONLY COPIES TO HOME DIRECTORY
-for lg in $LG_SCREENS ; do
+for lg in $LG_FRAMES ; do
     echo
     echo $lg:
-    scp $* $lg:
+    scp $FILES lg@$lg:
 done
