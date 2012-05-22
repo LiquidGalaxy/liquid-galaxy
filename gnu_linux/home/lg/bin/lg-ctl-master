@@ -73,7 +73,7 @@ else
     ssh -al $user -o ControlMaster=no -O check $lg >/dev/null 2>&1
     if [ $? -gt 0 ]; then
       { ### clear existing procs/sockets
-        pkill -f "^ssh -afMNTx.*-o ControlPersist.*${lg}$"
+        pkill -f "^ssh -afMNTx.*-o ControlPersist.*${user}@${lg}$"
         rm -f ${HOME}/.ssh/ctl/master-${user}@${lg}:22
       } >&2
       ssh -afMNTx -o LogLevel=QUIET -o ControlPersist=${SSH_PERSIST:-"yes"} ${user}@${lg} &
