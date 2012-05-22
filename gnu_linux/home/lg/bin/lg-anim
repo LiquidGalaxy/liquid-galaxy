@@ -1,0 +1,95 @@
+#!/bin/bash
+# Copyright 2010 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+. ${HOME}/etc/shell.conf
+
+tempdir=${HOME}/tmp
+screen_gap=2
+grab_fmt="gif"
+grab_size=240 # screen height
+anim_size=600 # animation width
+duration=20   # seconds, no decimals please
+fps=2         # 2 is the practical maximum
+
+frames=$(( duration * fps ))
+grab_delay=.5 # 1 / fps, lack of floating point in bash
+anim_delay=$(( 100 / fps ))
+
+##### Grab a Frame
+function _grab_frame {
+  t0=$( date +%s%N )
+  frame=$1
+  MTAGE_FILES=( )
+  MTAGE_CHECKED=( )
+  MTAGE_PIDS=( )
+
+  for target in ${LG_SCREENORDER?"LG_SCREENORDER must be set to use ${0##*/}.  Add it to ~/etc/shell.conf"}; do
+    lg=${target//:*}
+    display=${target/${lg}}
+    tempfile=${tempdir}/${lg}.${display//*.}.${frame}.anim.${grab_fmt}
+    
+    rm -f ${tempfile}
+    ssh -fqx lg@${lg} "xwd -display ${display} -root -silent | convert xwd:- -resize ${grab_size} -bordercolor 'black' -border ${screen_gap}x0 ${grab_fmt}:-" > ${tempfile} 2>/dev/null &
+    MTAGE_PIDS=( ${MTAGE_PIDS[*]} $! )
+    MTAGE_FILES=( ${MTAGE_FILES[*]} ${tempfile} )
+  done
+
+  for job in ${MTAGE_PIDS[*]}; do
+    wait $job
+  done
+
+  for file in ${MTAGE_FILES[*]}; do
+    if [ -s $file ]; then
+      MTAGE_CHECKED=( ${MTAGE_CHECKED[*]} $file )
+    fi
+  done
+
+  if [ ${#MTAGE_CHECKED[*]} -gt 0 ]; then
+    montage -background black -tile ${#MTAGE_CHECKED[*]}x1 -geometry +0+0 \
+      ${MTAGE_CHECKED[*]} \
+      ${tempdir}/lg-anim.${frame}.gif
+  fi
+
+  rm -f ${MTAGE_FILES[*]}
+  
+  t1=$( date +%s%N )
+  dt=$(( ( t1 - t0 ) / 1000000 ))
+  echo "frame: ${frame} dt: ${dt}ms" >&2
+}
+
+##### Logic Begins
+
+${HOME}/bin/lg-ctl-master
+
+rm -f ${tempdir}/lg-anim.*.gif
+
+echo "capturing animation: ${duration}s @ ${fps}fps"
+
+for i in `seq -w 1 ${frames}`; do
+  _grab_frame $i &
+  sleep $grab_delay
+done
+
+for job in `jobs -p`; do
+  wait $job
+done
+
+echo "all captures done, animating.."
+
+convert -delay ${anim_delay} -loop 0 -resize ${anim_size} ${tempdir}/lg-anim.*.gif ${tempdir}/lg-anim.gif
+
+rm -f ${tempdir}/lg-anim.*.gif
+
+exit 0

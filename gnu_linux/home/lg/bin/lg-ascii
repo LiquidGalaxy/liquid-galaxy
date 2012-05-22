@@ -1,0 +1,54 @@
+#!/bin/bash
+# Copyright 2010 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+. ${HOME}/etc/shell.conf
+tempdir=${HOME}/tmp
+resize=600
+
+${HOME}/bin/lg-ctl-master
+
+for target in $LG_SCREENORDER; do
+  lg=${target//:*}
+  display=${target/${lg}}
+  tempfile=${tempdir}/${lg}.${display//*.}-asc.miff
+  ssh -fqx lg@${lg} "xwd -display ${display} -root -silent | convert xwd:- -resize ${resize} miff:-" > ${tempfile} 2>/dev/null &
+  MTAGE_FILES=( ${MTAGE_FILES[*]} ${tempfile} )
+done
+
+for job in `jobs -p`; do
+  wait $job
+done
+
+for file in ${MTAGE_FILES[*]}; do
+  if [ -s $file ]; then
+    MTAGE_CHECKED=( ${MTAGE_CHECKED[*]} $file )
+  fi
+done
+
+if [ ${#MTAGE_CHECKED[*]} -lt 1 ]; then
+  echo "Nothing to ascii montage!" >&2
+  exit 1
+fi
+
+montage -background black -tile ${#MTAGE_CHECKED[*]}x1 -geometry +0+0 \
+  ${MTAGE_CHECKED[*]} \
+  ${tempdir}/lg-asc-montage.png
+
+rm -f ${MTAGE_FILES[*]}
+
+cacaview ${tempdir}/lg-asc-montage.png
+
+exit 0
+

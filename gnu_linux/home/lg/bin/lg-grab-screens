@@ -13,57 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## Ideally, this would not force graphicsMagick to use SSH to collect.
-## Xorg could be selectively exposed on the network, and GM could
-## make screen grabbing requests directly. For now, this works.
-
 . ${HOME}/etc/shell.conf
-display=$1
+  
 tempdir=${HOME}/tmp
 resize=600
 
-if [[ -z $display ]]; then
-    echo "Please provide a display number as the first option, like:
-\$ $0 :0.0"
-    exit 1
-fi
+PIDS=""
 
-SANITIZE_D=${display//:/}
-if [[ ! "${SANITIZE_D}" =~ .\.. ]]; then
+####$ 
+function _usage {
+  echo "Usage: ${0##*/} -a[ll] -q[uiet] -v[erbose] [-h host] [-d display]" >&2
+  echo "For a nice montage of all screens, try ${0##*/} -a" >&2
+}
 
-# We could avoid the "convert -scale" on the remote system and include
-# the resizing in the "-geometry" portion of the "montage" command.
-# However, doing it on each system spreads the load a little and 
-# reduces byte count transfered over the wire a bit.
-for lg in $LG_FRAMES; do
-    for screen in {0..3}; do
-    echo -en "${lg}, screen \"${screen}\": "
-    grabfile="${tempdir}/${lg}.${screen}.miff"
-    ssh lg@${lg} "(
-upSeconds=\$(</proc/uptime)
-upSeconds=\${upSeconds%%.*}
-let mins=\$((\${upSeconds}/60%60))
-let hours=\$((\${upSeconds}/3600%24))
-let days=\$((\${upSeconds}/86400))
-
-echo -en \"\$(hostname).${screen} up: \"
-if [ \"\${days}\" -ne \"0\" ]
-then
-   echo -en \"\${days}d \"
-fi
-echo -en \"\${hours}h \${mins}m\"
-) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img;
-echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img;
-DISPLAY=${display}.${screen} xwd -root | composite -gravity north -geometry +0+3 miff:/tmp/header-img xwd:- -resize ${resize} miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img miff:- miff:-
-" >${grabfile} && MTAGE_FILES=( ${MTAGE_FILES[*]} ${grabfile} ); echo $?
-    done
+##### Parse command line arguments
+host=""
+display=""
+alldisplays=0
+quiet=0
+verbose=0
+while getopts ":ad:h:qv" opt; do
+  case $opt in
+    a)
+      alldisplays=1;;
+    q)
+      quiet=1;;
+    v)
+      verbose=1;;
+    h)
+      host=${OPTARG};;
+    d)
+      display=${OPTARG//[^0-9:.]};;
+    \?)
+      echo "Invalid argument: -${OPTARG}" >&2
+      _usage
+      exit 1
+      ;;
+    :)
+      echo "You must specify options to ${0##*/}!" >&2
+      _usage
+      exit 1
+      ;;
+  esac
 done
 
-else
-
-for lg in $LG_FRAMES; do
-    grabfile="${tempdir}/${lg}.${SANITIZE_D##*\.}.miff"
-    ssh lg@${lg} "(
+##### Grab a Single Screen
+# _grab_screen {host} {display} {tempfile}
+function _grab_screen {
+  [ $verbose -gt 0 ] && echo "grabbing: ${1} ${2} ${3}"
+  rm -f ${3}
+  ssh -fqx lg@${1} "(
 upSeconds=\$(</proc/uptime)
 upSeconds=\${upSeconds%%.*}
 let mins=\$((\${upSeconds}/60%60))
@@ -76,19 +75,88 @@ then
    echo -en \"\${days}d \"
 fi
 echo -en \"\${hours}h \${mins}m\"
-) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img;
-echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img;
-DISPLAY=${display} xwd -root | composite -gravity north -geometry +0+3 miff:/tmp/header-img xwd:- -resize ${resize} miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img miff:- miff:-
-" >${grabfile} && MTAGE_FILES=( ${MTAGE_FILES[*]} ${grabfile} )
-done
+) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img-${2##*.};
+echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img-${2##*.};
+xwd -display ${2} -root -silent | composite -gravity north -geometry +0+3 miff:/tmp/header-img-${2##*.} xwd:- -resize ${resize} miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img-${2##*.} miff:- miff:- | convert -bordercolor 'black' -border 5x0 miff:- miff:-
+" > ${3} &
+  PIDS="${PIDS} $!"
+  MTAGE_FILES=( ${MTAGE_FILES[*]} ${3} )
+}
+
+##### Logic Begins
+
+SANITIZE_D=${display//:}
+
+${HOME}/bin/lg-ctl-master
+
+if [ $alldisplays -gt 0 ]; then
+  [ ! $quiet -gt 0 ] && echo "Grabbing all screens from all hosts"
+  for target in ${LG_SCREENORDER?"LG_SCREENORDER must be set to use -a[ll].  Add it to ~/etc/shell.conf"}; do
+    lg=${target//:*}
+    display=${target/${lg}}
+    tempfile=${tempdir}/${lg}.${display//*.}.miff
+    _grab_screen ${lg} ${display} ${tempfile}
+  done
+elif [ -n "$host" ]; then
+  if [ -n "$display" ]; then
+    [ ! $quiet -gt 0 ] && echo "Grabbing display: ${display} from host: ${host}"
+    if [[ ! "${SANITIZE_D}" =~ .\.. ]]; then
+      for screen in {0..3}; do
+        _grab_screen ${host} ${display}.${screen} ${tempdir}/${host}.${screen}.miff
+      done
+    else
+      _grab_screen ${host} ${display} ${tempdir}/${host}.miff
+    fi
+  else
+    echo "You must specify a display when specifying a host!" >&2
+    _usage
+    exit 1
+  fi
+elif [ -n "$display" ]; then
+  [ ! $quiet -gt 0 ] && echo "Grabbing display: ${display} from all hosts"
+  for lg in $LG_FRAMES; do
+    if [[ ! "${SANITIZE_D}" =~ .\.. ]]; then
+      for screen in {0..3}; do
+        _grab_screen ${lg} ${display}.${screen} ${tempdir}/${lg}.${screen}.miff
+      done
+    else
+      _grab_screen ${lg} ${display} ${tempdir}/${lg}.miff
+    fi
+  done
+else
+  echo "Not enough arguments to ${0##*/}!" >&2
+  _usage
+  exit 1
 fi
 
-echo "MTAGE FILES:
-ALL:   ${MTAGE_FILES[*]}
-COUNT: ${#MTAGE_FILES[*]}
-"
-montage -monitor -background black -tile ${#MTAGE_FILES[*]}x1 -geometry +5+0 \
-    ${MTAGE_FILES[*]} \
-    ${tempdir}/lg-montage.png && rm -f ${MTAGE_FILES[*]}
+for job in ${PIDS[*]}; do
+  wait $job
+done
 
-exit 0
+for file in ${MTAGE_FILES[*]}; do
+  if [ -s $file ]; then
+    MTAGE_CHECKED=( ${MTAGE_CHECKED[*]} $file )
+  fi
+done
+
+if [ ${#MTAGE_CHECKED[*]} -lt 1 ]; then
+  echo "Nothing to montage!" >&2
+  exit 1
+fi
+
+monitor=""
+if [ ! $quiet -gt 0 ]; then
+  echo "TEMP FILES:
+  ALL:   ${MTAGE_CHECKED[*]}
+  COUNT: ${#MTAGE_CHECKED[*]}
+  "
+  monitor="-monitor"
+fi
+
+montage ${monitor} -background black -tile ${#MTAGE_CHECKED[*]}x1 -geometry +0+0 \
+  ${MTAGE_CHECKED[*]} \
+  ${tempdir}/lg-montage.png
+
+rm -f ${MTAGE_FILES[*]}
+
+#exit 0
