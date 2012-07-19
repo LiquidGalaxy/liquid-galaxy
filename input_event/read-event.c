@@ -5,6 +5,10 @@
 // files like those found in /dev/input/event* for multi-axis devices such
 // as the 3dconnexion Space Navigator.
 //
+// Compile with:
+// $ gcc -m32 -o read-event read-event.c
+// (Earth is compiled as a 32-bit binary, so we compile with -m32)
+//
 // Our navigator shows up as:
 // Bus 007 Device 004: ID 0510:1004 Sejin Electron, Inc.
 
