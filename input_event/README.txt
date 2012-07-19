@@ -4,8 +4,8 @@ the 3dconnexion SpaceNavigator.
 
 Compile with:
 
-$ gcc -o read-event read-event.c
-$ gcc -o write-event write-event.c
+$ gcc -m32 -o read-event read-event.c
+$ gcc -m32 -o write-event write-event.c
 
 To use it:
 
