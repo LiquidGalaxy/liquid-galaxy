@@ -2,6 +2,11 @@
 // Google, Inc. Jason E. Holt <jholt [at] google.com>
 //
 // Create synthetic input_event structs for a multi-axis device.
+//
+// Compile with:
+// $ gcc -m32 -o write-event write-event.c
+// (Earth is compiled as a 32-bit binary, so we compile with -m32)
+
 
 #include <sys/ioctl.h>
 #include <error.h>
