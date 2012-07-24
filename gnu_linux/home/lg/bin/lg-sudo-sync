@@ -19,7 +19,7 @@
 # source common configuration (gets rsync options)
 . ${HOME}/etc/shell.conf
 
-${HOME}/bin/lg-ctl-master -u root
+lg-ctl-master -u root
 
 if [[ ${#@} -lt 2 ]]; then
     echo "This sync is a bit dangerous! Be sure to at least provide SRC and DEST:

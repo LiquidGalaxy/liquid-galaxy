@@ -29,7 +29,7 @@ while [ $# -gt 0 ]; do
 done
 [ -z "${LG_FRAMES}" ] && echo "LG_FRAMES is empty" && exit 1
 
-${HOME}/bin/lg-ctl-master
+lg-ctl-master
 
 # ONLY COPIES TO HOME DIRECTORY
 for lg in $LG_FRAMES ; do

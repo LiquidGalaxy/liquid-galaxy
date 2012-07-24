@@ -30,7 +30,6 @@ fi
 
 user="lg"
 usage="Usage: `basename $0` [-h]elp [-u user] [-c]heck [-k]ill"
-export SSH_AUTH_SOCK=''
 
 while getopts :hcku: opt; do
   case $opt in
@@ -76,7 +75,7 @@ else
         pkill -f "^ssh -afMNTx.*-o ControlPersist.*${user}@${lg}$"
         rm -f ${HOME}/.ssh/ctl/master-${user}@${lg}:22
       } >&2
-      ssh -afMNTx -o LogLevel=QUIET -o ControlPersist=${SSH_PERSIST:-"yes"} ${user}@${lg} &
+      ssh -afMNTx -o LogLevel=QUIET -o IdentitiesOnly=yes -o ControlPersist=${SSH_PERSIST:-"yes"} ${user}@${lg} &
       ((freshsocks++))
     fi
   done

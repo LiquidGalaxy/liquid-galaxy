@@ -15,7 +15,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-${HOME}/bin/lg-ctl-master
+lg-ctl-master
 
 case ${TERM} in
     screen*)
