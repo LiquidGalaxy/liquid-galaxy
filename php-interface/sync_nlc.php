@@ -138,7 +138,11 @@ function createNLC($kml_data_file, $connection_timeout = 60){
 }
 
 
-$kml_data_file = 'kmls.txt';
+### Allow arbitrary kml list to be selected by tag
+$kml_tag = preg_replace( '/[^a-zA-Z0-9-_]/', '', getOrDefault('tag', '') );
+$kml_tag_separator = (!empty( $kml_tag )) ? '-' : '';
+$kml_data_file = "kmls" . $kml_tag_separator . $kml_tag . ".txt";
+
 $CONNECT_TIMEOUT = 3;
 
 #LG server
