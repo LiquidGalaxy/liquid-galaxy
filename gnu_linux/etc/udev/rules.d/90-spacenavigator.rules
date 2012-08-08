@@ -2,4 +2,5 @@
 # of /dev/input/spacenavigator
 # XXX: 0644 will probably prevent earth from turning on the LED
 
-KERNEL=="event[0-9]*", SYSFS{idVendor}=="046d", SYSFS{idProduct}=="c626", MODE="0664", GROUP="plugdev", SYMLINK+="input/spacenavigator"
+# "SYSFS" selection is depricated
+SUBSYSTEM=="input", KERNEL=="event[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c626", MODE="0664", GROUP="plugdev", SYMLINK+="input/spacenavigator"
