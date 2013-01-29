@@ -1,0 +1,60 @@
+CXX = @CXX@
+VERSION = @VERSION@
+CXXFLAGS = -Wall @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+PREFIX = @prefix@
+
+all: xiv
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -DPREFIX=\"$(PREFIX)\" -DVERSION=\"$(VERSION)\" -c $<
+
+.c.o:
+	$(CXX) $(CXXFLAGS) -DPREFIX=\"$(PREFIX)\" -DVERSION=\"$(VERSION)\" -c $<
+
+xiv: xiv.o xiv_utils.o xiv_readers.o read-event.o
+	$(CXX) xiv.o xiv_utils.o xiv_readers.o read-event.o -o xiv $(LDFLAGS) @LIBS@
+
+clean:
+	rm -f xiv *~ core.* *.o
+
+distclean: clean
+	rm -rf config.log config.h config.status Makefile autom4te.cache autoscan.log configure.scan
+
+install:
+	test -d $(PREFIX)/bin || mkdir -p $(PREFIX)/bin
+	cp xiv $(PREFIX)/bin
+	cp xiv.sh $(PREFIX)/bin
+	test -d $(PREFIX)/share/xiv || mkdir -p $(PREFIX)/share/xiv
+	cp xiv.ppm README INSTALL ChangeLog TODO COPYRIGHT $(PREFIX)/share/xiv
+	test -d $(PREFIX)/share/applications || mkdir -p $(PREFIX)/share/applications
+	cp xiv.desktop $(PREFIX)/share/applications
+	test -d $(PREFIX)/share/icons || mkdir -p $(PREFIX)/share/icons
+	cp xiv.png $(PREFIX)/share/icons
+	test -d $(PREFIX)/share/man/man1 || mkdir -p $(PREFIX)/share/man/man1
+	gzip -c xiv.1 > $(PREFIX)/share/man/man1/xiv.1.gz
+
+uninstall:
+	rm $(PREFIX)/bin/xiv
+	rm $(PREFIX)/bin/xiv.sh
+	rm -rf $(PREFIX)/share/xiv
+	rm $(PREFIX)/share/applications/xiv.desktop
+	rm $(PREFIX)/share/icons/xiv.png
+	rm $(PREFIX)/share/man/man1/xiv.1.gz
+
+
+rpm::
+	test -d ${HOME}/rpmbuild/SOURCES/ || mkdir -p ${HOME}/rpmbuild/SOURCES/
+	test -d ${HOME}/rpmbuild/SPECS/ || mkdir -p ${HOME}/rpmbuild/SPECS/
+	cd ..;tar cvfz xiv-${VERSION}.tgz --exclude=.svn xiv-${VERSION}
+	cp ../xiv-${VERSION}.tgz ${HOME}/rpmbuild/SOURCES/
+	cp ../xiv-${VERSION}/xiv.spec ${HOME}/rpmbuild/SPECS/xiv-${VERSION}.spec
+	cd ${HOME}; rpmbuild -bb ${HOME}/rpmbuild/SPECS/xiv-${VERSION}.spec
+	cp ${HOME}/rpmbuild/RPMS/*/xiv-${VERSION}-*.rpm ../
+
+# DO NOT DELETE
+
+xiv.o: xiv.h config.h xiv_utils.h xiv_readers.h
+xiv_readers.o: xiv_readers.h
+xiv_utils.o: xiv_utils.h xiv.h config.h
+read-event.o: read-event.h

@@ -1,0 +1,39 @@
+0.2
+	Correct bug in read_tiff
+	Add commands
+	Handle strip tiff
+0.3
+	Add image cache
+	Add preload of 2 next images
+	Add display of an overview (key o).
+	Histogram is now toggled on/off manually (key h).
+0.4
+	Add clean ups before leaving.
+	Check mallocs and new.
+	Histogram is computed only if displayed.
+	Handles close event from WM.
+	Size of histogram & overview is adapted to window size.
+	Add (un)zoom on zone with Shift+Drag. 
+	Add N/P for next/previous x10/
+	Add ability to setup points and writes them before leaving or
+	changing image.
+0.5
+	Add display of reference grid
+	Deactivate bilinear interpolation during move.
+	Add -browse parameter to expand list of files to files in the
+	directory.
+	Add OpenDesktop files.
+	Improve speed.
+0.6
+	Add Fullscreen mode.
+	Add -cache parameter.
+	Revert deplacement for Left/Right/Up/Down keys.
+	Add -shuffle to shuffle file list.
+	Add manpage.
+0.7
+	Rename to xiv
+0.8
+	Improve automake configuration files and portability.
+	Automatically set browse on if a directory is passed.
+	Add Delete and mark delete functions.
+	Add command line option for bilinear interpolation.

@@ -1,0 +1,9 @@
+*.o
+\.*.swp
+xiv
+*.jpg
+Makefile
+config.h
+config.log
+config.status
+autom4te.cache/

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=XIV
+Name[fr]=XIV
+GenericName=Simple Image Viewer
+GenericName[fr]=Visioneuse rudimentaire d'image
+Comment=View images, pan, zoom, rotate and adjust contrast, luminosity and gamma. 
+Comment[fr]=Visualiser vos images, naviguer, zoomer, tourner et adjuster le contraste, la luminosité et le gamma. 
+Exec=xiv.sh %F
+Icon=xiv
+Type=Application
+Terminal=false
+Categories=Graphics;RasterGraphics;Viewer;2DGraphics;
+MimeType=image/bmp;image/x-bmp;image/x-MS-bmp;image/gif;image/jpeg;image/png;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-cmu-raster;image/x-sun-raster;image/x-tga;image/tiff;image/vnd.wap.wbmp;image/x-png;image/xpm;image/x-pcx;

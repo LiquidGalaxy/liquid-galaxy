@@ -1,0 +1,28 @@
+Prerequirements:
+In order to compile xiv, you need the following elements:
+  - libjpeg-devel
+  - libtiff-devel
+  - libexif-devel
+  - libx11-devel
+
+Optionally you need zenity or kdialog in order to be able to launch
+xiv.sh without any file (from a menu for instance) and ImageMagick to
+convert unsupported image formats.
+
+Install
+export CXXFLAGS=-O3
+./configure --prefix=/whatever
+make
+make install
+
+Uninstall
+make uninstall
+
+Rpm build
+mkdir -p ~/rpmbuild/SPECS
+mkdir -p ~/rpmbuild/SOURCES
+cp xiv-x.x.tgz ~/rpmbuild/SOURCES
+cp xiv.spec ~/rpmbuild/SPECS
+rpmbuild -ba ~/rpmbuild/SPECS/xiv.spec
+
+Rpm is built in ~/rpmbuild/RPMS/'arch'

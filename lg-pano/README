@@ -1,0 +1,76 @@
+Description:
+
+xiv is a very simple image viewer without UI and only controled by keys and mouse.
+As opposed to most of the image viewers, it does not rely on scrollbar for image panning.
+It is a powerful tool to analyse huge images.
+The Window is a view of the image in which you can zoom, pan, rotate...
+xiv reads natively 8 and 16 bits binary PPM and TIFF and JPEG images. It uses ImageMagick to convert other formats.
+Image drawing is performed in several threads for a better image analysis experience.
+Next image is preloaded during current image analysis.
+See usage for the full list of features.
+
+xiv comes with an additional script xiv.sh which will open a file
+selection box if called without any file. File selection box requires
+kdialog (KDE), zenity (GNOME) or Xdialog. This script is meant to use
+xiv from a desktop environment.
+Additionnal information can be found on http://lordikc.free.fr/wordpress/?p=701.
+
+License:
+xiv is provided under the terms of the BSD license. See copyright file.
+
+Bug & limitations:
+Mouse interaction conflict with default LXDE mouse shortcuts. You need
+to change LXDE's mouse shortcuts (Alt+Wheel).
+
+Usage: 
+Run xiv without arguments for up-to-date usage information
+
+LIQUID GALAXY USE
+
+For use on a Liquid Galaxy, there is one master instance, and several slave
+instances. The master sends UDP traffic to the slaves, so it needs to know what
+addresses to talk to. Specify these like this:
+
+    ./xiv -slavehost addr1:port1 -slavehost addr2:port2 ...
+
+If a slave address is a broadcast address, include the -broadcast option
+immediately after the corresponding -slavehost option:
+
+    ./xiv -slavehost addr1:port1 -broadcast -slavehost addr2:port2 ...
+
+Slaves are configured to listen for traffic as follows:
+
+    ./xiv -listenport 10801 image_file.jpg
+
+You can also specify what address to listen on:
+
+    ./xiv -listenaddr 10.42.0.3 -listenport 10801 image_file.jpg
+
+NOTES ON CONNECTIVITY, esp. RE: Liquid Galaxy
+
+Liquid Galaxies often have a single node running multiple displays. So multiple
+xiv instances will need to run on such nodes, each listening in a way that it
+can receive sync traffic. The easiest way to do this seems to be to have the
+master node send traffic to two different ports, both on the galaxy's broadcast
+address.
+
+    ./xiv -slavehost 10.42.0.255:10801 -broadcast -slavehost 10.42.0.255:10802 -broadcast ...
+
+Then one instance on each display listens on the first port, and the other on
+the second port. If one mode controls more than two displays, you'll need more
+ports, and the master will need to know about them.
+
+Other options we've tried include:
+
+* Multiple instances listen on the same port. Despite the apparently inaccurate
+  descriptions of the SO_REUSEADDR socket option available online, you
+  apparently can't have multiple programs using the same port at the same time.
+  socat sometimes appears to violate this principle; here more research might
+  be useful.
+
+* Broadcasting, and having each instance listen on a specific IP, giving each
+  node multiple IPs. Unfortunately it seems a socket will receive broadcast
+  traffic only if it is listening on 0.0.0.0.
+
+* Multicast. Unfortunately, like broadcast, it seems you can receive multicast
+  traffic only by listening on 0.0.0.0

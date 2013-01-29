@@ -1,0 +1,70 @@
+AC_INIT(xiv.cpp)
+AC_CONFIG_HEADER([config.h])
+            
+VERSION="0.8"
+AC_SUBST(VERSION)
+
+dnl find and test the C compiler
+AC_PROG_CXX
+AC_LANG_CPLUSPLUS
+     
+AC_PROG_MAKE_SET
+               
+AC_HEADER_STDC
+
+AC_C_INLINE
+AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([mkfifo])
+AC_CHECK_FUNCS([strstr])
+AC_CHECK_FUNCS([unlink])
+AC_CHECK_FUNCS([open])
+AC_CHECK_FUNCS([read])
+AC_CHECK_FUNCS([close])
+AC_CHECK_FUNCS([strstr])
+AC_CHECK_FUNCS([strcmp])
+AC_CHECK_FUNCS([strdup])
+AC_CHECK_FUNCS([strcasecmp])
+AC_CHECK_FUNCS([pthread_create])
+AC_CHECK_FUNCS([pthread_mutex_lock])
+AC_CHECK_FUNCS([pthread_mutex_unlock])
+AC_CHECK_FUNCS([setjmp])
+AC_CHECK_FUNCS([longjmp])
+AC_CHECK_FUNCS([powf])
+AC_CHECK_FUNCS([dirname])
+AC_CHECK_FUNCS([basename])
+AC_CHECK_FUNCS([opendir])
+AC_CHECK_FUNCS([readdir])
+AC_CHECK_FUNCS([closedir])
+AC_CHECK_HEADERS([X11/Xlib.h],,[AC_MSG_ERROR([Required library X11 not found])])
+AC_CHECK_HEADERS([X11/Xutil.h],,[AC_MSG_ERROR([Required library X11 not found])])
+AC_CHECK_HEADERS([X11/Xutil.h X11/extensions/Xdbe.h],,[AC_MSG_ERROR([Required library Xext not found])],
+[[
+#include <X11/Xlib.h>
+]])
+AC_CHECK_HEADERS([math.h])
+AC_CHECK_HEADERS([pthread.h])
+AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_HEADERS([stdlib.h])
+AC_CHECK_HEADERS([string.h])
+AC_CHECK_HEADERS([unistd.h])
+AC_CHECK_HEADERS([sys/types.h])
+AC_CHECK_HEADERS([sys/stat.h])
+AC_CHECK_HEADERS([setjmp.h])
+AC_CHECK_HEADERS([libgen.h])
+AC_CHECK_HEADERS([dirent.h])
+AC_CHECK_LIB(jpeg,jpeg_read_scanlines,,[AC_MSG_WARN([Required library JPEG not found])])
+AC_CHECK_LIB(tiff,TIFFReadScanline,,[AC_MSG_WARN([Required library TIFF not found])])
+AC_CHECK_LIB(pthread,pthread_create,,[AC_MSG_ERROR([Required library pthread not found])])
+AC_CHECK_LIB(X11,XOpenDisplay,,[AC_MSG_ERROR([Required library X11 not found])])
+AC_CHECK_LIB(Xext,XdbeQueryExtension,,[AC_MSG_ERROR([Required library Xext not found])])
+AC_CHECK_LIB(exif,exif_data_new_from_file,,[AC_MSG_WARN([Required library EXIF not found])])
+AC_C_CONST
+AC_FUNC_MALLOC
+AC_HEADER_STDBOOL
+AC_PATH_X
+AC_PROG_CC
+AC_TYPE_UINT16_T
+
+dnl read Makefile.in and write Makefile
+AC_OUTPUT(Makefile)
+
