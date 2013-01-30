@@ -1,0 +1,52 @@
+= 0.0.7
+
+* Add lots of new helper functions
+* Add functions to extract placemarks from existing KML
+* Added functions to create an HTML tour index automatically
+* Fix bug in NetworkLinks
+* Handle UTF8 in source code properly
+* Fix balloonVisibility error
+
+= 0.0.6
+
+* Support resolution argument to interpolate()
+* Add several new helper functions
+* Add support for gx:Track objects
+* Handle coordinates with strange spaces in them, support real degrees symbol
+* Fix bug with polygons
+* Add functions for processing telemetry data
+* Add decent ExtendedData support
+
+= 0.0.5
+
+* Changed constructors to accept arguments as a hash, rather than some arbitrary and hard-to-remember order
+* Converted from REXML to libxml; speed improved dramatically
+* Added better CDATA support to Feature description attributes
+* Removed color elements from ListStyle
+* Fix AnimatedUpdates and Snippets to make them more reliable
+* Added support for Polygon and MultiGeometry objects
+* Fixed support functions and PointList to handle Kamelopard module
+* Added NetworkLink objects
+
+= 0.0.4
+
+* Changed all KML output to produce REXML::Element and REXML::Document objects, instead of simply strings containing XML
+* Wrapped all of Kamelopard in a module, to prevent name collisions
+* Changed variuos names to something meaningful, where previously they'd been deliberately made strange to avoid namespace problems
+* Finished test suite, taking into account all the above changes
+
+= 0.0.3
+
+* Significantly expanded test suite after converting it to use rspec
+* Added support for several new objects
+* Removed some error checks that didn't work properly
+
+= 0.0.2
+
+* Add soundcue objects
+* Add support for dms format lat/long
+* Include geocode library by default, and remove XML because it was a pain
+
+= 0.0.1
+
+* Initial github push, including basic classes for most KML objects, spline code, and some helper functions

@@ -1,0 +1,77 @@
+# vim:textwidth=78:nosi:noet:sw=4:ts=4:syntax=nothing
+
+The idea here is to create a library or language or something that will make
+it easier to produce KML for use in Google Earth tours. The problems this
+looks to solve include, in no particular order:
+
+* KML always wants decimal lat/long, but Google Earth (and lots of other
+  stuff) provides deg/min/sec. It should be easier to deal with this
+* It would be nice to say "fly through these points smoothly", rather than
+  having to tweak angles, durations, ranges, etc. by trial and error.
+* Related to the above, you can pretty easily end up crashing into the ground
+  with gx:FlyTo, and it's hard to fix while keeping the flyby smooth.
+* Iterating through things sucks in KML. For instance, for the Internet
+  Retailer show where we built a tour of each employee and sites near his/her
+  home, each time we tweaked the basic theme of an employee flyby, we had to
+  tweak 20 different places in the KML.
+* Some operations are pretty cool, but hard to do in KML. For instance,
+  orbiting a particular spot, or rotating the camera to look at a new point
+  while remaining in the same position.
+
+LIBRARY OR LANGUAGE?
+
+It could be easy enough to create a library of, say, Perl functions, that
+would do this. Another option is to create something like a language, using
+(because it's particularly easy for creating languages) Ruby. I'm leaning
+heavily toward the latter option, because it sounds cool, and because ISTM
+there's some possibility this will make it into the outside world, where
+"cool" could be an important factor. Using Ruby and creating a language will
+probably be marginally more difficult than using Perl, but it also seems it
+will make the result more flexible.
+
+SOME IDEAS ABOUT LANGUAGE STRUCTURE
+
+I'd like it to be easy to create new points:
+
+	... at 10'5"6.5, 2'4"2.1
+
+(or, since quotes tend to be special)
+
+	... at 10d5m6.5s, 2d4m2.1s
+
+Create paths somehow:
+
+	... from <point> to <point>
+	... through <points>
+
+	* Somehow, we need to specify how speed can change through this path
+
+Orbit something
+
+	... orbit <point>
+
+	* include something to jitter a bit, orbit multiple times, swing down from
+	  above and back up
+
+Timing
+
+	* Perhaps issue timepoints periodically, or declare time statements within
+	  blocks following flythrough information:
+
+		... fly from <point> to <point> {
+				play 'test.mp3' at <time>
+			}
+
+Or perhaps just assume there will be some tweaking to follow any KML
+production. I don't like that idea, though, because I'd like to be able to
+regenerate any KML from a Kamelopard script.
+
+SPLINE NOTES
+
+It makes sense to be able to take a bunch of points and interpolate a spline
+around them all. Hence the recently committed spline library stuff. We could
+meaningfully interpolate points in 1, 2, or 3 dimensions, as well as points in
+time and other stuff. Users will be able to set a spline type (GNU Scientific
+Language has six of them) and a resolution (how many points should this
+interpolation make). One possibility is to include lots of points when the
+derivative or second derivative changes rapidly, and few when it doesn't.

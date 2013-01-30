@@ -1,0 +1,29 @@
+IDEAS FOR FUTURE DEVELOPMENT
+
+* Collecting a set of tours into one document is difficult. Make it easy to do,
+  and to add an index to the whole thing
+
+* Creating master and slave versions of KMZ files for a galaxy is lots of
+  busywork. Kamelopard should do it automatically.
+
+* Create function so objects can generate their own <Change>, etc. elements
+  for an AnimatedUpdate
+
+* Improve helper functions, their tests, and their documentation
+
+* Add functions to generate various shapes in one and possibly two dimensions,
+  and other functions to accept those paths as arguments to create flythroughs.
+  These paths could include regular lines, lines where the points expand or
+  contract geometrically or exponentially, sine and cosine functions (for
+  making circles), etc., and other functions could take these paths as
+  arguments to describe latitude, longitude, altitude, duration, heading, tilt,
+  etc. For instance, a sine path passed to the tilt parameter would rock back
+  and forth. sine and cosine passed to lat and long respectivally would travel
+  in a circle. Adding an exponentially increasing range path would make it a
+  spiral.
+
+* Add a function to get the current camera position, if possible
+
+* Add something to encode common screenoverlay size, screenxy, and overlayxy
+  options, so I don't have to keep looking up the right values for things like
+  "Keep the aspect ratio"

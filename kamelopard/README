@@ -1,0 +1,35 @@
+= kamelopard: Ruby gem to simplify production of KML
+
+This gem simplifies generating KML files, especially those used by Google
+Earth. See http://code.google.com/apis/kml/documentation/kmlreference.html for
+information on KML. The KML reference will provide information on undocumented
+attributes from these classes.
+
+== Requirements
+
+It's probably best to use a fairly non-prehistoric verion of Ruby, as that's
+what's most frequently tested.
+
+== Installation
+
+Install via RubyGems:
+
+  gem install kamelopard
+
+From source:
+
+  rake install
+
+== Copying
+
+This code is copyrighted by the author, Joshua Tolley <josh@endpoint.com>
+
+== License and distribution
+
+You may redistribute this software under the terms of the Ruby license,
+included in the file "LICENSE". The Ruby license also allows distribution
+under the terms of the GPL, included in the file "GPL".
+
+== Acknowledgements
+
+Thanks to End Point Corporation (http://www.endpoint.com) for support for the project.
