@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use IO::Socket;
+use IO::Socket::UNIX qw( SOCK_STREAM SOMAXCONN );
 #use IO::Socket::Multicast;
 use IO::Select;
 use Getopt::Long;
@@ -20,8 +21,10 @@ $| = 1;
 # * Fetch kml.txt from lg-head, fetch KMLs it lists, get their actions.yml
 #     (name?) files, and combine them into one config.
 
-our ($verbose_in, $verbose_out, $verbose_link, $verbose_act, $verbose, $kml_server, $help)
-    = (0, 0, 0, 0, 0, 0);
+our ($verbose_in, $verbose_out, $verbose_link, $verbose_act, $verbose, $kml_server, $help, $fifo)
+    = (0, 0, 0, 0, 0, 0, undef);
+
+our @verbose_actions;
 
 sub usage {
     print <<USAGE;
@@ -30,7 +33,7 @@ NAME
     viewsyncrelay.pl
 
 SYNOPSIS
-    viewsyncrelay.pl [--verbose] [--vi] [--vo] [--vl] [--va] --kml[=server] config_file
+    viewsyncrelay.pl [OPTIONS] config_file
     viewsyncrelay.pl --help
 
 DESCRIPTION
@@ -51,6 +54,17 @@ OPTIONS
         actions, and transforms respectively. Each option can be given more
         than once.
         
+    --sva=NAME
+        Make action NAME *very* verbose, without getting spam from all the
+        other actions
+
+    -f /path/to/fifo, --fifo=/path/to/fifo
+        Open (optionally creating first) a FIFO at /path/to/fifo (relative
+        paths are acceptable as well) for control commands. This can also be
+        specified in the configuration file(s), but the command-line option
+        will override the config file. Further documentation is provided in the
+        sample config.yml.
+
     -v, --verbose
         Setting this option once is equivalent to setting --vi, --vo, --vl,
         --va, and --vt. This can be set multiple times
@@ -68,12 +82,23 @@ USAGE
 }
 
 sub child_action {
-    return if fork;
+    my $pid = fork;
+    return $pid if $pid;
+    
+
+    my $cmd = shift;
+    my $repl = shift;
+    my %repl = %$repl;
+
+    # Replace ${KEY} commands in $cmd
+    map {
+        $cmd =~ s/\$\{$_\}/$repl{$_}/g;
+    } keys %repl;
 
     open STDIN, '/dev/null' or die "Can't read /dev/null: $!";
     open STDOUT, '/dev/null' or die "Can't write to /dev/null: $!";
 
-    exec @_;
+    exec $cmd;
     exit 0;
 }
 
@@ -82,19 +107,31 @@ sub parse_constraints {
     my $cf = shift;
     my $limits;
 
-    for my $constraint (keys %$cf) {
+    for my $constraint (grep { ! /planet/ } (keys %$cf)) {
         my $val = $cf->{$constraint};
         $val =~ s/\s+//g;
 
-        $val =~ /(?<min_inc>[\[\(])(?<min>-?[\d\.]+)(?:,(?<max>-?[\d\.]+))?(?<max_inc>[\)\]])/;
-        $limits->{$constraint} = {
-            min_inc => ($+{min_inc} eq '['),
-            min => $+{min} * 1.0,
-            max_inc => ($+{max_inc} eq ']'),
-            val => $val,
-        };
-        $limits->{$constraint}{max} = $+{max} * 1.0 if exists $+{max};
+        if ($val =~ /(?<min_inc>[\[\(])(?<min>-?[\d\.]+)(?:,(?<max>-?[\d\.]+))?(?<max_inc>[\)\]])/) {
+            $limits->{$constraint} = {
+                min_inc => ($+{min_inc} eq '['),
+                min => $+{min} * 1.0,
+                max_inc => ($+{max_inc} eq ']'),
+                val => $val,
+            };
+            $limits->{$constraint}{max} = $+{max} * 1.0 if exists $+{max};
+        }
+        elsif ($val =~ /(?<center>-?[\d\.]+) \s* \+\/?- \s* (?<range>-?[\d\.]+)/x) {
+            # +/- format  "123.4 +- 3"
+            $limits->{$constraint} = {
+                min_inc => 1,
+                max_inc => 1,
+                min => ($+{center} - $+{range}),
+                max => ($+{center} + $+{range}),
+                val => $val
+            };
+        }
     }
+    $limits->{planet} = $cf->{planet} if exists $cf->{planet};
     return $limits;
 }
 
@@ -104,6 +141,9 @@ sub match_constraints {
     my @fields = qw/count latitude longitude altitude heading tilt roll start_time end_time planet/;
     my $do_action = 1;
     @msg_vals{@fields} = split(',', $msg);
+    my $result = {
+        'pass' => [],
+    };
 
     eval {
         map {
@@ -117,11 +157,12 @@ sub match_constraints {
                     ) ||
                     ($limits->{$field}{min_inc} && $val == $limits->{$field}{min})
                 ) {
-                    # Yay! this constraint passed
-                    print "Action $name passed check for value $field\n" if $verbose_act > 2;
+                    push(@{$result->{pass}}, $field);
                 }
                 else {
-                    print "Action $name violated condition on $field (value was $val)\n" if $verbose_act > 2;
+                    $result->{fail} = $field;
+                    $result->{failed_constraints} = $limits->{$field}{val};
+                    $result->{failed_value} = $val;
                     $do_action = 0;
                     die;
                 }
@@ -130,13 +171,45 @@ sub match_constraints {
         } grep { $_ ne 'planet' } @fields;
                 # ^^ these constraints are only designed to handle numeric
                 # values, so don't bother with a non-numeric field
+
+        # For now, assume you'll only ever want an action to work for one
+        # single planet, so there's no support for sets of planets
+        $msg_vals{planet} = 'earth' if (! defined $msg_vals{planet});
+        if (exists $limits->{planet}) {
+            if (lc($msg_vals{planet}) eq lc($limits->{planet})) {
+                push @{$result->{pass}}, 'planet';
+            }
+            else {
+                $result->{fail} = 'planet';
+                $result->{failed_constraints} = $limits->{planet};
+                $result->{failed_value} = $msg_vals{planet};
+                $do_action = 0;
+                die;
+            }
+        }
     };
-    return $do_action;
+    return [$do_action, $result, \%msg_vals];
 }
 
 sub run_action {
     my $name = shift;
     my $config = shift;
+    my $cmds = shift;
+
+    my ($last_fail, $fail_count) = (0, 0);
+    my $tour_started = ! exists $config->{tour_name};
+
+    if (exists $config->{verbose}) {
+        $verbose_act = $config->{verbose};
+    }
+
+    if (exists $config->{id}) {
+        my @a = grep { $_ eq $config->{id} } @verbose_actions;
+        $verbose_act += $#a if $#a >= 0;
+    }
+
+    print "Action $name disabled waiting for tour $config->{tour_name} to start\n"
+        if ($verbose_act > 1 && exists $config->{tour_name});
 
     my ($limits, $reset_limits);
     my $repeat = $config->{repeat} || 'DEFAULT';
@@ -145,48 +218,104 @@ sub run_action {
     # Set up config
     $limits = parse_constraints($config->{constraints});
     $reset_limits = parse_constraints($config->{reset_constraints}) if exists $config->{reset_constraints};
+    print "Action $name constraints: " . Dumper($limits) if $verbose_act > 2;
+    print "Action $name reset_constraints: " . Dumper($reset_limits) if $verbose_act > 2;
 
     my $run_next = 1;
     if ($config->{initially_disabled}) {
-        print "Disabling action $name at startup because of initially_disabled key\n" if $verbose_act;
+        print "Disabling action $name at startup\n" if $verbose_act;
         $run_next = 0;
     }
     my $running = 0;
+    my $pid;
 
+    STDIN:
     while (<STDIN>) {
         chomp;
         exit 0 if /^EXIT$/;
         next if /^$/;
         my $msg = $_;
         print "Action \"$name\" received $msg\n" if $verbose_act > 3;
+
+        if ($msg =~ /CONTROL:\W/) {
+            # Handle tour control commands
+            if ($msg =~ /\Wstarttour (.*)$/) {
+                if (exists $config->{tour_name} && $config->{tour_name} eq $1) {
+                    print "Enabling action $config->{id} as part of starting tour $config->{tour_name}\n"
+                        if ($verbose_act >= 1);
+                    $tour_started = 1;
+                }
+            }
+            elsif ($msg =~ /\Wexittour/) {
+                print "Disabling action $config->{id} with exit of tour\n"
+                    if ($verbose_act > 1 && exists $config->{tour_name});
+                $tour_started = 0;
+                $run_next = !($config->{initially_disabled});
+                $running = 0;
+                # XXX Make this work
+                system "kill -9 $pid" if $pid;
+            }
+            else {
+                print "Didn't recognize control message \"$msg\"\n";
+            }
+            next STDIN;
+        }
+
+        next STDIN unless $tour_started;
         
         my $do_action = 1;
 
-        if ($run_next && match_constraints($name, $msg, $limits)) {
+        my $res = match_constraints($name, $msg, $limits);
+        my $matches = $res->[0];
+        if ($run_next && $verbose_act > 2 && !$matches) {
+            $fail_count++;
+            # Only print out every 15th failure, unless the last viewsync packet matched
+            if (! $last_fail || $fail_count >= 15) {
+                print "Failed check on action $name: " . Dumper($res->[1]);
+                $fail_count = 0;
+            }
+            $last_fail = 1;
+        }
+        if ($run_next && $matches) {
             $run_next = 0 unless $repeat eq 'ALL';
-            print "Action $name ($config->{action}) is going to be run now (repeat mode: $repeat)\n" if $verbose_act;
-            child_action $config->{action};
+            print "Action $name ($config->{action}) is going to be run now (repeat mode: $repeat): " . Dumper($res->[2]) . "\n" if $verbose_act;
+            $pid = child_action($config->{action}, $cmds);
             $running = 1;
         }
         else {
-            if ($running && exists $config->{exit_action}) {
-                print "Running exit_action for $name: $config->{exit_action}\n" if $verbose_act > 0;
-                child_action $config->{exit_action};
+            if ($running && !$matches && exists $config->{exit_action}) {
+                print "Running exit_action for $name: $config->{exit_action}\n"
+                    if ($verbose_act > 0 && exists($config->{exit_action}) && defined($config->{exit_action}));
+                $pid = child_action($config->{exit_action}, $cmds);
+                $running = 0;
             }
-            $running = 0;
-            if ($repeat ne 'ONCE' && $repeat ne 'RESET') {
+            if ($repeat ne 'ONCE' && $repeat ne 'RESET' && !$matches) {
                 print "Resetting action $name because of failed test on field\n"
                     if ($run_next == 0 and $verbose_act > 0);
                 $run_next = 1;
             }
         };
 
-        if ($run_next == 0 && $repeat eq 'RESET' && match_constraints("$name [RESET]", $msg, $reset_limits)) {
-            print "Resetting RESET action $name.\n" if $verbose_act;
-            $run_next = 1;
-        }
-        else {
-            print "Not resetting RESET action $name because of failed test\n" if ($verbose_act > 1 && ! $run_next);
+        if ($repeat eq 'RESET') {
+            if ($run_next == 0) {
+                my $res2 = match_constraints("$name [RESET]", $msg, $reset_limits);
+                if ($res2->[0]) {
+                    print "Resetting RESET action $name.\n" if $verbose_act;
+                    $run_next = 1;
+                }
+                else {
+                    if ($verbose_act > 1 && ! $run_next) {
+                        $fail_count++;
+                        # Only print out every 15th failure, unless the last viewsync packet matched
+                        if (! $last_fail || (exists $config->{fail_count} && $fail_count > $config->{fail_count}) || $fail_count >= 15) {
+                            print "Not resetting RESET action $name because of failed test: " . Dumper($res2->[1]);
+                            $fail_count = 0;
+                        }
+                        $last_fail = 1;
+                    }
+
+                }
+            }
         }
     }
 }
@@ -200,6 +329,7 @@ sub run_linkage {
         chomp;
         exit 0 if /^EXIT$/;
         print "Linkage \"$name\" received $_\n" if $verbose_link > 1;
+        next if /^CONTROL:/;
         print $output_pipe "$_\n";
     }
 }
@@ -324,6 +454,7 @@ sub build_linkages {
 sub build_actions {
     my %actions;
     my $config = shift;
+    my $cmds = (exists $config->{action_commands} ? $config->{action_commands} : undef);
     for my $action (@{$config->{actions}}) {
         print Dumper($action) if $verbose_act > 2;
         my ($name, $input, $constraints) = 
@@ -332,7 +463,7 @@ sub build_actions {
                     unless exists $action->{$_};
                 $action->{$_};
             } qw/name input constraints/;
-        my ($action_pid, $action_pipe) = open_child( "Action \"$name\"", \&run_action, ( $name, $action ));
+        my ($action_pid, $action_pipe) = open_child( "Action \"$name\"", \&run_action, ( $name, $action, $cmds ));
         $action_pipe->autoflush();
         @{$actions{$name}}{qw/NAME INPUT PID STDIN/} = ( $name, $input, $action_pid, $action_pipe );
         $actions{$name}{initially_disabled} = 1 if exists $action->{initially_disabled};
@@ -353,28 +484,41 @@ sub load_config_file {
 
     map {
         my @a = @{$config->{$_}};
-        @a = (@{$config->{$_}}, @{$file->{$_}}) if exists $file->{$_};
+        if (defined $file->{$_} && exists $file->{$_}) {
+            @a = (@{$config->{$_}}, @{$file->{$_}})
+        }
+        else {
+            @a = @{$config->{$_}};
+        }
         $config->{$_} = \@a;
     } qw/input_streams output_streams transformations linkages actions/;
 
+    my %file_ac = exists $file->{action_commands} ? %{$file->{action_commands}} : ();
+    my %config_ac = exists $config->{action_commands} ? %{$config->{action_commands}} : ();
+    @config_ac{keys %file_ac} = values %file_ac;
+    $config->{action_commands} = \%config_ac;
+
     # Copy an action's constraints to the next action's reset_constraints if
-    #   1) it has a RESET repeat configuration
-    #   2) it doesn't already have its own reset_constraints
+    #   1) the next action has a RESET repeat configuration
+    #   2) the next action doesn't already have its own reset_constraints
     # Also, disable all but the first action, unless otherwise specified
 
     my @actions = @{$config->{actions}};
-    my $prev_reset = $actions[$#actions]->{constraints};
-    my $first = 1;
-    map {
-        if ($_->{repeat} eq 'RESET' and ! exists $_->{reset_constraints}) {
-            $_->{reset_constraints} = $prev_reset;
-        }
-        if (!$first) {
-            $_->{initially_disabled} = 1 unless exists $_->{initially_disabled};
-        }
-        $first = 0;
-        $prev_reset = $_->{constraints};
-    } @{$config->{actions}};
+    if ($#actions > -1) {
+        my $prev_reset = $actions[$#actions]->{constraints};
+        my $first = 1;
+        map {
+            $_->{repeat} = 'DEFAULT' unless exists $_->{repeat};
+            if ($_->{repeat} eq 'RESET' and ! exists $_->{reset_constraints}) {
+                $_->{reset_constraints} = $prev_reset;
+                if (!$first) {
+                    $_->{initially_disabled} = 1 unless exists $_->{initially_disabled};
+                }
+            }
+            $first = 0;
+            $prev_reset = $_->{constraints};
+        } @{$config->{actions}};
+    }
 }
 
 sub load_config {
@@ -385,20 +529,21 @@ sub load_config {
         transformations => [],
         linkages => [],
         actions => [],
+        action_commands => {}
     );
 
     if ($downloaded_config) {
         my $tmp = YAML::Syck::Load($downloaded_config);
         map {
             push @{$config_values{$_}}, $tmp->{$_};
-        } qw/input_streams output_streams actions transformations linkages/;
+        } qw/input_streams output_streams actions transformations linkages action_commands/;
     }
 
     for my $file (@ARGV) {
         if (-d $file) {
             opendir(my $dh, $file) || die "Can't opendir $file: $!";
             map {
-                load_config_file \%config_values, $_;
+                load_config_file \%config_values, "$file/$_";
             } grep { (! /^\./) && -f "$file/$_" } readdir($dh);
             closedir $dh;
         }
@@ -409,6 +554,12 @@ sub load_config {
     return \%config_values;
 }
 
+sub reconstruct_viewsync {
+    push @_, ''
+        while ($#_ < 9);
+    return join(',', @_);
+}
+
 ## MAIN PROGRAM BEGINS HERE
 
 GetOptions(
@@ -416,8 +567,10 @@ GetOptions(
     "--vo+" => \$verbose_out,
     "--vl+" => \$verbose_link,
     "--va+" => \$verbose_act,
+    "--sva=s" => \@verbose_actions,
     "--verbose+" => \$verbose,
     "--kml:s" => \$kml_server,
+    "--fifo:s" => \$fifo,
     "--help" => \$help
 );
 
@@ -455,6 +608,19 @@ my $config = load_config($downloaded_config);
 my $select = IO::Select->new;
 
 my %input_streams = %{ build_input_streams($config, $select) };
+if (exists $config->{control} || defined $fifo) {
+    use IO::Socket::UNIX;
+
+    $verbose && print "Opening FIFO $fifo\n";
+    $fifo ||= $config->{control};
+    my $r = IO::Socket::UNIX->new(
+        Type => SOCK_DGRAM,
+        LocalAddr => $fifo,
+        Listen => SOMAXCONN
+    ) or die "Couldn't set up control FIFO ($fifo): $@";
+    $$r->{vsr_control} = 1;
+    $select->add($r);
+}
 my %output_streams = %{ build_output_streams $config };
 my %linkages = %{ build_linkages($config, \%output_streams) };
 my %actions = %{ build_actions $config };
@@ -477,39 +643,50 @@ my $do_counter = 0;
 while (1) {
     my @handles = $select->can_read(0.5);
     if ($#handles >= 0) {
-        for my $a (@handles) {
+        HANDLE: for my $a (@handles) {
             my $msg;
             $a->recv($msg, 1024);
-            print "Input stream \"$$a->{viewsyncrelay_name}\" received $msg\n" if $verbose_in > 1;
-            my $input_stream_name = $$a->{viewsyncrelay_name};
-
-            my @viewsync = split(',', $msg);
-            my ($peer_port, $peer_addr) = sockaddr_in($a->peername);
-
-            if (!defined $input_streams{$input_stream_name}{PEER_ADDR}) {
-                @{ $input_streams{$input_stream_name} }{qw/PEER_ADDR PEER_PORT COUNTER/} = ( $peer_addr, $peer_port, $viewsync[0] );
-            }
-            elsif ($input_streams{$input_stream_name}{DO_COUNTER}) {
-                $viewsync[0] = ++$input_streams{$input_stream_name}{COUNTER};
-                $msg = join ',', @viewsync;
+            my ($input_stream_name, $control_fifo) = (undef, 0);
+            if (exists $$a->{vsr_control}) {
+                # This comes from the control FIFO
+                print "Control FIFO received $msg\n" if $verbose_in > 1;
+                $msg = 'CONTROL:\t' . $msg;
+                $control_fifo = 1;
             }
             else {
-                if ($viewsync[0] > $input_streams{$input_stream_name}{COUNTER}) { 
-                    $input_streams{$input_stream_name}{COUNTER} = $viewsync[0];
-                }
-                else {
-                    # Do we take control?
-                    print "View Counter has not increased. internal counter=$input_streams{$input_stream_name}{COUNTER}, recvd view_counter=$viewsync[0]\n" if $verbose_in > 0;
+                print "Input stream \"$$a->{viewsyncrelay_name}\" received $msg\n" if $verbose_in > 1;
+                $input_stream_name = $$a->{viewsyncrelay_name};
 
-                    # Has viewmaster host changed?
-                    if ($peer_addr eq $input_streams{$input_stream_name}{PEER_ADDR}) {
-                        print "View Master IP address is same as old, taking control of View Counter.\n" if $verbose_in > 0;
-                        $input_streams{$input_stream_name}{DO_COUNTER} = 1;
+                if ($msg !~ /^CONTROL:/) {
+                    my @viewsync = split(',', $msg);
+                    my ($peer_port, $peer_addr) = sockaddr_in($a->peername);
+
+                    if (!defined $input_streams{$input_stream_name}{PEER_ADDR}) {
+                        @{ $input_streams{$input_stream_name} }{qw/PEER_ADDR PEER_PORT COUNTER/} = ( $peer_addr, $peer_port, $viewsync[0] );
+                    }
+                    elsif ($input_streams{$input_stream_name}{DO_COUNTER}) {
                         $viewsync[0] = ++$input_streams{$input_stream_name}{COUNTER};
-                        $msg = join ',', @viewsync;
-                    } else {
-                        print "View Master IP address has changed from ". inet_ntoa($input_streams{$input_stream_name}{PEER_ADDR}) ." to ". inet_ntoa($peer_addr) . ". Exiting.\n";
-                        exit(0);
+                        $msg = reconstruct_viewsync(@viewsync);
+                    }
+                    else {
+                        if ($viewsync[0] > $input_streams{$input_stream_name}{COUNTER}) { 
+                            $input_streams{$input_stream_name}{COUNTER} = $viewsync[0];
+                        }
+                        else {
+                            # Do we take control?
+                            print "View Counter has not increased. internal counter=$input_streams{$input_stream_name}{COUNTER}, recvd view_counter=$viewsync[0]\n" if $verbose_in > 0;
+
+                            # Has viewmaster host changed?
+                            if ($peer_addr eq $input_streams{$input_stream_name}{PEER_ADDR}) {
+                                print "View Master IP address is same as old, taking control of View Counter.\n" if $verbose_in > 0;
+                                $input_streams{$input_stream_name}{DO_COUNTER} = 1;
+                                $viewsync[0] = ++$input_streams{$input_stream_name}{COUNTER};
+                                $msg = reconstruct_viewsync(@viewsync);
+                            } else {
+                                print "View Master IP address has changed from ". inet_ntoa($input_streams{$input_stream_name}{PEER_ADDR}) ." to ". inet_ntoa($peer_addr) . ". Exiting.\n";
+                                exit(0);
+                            }
+                        }
                     }
                 }
             }
@@ -522,6 +699,7 @@ while (1) {
                     my $key = $_;
                     print { $hash->{$key}{STDIN} } "$msg\n"
                         if ($hash->{$key}{INPUT} eq 'ALL' || 
+                            $control_fifo ||
                             $hash->{$key}{INPUT} eq $input_stream_name);
                 } ( keys %$hash );
             } ( \%linkages, \%actions );

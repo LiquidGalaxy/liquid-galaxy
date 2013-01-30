@@ -1,0 +1,111 @@
+# viewsyncrelay config file
+---
+# Each input has a name, a port, and a bind address. It accepts UDP traffic on that port
+# XXX Make this support receiving multicast
+input_streams:
+    -
+        name: input
+        port: 23456
+        addr: 0.0.0.0
+
+# Each output has a name, an address, and a port, and sends UDP traffic on that
+# port. The broadcast element can be true, false, or missing; if it's missing,
+# it will be the equivalent of "false". This tells the script whether this is a
+# broadcast address or not.
+# XXX Make this support sending multicast, broadcast
+output_streams:
+    -
+        name: output1
+        host: 127.0.0.1
+        port: 1235
+        broadcast: false
+    -
+        name: output2
+        host: 10.43.0.100
+        port: 1235
+
+# Each transformation has a name and a rule
+# XXX come up with a definition for rules
+transformations:
+    -
+        name: transform1
+        rule: something
+
+# Linkages connect inputs and outputs, optionally including transformations.
+# Inputs and outputs are both names referring to input streams, and can be a
+# scalar or an array. Transform can also contain a scalar or array, indicating
+# transformations applied in the order given
+# XXX Actually implement the "scalar or array" stuff for input, output, and transform
+linkages:
+    -
+        name: normal input
+        input: input
+        output: output1
+    -
+        name: transformed
+        input: input
+        output: output2
+        transform: transform1
+
+# Control FIFO receives commands from other processes. Anticipated commands so
+#   far are "playtour=tour name" and "exittour"
+control: /path/to/some/fifo
+
+# Actions tell viewsyncrelay to do something when a packet matches some conditions
+# action represents the shell command to run. This can have substitutions; see
+#   action_commands, below
+# "repeat" values can be:
+#   DEFAULT:
+#       Run the first time a packet matches conditions. Don't run again until
+#       after we get a packet that *doesn't* match the constraints
+#   ALL: Run each time a packet matches thesse constraints
+#   ONCE: Run once (duh!)
+#   RESET: Allows a reset_constraints section exactly like the constraints
+#       section. Runs the action once, but resets when the reset_constraints
+#       are matched, allowing the action to run again. These actions also allow
+#       an "initially_disabled" field, which, when set, means the action needs
+#       to be reset *before* it can run at all. Note that the presence of the
+#       initially_disabled key is sufficient to make it disabled; the value of
+#       the key doesn't matter.
+# "constraints" and "reset_constraints" are defined as a range of values on
+#   latitude, longitude, heading, altitude, tilt, roll, start_time, and
+#   end_time, or a single value in the planet field. Ranges use either square
+#   brackets or parenthesis, containing two comma-separated numbers. Square
+#   brackets indicate inclusive ranges; parentheses exclusive ones. Ranges can
+#   also be specified with two numbers separated by miscellaneous whitespace
+#   and "+-" or "+/-". "5 +/- 2" indicates values between 5-2 and 5+2,
+#   inclusive, and is therefore equivalent to "[3, 7]"
+# id is used to identify the action in --sva command line options
+# verbose is a number, and if it's present, it causes this action to ignore
+#   --va options. --sva options will still modify this action
+# fail_count controls how many constraint failures will be shown in verbose
+#   output. 10 means one of every 10 failures will be shown. A value of 1 will
+#   show all failures. The default is 15.
+# tour_name groups this action with those of a particular tour. Actions grouped
+#   into a given tour will only be enabled when the control pipe receives a
+#   command to say that tour has started.
+actions:
+    -
+        name: play triosonata
+        tour_name: some tour
+        id: 12
+        verbose: 1
+        fail_count: 10
+        input: ALL
+        action: ${PLAYMEDIA} p1.flv
+        exit_action: mp-control 
+        repeat: DEFAULT
+#        reset_constraints:
+#           Just like constraints section; only used for actions with repeat =
+#           RESET
+#        initially_disabled: 1
+        constraints:
+            latitude: '(10.0, 20.0]'
+            longitude: '[15 +- 5]'
+
+# This maps keywords to substitutions in action commands. The key in this hash
+# is the keyword, and the value is the string to be substituted. In the actions
+# section of the configuration, use ${KEYWORD} in the action command to get
+# this value put in its place.
+action_commands:
+    PLAYMEDIA: mplayer -really-quiet -fs -zoom
