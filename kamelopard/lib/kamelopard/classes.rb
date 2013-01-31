@@ -858,11 +858,12 @@ module Kamelopard
     # scripts can (for now) manage only one Document at a time.
     class Document < Container
         include Singleton
-        attr_accessor :flyto_mode, :folders, :tours, :uses_xal
+        attr_accessor :flyto_mode, :folders, :tours, :uses_xal, :vsr_actions
 
         def initialize(options = {})
             @tours = []
             @folders = []
+            @vsr_actions = []
             super
         end
 
@@ -2219,6 +2220,21 @@ module Kamelopard
             end
             elem << e unless elem.nil?
             e
+        end
+    end
+
+    # Viewsyncrelay action
+    class VSRAction < Object
+        attr_accessor :name, :tour_name, :verbose, :fail_count, :input, :action, :exit_action, :repeat, :constraints, :reset_constraints, :initially_disabled
+
+        def initialize(name, options = {})
+            @name = name
+            @constraints = {}
+            @repeat = 'DEFAULT'
+            @input = 'ALL'
+            super(options)
+
+            Document.instance.vsr_actions << self
         end
     end
 end

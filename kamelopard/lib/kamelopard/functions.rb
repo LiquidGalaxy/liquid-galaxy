@@ -183,8 +183,17 @@ def set_prefix_to(a)
     Kamelopard.id_prefix = a
 end
 
-def write_kml_to(file = 'doc.kml')
+# writes KML output (and if applicable, viewsyncrelay configuration) to files.
+# Include a file name for the actions_file argument to get viewsyncrelay
+# configuration output as well. Note that this configuration includes only the
+# actions section; users are responsible for creating appropriate linkages,
+# inputs and outputs, and transformations, on their own, presumably in a
+# separate file.
+def write_kml_to(file = 'doc.kml', actions_file = 'actions.yml')
     File.open(file, 'w') do |f| f.write get_kml.to_s end
+    if (get_document.vsr_actions.size > 0) then
+        File.open(actions_file, 'w') do |f| f.write get_document.get_actions end
+    end
     #File.open(file, 'w') do |f| f.write get_kml.to_s.gsub(/balloonVis/, 'gx:balloonVis') end
 end
 
@@ -437,4 +446,54 @@ end
 
 def cdata(text)
     XML::Node.new_cdata text.to_s
+end
+
+# Returns an array of two values, equal to l +/- p%, defining a "band" around the central value l
+# NB! p is interpreted as a percentage, not a fraction. IOW the result is divided by 100.0.
+def band(l, p)
+    f = l * p / 100.0
+    [ l - f, l + f ]
+end
+
+
+# Internal to circ_bounds; this assumes v is not an array. circ_bounds handles
+# array inputs gracefully when given
+def bounds_check(v, max, min)
+    w = max - min
+    if v > max then
+        while (v > max) do
+            v = v - w
+        end
+    elsif v < min then
+        while (v < min) do
+            v = v + w
+        end
+    end
+    v
+end
+
+# Ensures v is within the range [min, max]. Modifies v to be within that range,
+# assuming the number line is circular (as with latitude or longitude)
+def circ_bounds(v, max, min)
+    if (v.kind_of? Array) then
+        a = v.collect { |f| bounds_check(f, max, min) }
+        v = a
+    else
+        v = bounds_check(v, max, min)
+    end
+    v
+end
+
+# These functions ensure the given value is within appropriate bounds for a
+# latitude or longitude. Modifies it as necessary if it's not.
+def lat_check(l)
+    circ_bounds(l * 1.0, 90.0, -90.0)
+end
+
+def long_check(l)
+    circ_bounds(l * 1.0, 180.0, -180.0)
+end
+
+# Adds a VSRAction object to the document
+def do_action(cmd, options = {})
 end

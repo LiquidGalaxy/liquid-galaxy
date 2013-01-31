@@ -1984,3 +1984,66 @@ describe 'placemark reading' do
         i.should == 3
     end 
 end
+
+describe 'The band function' do
+    it 'correctly calculates bands' do
+        band(100, 20).should == [80, 120]
+        band(100, 20).should_not == [70, 120]
+        band(100, 20).should_not == [80, 140]
+    end
+end
+
+describe 'The latitude and longitude range checker function' do
+    it 'handles longitude correctly' do
+        # Within range
+        long_check(35).should == 35
+        # At edge of range
+        long_check(180).should == 180
+        # Below range
+        long_check(-190).should == 170
+        # Above range
+        long_check(200).should == -160
+        # Far below range
+        long_check(-980).should == 100
+    end
+
+    it 'handles latitude correctly' do
+        # Within range
+        lat_check(15).should == 15
+        # At edge of range
+        lat_check(90).should == 90
+        # Below range
+        lat_check(-95).should == 85
+        # Above range
+        lat_check(100).should == -80
+        # Far below range
+        lat_check(-980).should == -80
+    end
+
+    it 'handles arrays correctly' do
+        lat_check([180, 20, -10]).should == [0, 20, -10]
+    end
+end
+
+describe 'Document\'s vsr_actions' do
+    before(:each) do
+        @lat = Kamelopard.convert_coord('10d10m10.1s N')
+        @lon = Kamelopard.convert_coord('10d10m10.1s E')
+        @alt = 1000
+        @head = 150
+    end
+
+    it 'accepts new actions' do
+        vals = %w{a b c d e f}
+        vals.each do |a|
+            Kamelopard::VSRAction.new(a, :constraints => {
+                :latitude => lat_check(band(@lat, 0.1)),
+                :longitude => long_check(band(@lon, 0.2)),
+                :heading => band(@head, 1),
+                :altitude => band(@alt, 2)
+            })
+        end
+
+        Kamelopard::Document.instance.vsr_actions.size.should == vals.size
+    end
+end
