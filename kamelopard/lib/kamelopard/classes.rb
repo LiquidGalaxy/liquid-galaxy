@@ -128,6 +128,11 @@ module Kamelopard
         attr_accessor :kml_id
         attr_reader :comment
 
+        # This constructor looks for values in the options hash that match
+        # class attributes, and sets those attributes to the values in the
+        # hash. So a class with an attribute called :when can be set via the
+        # constructor by including ":when => some-value" in the options
+        # argument to the constructor.
         def initialize(options = {})
             @kml_id = "#{Kamelopard.id_prefix}#{self.class.name.gsub('Kamelopard::', '')}_#{ Kamelopard.get_next_id }"
 
@@ -141,15 +146,15 @@ module Kamelopard
             end
         end
 
-        def comment=(a)
-            if a.respond_to? :gsub then
-                @comment = a.gsub(/</, '&lt;')
-            else
-                @comment = a
-            end
+        # Adds an XML comment to this node. Handles HTML escaping the comment
+        # if needed
+        def comment=(cmnt)
+            require 'cgi'
+            @comment = CGI.escapeHTML(cmnt)
         end
 
-        # Returns KML string for this object. Objects should override this method
+        # Returns XML::Node containing this object's KML. Objects should
+        # override this method
         def to_kml(elem)
             elem.attributes['id'] = @kml_id.to_s
             if not @comment.nil? and @comment != '' then
@@ -261,9 +266,9 @@ module Kamelopard
         # Note that this will not accept a one-dimensional array of numbers to add
         # a single point. Instead, create a Point with those numbers, and pass
         # it to add_element
-        #-
+        #--
         # XXX The above stipulation is a weakness that needs fixing
-        #+
+        #++
         def add_element(a)
             if a.kind_of? Enumerable then
                 # We've got some sort of array or list. It could be a list of
@@ -518,7 +523,9 @@ module Kamelopard
     class TimePrimitive < Object
     end
 
-    # Corresponds to KML's TimeStamp object. The @when attribute must be in a format KML understands.
+    # Corresponds to KML's TimeStamp object. The @when attribute must be in a
+    # format KML understands. Refer to the KML documentation to see which
+    # formats are available.
     class TimeStamp < TimePrimitive
         attr_accessor :when
         def initialize(ts_when = nil, options = {})
@@ -606,7 +613,7 @@ module Kamelopard
         end
     end
 
-    # ExtendedData SchemaData objects
+    # Corresponds to KML's ExtendedData SchemaData objects
     class SchemaData
         attr_accessor :schemaUrl, :simpleData
         def initialize(schemaUrl, simpleData = {})
@@ -633,9 +640,10 @@ module Kamelopard
     end
 
     # Abstract class corresponding to KML's Feature object.
+    #--
     # XXX Make this support alternate namespaces
+    #++
     class Feature < Object
-        # Abstract class
         attr_accessor :visibility, :open, :atom_author, :atom_link, :name,
             :phoneNumber, :abstractView, :styles, :timeprimitive, :styleUrl,
             :styleSelector, :region, :metadata
@@ -855,7 +863,10 @@ module Kamelopard
     end
 
     # Represents KML's Document class. This is a Singleton object; Kamelopard
-    # scripts can (for now) manage only one Document at a time.
+    # scripts can manage only one Document at a time.
+    #--
+    # XXX Fix this limitation, so Kamelopard can handle multiple documents at onces
+    #++
     class Document < Container
         include Singleton
         attr_accessor :flyto_mode, :folders, :tours, :uses_xal, :vsr_actions
@@ -2125,6 +2136,7 @@ module Kamelopard
         end
     end
 
+    # Abstract class corresponding to KML's MultiGeometry object
     class MultiGeometry < Geometry
         attr_accessor :geometries
 
@@ -2148,6 +2160,7 @@ module Kamelopard
         end
     end
 
+    # Analogue of KML's NetworkLink class
     class NetworkLink < Feature
         attr_accessor :refreshVisibility, :flyToView, :link
 
@@ -2197,6 +2210,7 @@ module Kamelopard
         end
     end
 
+    # Corresponds to Google Earth's gx:Track extension to KML
     class Track < Geometry
         attr_accessor :altitudeMode, :when, :coord, :angles, :model
         def initialize(options = {})
