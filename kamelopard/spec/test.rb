@@ -232,6 +232,12 @@ shared_examples_for 'Kamelopard::Object' do
         k = @o.to_kml
         k.to_s.should =~ /Look for this string/
     end
+
+    it 'should HTML escape comments' do
+        @o.comment = 'Look for << this string'
+        k = @o.to_kml
+        k.to_s.should =~ /Look for &lt;&lt; this string/
+    end
 end
 
 shared_examples_for 'altitudeMode' do
