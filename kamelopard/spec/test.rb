@@ -3,6 +3,7 @@
 $LOAD_PATH << './lib'
 require 'kamelopard'
 require "xml"
+require 'tempfile'
 
 # XXX test everything's to_kml(elem), instead of just to_kml(nil)
 
@@ -583,7 +584,7 @@ shared_examples_for 'Kamelopard::Feature' do
     end
 
     it 'correctly KML\'s the Kamelopard::TimePrimitive' do
-        @o.timeprimitive = Kamelopard::TimeStamp.new('asdflkj')
+        @o.timeprimitive = Kamelopard::TimeStamp.new('dflkj')
         check_time_primitive(
             lambda { |t| @o.timeprimitive = t },
             lambda { @o.to_kml },
@@ -965,11 +966,46 @@ end
 describe 'Kamelopard::Document' do
     before(:each) do
         @o = Kamelopard::Document.instance
-        @fields = []
+        
+        # Subsequent runs seem to keep the vsr_actions from previous runs, so clear 'em
+        @o.vsr_actions = []
+
+        @lat = Kamelopard.convert_coord('10d10m10.1s N')
+        @lon = Kamelopard.convert_coord('10d10m10.1s E')
+        @alt = 1000
+        @head = 150
+
+        @vsractions = %w{a b c d e f}
+        @vsractions.each do |a|
+            Kamelopard::VSRAction.new(a, :constraints => {
+                :latitude => to_constraint(band(@lat, 0.1).collect{ |l| lat_check(l) }),
+                :longitude => to_constraint(band(@lon, 0.1).collect{ |l| long_check(l) }),
+                :heading => to_constraint(band(@head, 1)),
+                :altitude => to_constraint(band(@alt, 2))
+            })
+        end
     end
 
     it_should_behave_like 'Kamelopard::Container'
     it_should_behave_like 'Kamelopard::Feature'
+
+    it 'accepts new viewsyncrelay actions' do
+        Kamelopard::Document.instance.vsr_actions.size.should == @vsractions.size
+    end
+
+    it 'can write its viewsyncrelay actions to a valid YAML string' do
+        Kamelopard::Document.instance.vsr_actions.size.should == @vsractions.size
+        act = YAML.load(get_actions)
+        act['actions'].size.should == @vsractions.size
+    end
+
+    it 'can write its viewsyncrelay actions to a file' do
+        file = Tempfile.new('kamelopard_test')
+        file.close
+        write_actions_to file.path
+        YAML.parse_file(file.path)
+        file.unlink
+    end
 
     it 'should return a tour' do
         @o.should respond_to(:tour)
@@ -2025,31 +2061,40 @@ describe 'The latitude and longitude range checker function' do
         # Far below range
         lat_check(-980).should == -80
     end
-
-    it 'handles arrays correctly' do
-        lat_check([180, 20, -10]).should == [0, 20, -10]
-    end
 end
 
-describe 'Document\'s vsr_actions' do
+describe 'VSRActions' do
     before(:each) do
-        @lat = Kamelopard.convert_coord('10d10m10.1s N')
-        @lon = Kamelopard.convert_coord('10d10m10.1s E')
-        @alt = 1000
-        @head = 150
+        @action_name = 'action name'
+        @action_cmd = 'ls -1'
+        @latitude = 45
+        @longitude = 34
+        @heading = 123
+        @altitude = 453
+
+        @action = Kamelopard::VSRAction.new(@action_name, :constraints => {
+                'latitude' => to_constraint(band(@latitude, 0.1).collect{ |v| lat_check(v) }),
+                'longitude' => to_constraint(band(@longitude, 0.1).collect{ |v| long_check(v) }),
+                'heading' => to_constraint(band(@heading, 1)),
+                'altitude' => to_constraint(band(@altitude, 2))
+            }, :action => @action_cmd)
     end
 
-    it 'accepts new actions' do
-        vals = %w{a b c d e f}
-        vals.each do |a|
-            Kamelopard::VSRAction.new(a, :constraints => {
-                :latitude => lat_check(band(@lat, 0.1)),
-                :longitude => long_check(band(@lon, 0.2)),
-                :heading => band(@head, 1),
-                :altitude => band(@alt, 2)
-            })
+    describe 'make themselves into hashes. A hash' do
+        before(:each) do
+            @hash = @action.to_hash
         end
 
-        Kamelopard::Document.instance.vsr_actions.size.should == vals.size
+        it 'doesn\'t barf when created' do
+            @hash.should_not be_nil
+        end
+
+        it 'contains proper constraints' do
+            @hash['constraints'].should_not be_nil
+            @hash['constraints']['latitude'].should_not be_nil
+            %w{latitude longitude heading altitude}.each do |i|
+                @hash['constraints'][i].should =~ /\[.*, .*\]/
+            end
+        end
     end
 end

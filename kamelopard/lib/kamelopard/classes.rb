@@ -878,6 +878,17 @@ module Kamelopard
             super
         end
 
+        # Returns viewsyncrelay actions as a hash
+        def get_actions
+            {
+                'actions' => @vsr_actions.collect { |a| a.to_hash }
+            }
+        end
+
+        def get_actions_yaml
+            get_actions.to_yaml
+        end
+
         # Returns the current Tour object
         def tour
             Tour.new if @tours.length == 0
@@ -2239,7 +2250,11 @@ module Kamelopard
 
     # Viewsyncrelay action
     class VSRAction < Object
-        attr_accessor :name, :tour_name, :verbose, :fail_count, :input, :action, :exit_action, :repeat, :constraints, :reset_constraints, :initially_disabled
+        attr_accessor :name, :tour_name, :verbose, :fail_count, :input,
+            :action, :exit_action, :repeat, :constraints, :reset_constraints,
+            :initially_disabled
+        # XXX Consider adding some constraints, so that things like @name and @action don't go nil
+        # XXX Also ensure constraints and reset_constraints are hashes, containing reasonable values
 
         def initialize(name, options = {})
             @name = name
@@ -2249,6 +2264,23 @@ module Kamelopard
             super(options)
 
             Document.instance.vsr_actions << self
+        end
+
+        def to_hash
+            a = {}
+            a['name']               = @name               unless @name.nil?
+            a['id']                 = @id                 unless @id.nil?
+            a['input']              = @input              unless @input.nil?
+            a['tour_name']          = @tour_name          unless @tour_name.nil?
+            a['verbose']            = @verbose            unless @verbose.nil?
+            a['fail_count']         = @fail_count         unless @fail_count.nil?
+            a['action']             = @action             unless @action.nil?
+            a['exit_action']        = @exit_action        unless @exit_action.nil?
+            a['repeat']             = @repeat             unless @repeat.nil?
+            a['initially_disabled'] = @initially_disabled unless @initially_disabled.nil?
+            a['constraints']        = @constraints        unless @constraints.nil?
+            a['reset_constraints']  = @reset_constraints  unless @reset_constraints.nil?
+            a
         end
     end
 end

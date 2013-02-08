@@ -1,7 +1,5 @@
 # vim:ts=4:sw=4:et:smartindent:nowrap
 
-module Kamelopard
-
   # Returns the current Document object
   def get_document()
       Kamelopard::Document.instance
@@ -539,9 +537,9 @@ module Kamelopard
   end
   
   
-  # Internal to circ_bounds; this assumes v is not an array. circ_bounds handles
-  # array inputs gracefully when given
-  def bounds_check(v, max, min)
+  # Ensures v is within the range [min, max]. Modifies v to be within that range,
+  # assuming the number line is circular (as with latitude or longitude)
+  def circ_bounds(v, max, min)
       w = max - min
       if v > max then
           while (v > max) do
@@ -551,18 +549,6 @@ module Kamelopard
           while (v < min) do
               v = v + w
           end
-      end
-      v
-  end
-  
-  # Ensures v is within the range [min, max]. Modifies v to be within that range,
-  # assuming the number line is circular (as with latitude or longitude)
-  def circ_bounds(v, max, min)
-      if (v.kind_of? Array) then
-          a = v.collect { |f| bounds_check(f, max, min) }
-          v = a
-      else
-          v = bounds_check(v, max, min)
       end
       v
   end
@@ -577,9 +563,25 @@ module Kamelopard
   def long_check(l)
       circ_bounds(l * 1.0, 180.0, -180.0)
   end
+
+  # Turns an array of two values (min, max) into a string suitable for use as a
+  # viewsyncrelay constraint
+  def to_constraint(arr)
+    "[#{arr[0]}, #{arr[1]}]"
+  end
   
-  # Adds a VSRAction object to the document, for viewsyncrelay configuration
+  # Adds a VSRAction object (a viewsyncrelay action) to the document, for
+  # viewsyncrelay configuration
   def do_action(cmd, options = {})
   end
 
-end
+  # Returns the Document's VSRActions as a YAML string, suitable for writing to
+  # a viewsyncrelay configuration file
+  def get_actions
+    get_document.get_actions_yaml
+  end
+
+  # Writes actions to a viewsyncrelay config file
+  def write_actions_to(filename = 'actions.yml')
+    File.open(filename, 'w') do |f| f.write get_actions end
+  end
