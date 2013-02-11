@@ -461,7 +461,7 @@ shared_examples_for 'Kamelopard::Feature' do
 
     it 'handles extended address stuff correctly' do
         @o.addressDetails = 'These are some extended details'
-        k = Kamelopard::Document.instance.get_kml_document
+        k = Kamelopard::DocumentHolder.instance.current_document.get_kml_document
         k.root['xmlns:xal'].should == 'urn:oasis:names:tc:ciq:xsdschema:xAL:2.0'
         get_obj_child_content(@o, 'xal:AddressDetails').should == @o.addressDetails
     end
@@ -490,7 +490,7 @@ shared_examples_for 'Kamelopard::Feature' do
         fields = %w( name address phoneNumber description styleUrl )
         fields.each do |f|
             p = Kamelopard::Feature.new
-            Kamelopard::Document.instance.folder << p
+            Kamelopard::DocumentHolder.instance.current_document.folder << p
             p.instance_variable_set("@#{f}".to_sym, marker)
             e = get_obj_child p, "#{f}"
             e.should_not be_nil
@@ -965,7 +965,7 @@ end
 
 describe 'Kamelopard::Document' do
     before(:each) do
-        @o = Kamelopard::Document.instance
+        @o = Kamelopard::DocumentHolder.instance.current_document
         
         # Subsequent runs seem to keep the vsr_actions from previous runs, so clear 'em
         @o.vsr_actions = []
@@ -990,11 +990,11 @@ describe 'Kamelopard::Document' do
     it_should_behave_like 'Kamelopard::Feature'
 
     it 'accepts new viewsyncrelay actions' do
-        Kamelopard::Document.instance.vsr_actions.size.should == @vsractions.size
+        Kamelopard::DocumentHolder.instance.current_document.vsr_actions.size.should == @vsractions.size
     end
 
     it 'can write its viewsyncrelay actions to a valid YAML string' do
-        Kamelopard::Document.instance.vsr_actions.size.should == @vsractions.size
+        Kamelopard::DocumentHolder.instance.current_document.vsr_actions.size.should == @vsractions.size
         act = YAML.load(get_actions)
         act['actions'].size.should == @vsractions.size
     end
@@ -2096,5 +2096,22 @@ describe 'VSRActions' do
                 @hash['constraints'][i].should =~ /\[.*, .*\]/
             end
         end
+    end
+end
+
+describe 'DocumentHolder' do
+    it 'supports multiple documents' do
+        Kamelopard::Document.new
+        name_document 'First'
+        i = Kamelopard::DocumentHolder.instance.document_index
+        Kamelopard::Document.new
+        name_document 'Second'
+        j = Kamelopard::DocumentHolder.instance.document_index
+
+        get_doc_holder.document_index = i
+        get_document.name.should == 'First'
+        get_doc_holder.document_index = j
+        get_document.name.should == 'Second'
+
     end
 end

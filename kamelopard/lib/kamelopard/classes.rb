@@ -17,7 +17,7 @@ module Kamelopard
     @@id_prefix = ''
 
     def Kamelopard.get_document
-        Document.instance
+        DocumentHolder.instance.current_document
     end
 
     def Kamelopard.get_next_id   # :nodoc
@@ -713,9 +713,9 @@ module Kamelopard
 
         def addressDetails=(a)
             if a.nil? or a == '' then
-                Document.instance.uses_xal = false
+                DocumentHolder.instance.current_document.uses_xal = false
             else
-                Document.instance.uses_xal = true
+                DocumentHolder.instance.current_document.uses_xal = true
             end
             @addressDetails = a
         end
@@ -812,7 +812,7 @@ module Kamelopard
             @styles = []
             @folders = []
             super
-            Document.instance.folders << self
+            DocumentHolder.instance.current_document.folders << self
         end
 
         def styles=(a)
@@ -862,19 +862,15 @@ module Kamelopard
         k
     end
 
-    # Represents KML's Document class. This is a Singleton object; Kamelopard
-    # scripts can manage only one Document at a time.
-    #--
-    # XXX Fix this limitation, so Kamelopard can handle multiple documents at onces
-    #++
+    # Represents KML's Document class.
     class Document < Container
-        include Singleton
         attr_accessor :flyto_mode, :folders, :tours, :uses_xal, :vsr_actions
 
         def initialize(options = {})
             @tours = []
             @folders = []
             @vsr_actions = []
+            DocumentHolder.instance << self
             super
         end
 
@@ -985,6 +981,61 @@ module Kamelopard
             @tours.map do |a| a.to_kml(d) end
 
             d
+        end
+    end
+
+    # Holds a set of Document objects, so we can work with multiple KML files
+    # at once and keep track of them. It's important for Kamelopard's usability
+    # to have the concept of a "current" document, so we don't have to specify
+    # the document we're talking about each time we do something interesting.
+    # This class supports that idea.
+    class DocumentHolder
+        include Singleton
+        attr_accessor :document_index, :initialized
+        attr_reader :documents
+
+        def initialize(doc = nil)
+            @documents = []
+            @document_index = -1
+            if ! doc.nil?
+                self.documents << doc
+            end
+        end
+
+        def document_index
+            return @document_index
+        end
+
+        def document_index=(a)
+            @document_index = a
+        end
+
+        def current_document
+            # Automatically create a Document if we don't already have one
+            if @documents.size <= 0
+                Document.new
+                @document_index = 0
+            end
+            return @documents[@document_index]
+        end
+
+        def <<(a)
+            raise "Cannot add a non-Document object to a DocumentHolder" unless a.kind_of? Document
+            @documents << a
+            @document_index += 1
+        end
+
+        def [](a)
+            return @documents[a]
+        end
+
+        def []=(i, v)
+            raise "Cannot include a non-Document object in a DocumentHolder" unless v.kind_of? Document
+            @documents[i] = v
+        end
+
+        def size
+            return @documents.size
         end
     end
 
@@ -1306,7 +1357,7 @@ module Kamelopard
         def initialize(options = {})
             super
             @attached = false
-            Document.instance.styles << self
+            DocumentHolder.instance.current_document.styles << self
         end
 
         def attached?
@@ -1444,7 +1495,7 @@ module Kamelopard
         attr_accessor :standalone
 
         def initialize(options = {})
-            Document.instance.tour << self unless options[:standalone]
+            DocumentHolder.instance.current_document.tour << self unless options[:standalone]
             super
         end
     end
@@ -1623,7 +1674,7 @@ module Kamelopard
             @name = name
             @description = description
             @playlist = []
-            Document.instance.tours << self
+            DocumentHolder.instance.current_document.tours << self
             Wait.new(0.1, :comment => "This wait is automatic, and helps prevent animation glitches") unless no_wait
         end
 
@@ -1656,7 +1707,7 @@ module Kamelopard
 
         def initialize(options = {})
             super nil, options
-            Document.instance.folder << self
+            DocumentHolder.instance.current_document.folder << self
         end
 
         def to_kml(elem)
@@ -2254,7 +2305,9 @@ module Kamelopard
             :action, :exit_action, :repeat, :constraints, :reset_constraints,
             :initially_disabled
         # XXX Consider adding some constraints, so that things like @name and @action don't go nil
-        # XXX Also ensure constraints and reset_constraints are hashes, containing reasonable values
+        # XXX Also ensure constraints and reset_constraints are hashes,
+        #   containing reasonable values, and reasonable keys ('latitude' vs.
+        #   :latitude, for instance)
 
         def initialize(name, options = {})
             @name = name
@@ -2263,7 +2316,7 @@ module Kamelopard
             @input = 'ALL'
             super(options)
 
-            Document.instance.vsr_actions << self
+            DocumentHolder.instance.current_document.vsr_actions << self
         end
 
         def to_hash

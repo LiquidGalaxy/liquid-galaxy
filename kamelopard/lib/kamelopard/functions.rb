@@ -2,12 +2,12 @@
 
   # Returns the current Document object
   def get_document()
-      Kamelopard::Document.instance
+      Kamelopard::DocumentHolder.instance.current_document
   end
   
   # Changes the default FlyTo mode. Possible values are :smooth and :bounce
   def set_flyto_mode_to(mode)
-      Kamelopard::Document.instance.flyto_mode = mode
+      Kamelopard::DocumentHolder.instance.current_document.flyto_mode = mode
   end
   
   # Shows or hides the popup balloon for Placemark and ScreenOverlay objects.
@@ -97,7 +97,7 @@
   
   # Returns the KML that makes up the current Kamelopard::Document
   def get_kml
-      Kamelopard::Document.instance.get_kml_document
+      Kamelopard::DocumentHolder.instance.current_document.get_kml_document
   end
   
   # Returns the KML that makes up the current Document, as a string
@@ -112,17 +112,17 @@
   
   # Returns the current Tour object
   def get_tour()
-      Kamelopard::Document.instance.tour
+      Kamelopard::DocumentHolder.instance.current_document.tour
   end
   
   # Sets a name for the current Tour
   def name_tour(name)
-      Kamelopard::Document.instance.tour.name = name
+      Kamelopard::DocumentHolder.instance.current_document.tour.name = name
   end
   
   # Returns the current Folder object
   def get_folder()
-      Kamelopard::Document.instance.folders.last
+      Kamelopard::DocumentHolder.instance.current_document.folders.last
   end
   
   # Creates a new Folder with the current name
@@ -132,18 +132,18 @@
   
   # Names (or renames) the current Folder, and returns it
   def name_folder(name)
-      Kamelopard::Document.instance.folder.name = name
-      return Kamelopard::Document.instance.folder
+      Kamelopard::DocumentHolder.instance.current_document.folder.name = name
+      return Kamelopard::DocumentHolder.instance.current_document.folder
   end
   
   # Names (or renames) the current Document object, and returns it
   def name_document(name)
-      Kamelopard::Document.instance.name = name
-      return Kamelopard::Document.instance
+      Kamelopard::DocumentHolder.instance.current_document.name = name
+      return Kamelopard::DocumentHolder.instance.current_document
   end
   
   def zoom_out(dist = 1000, dur = 0, mode = nil)
-      l = Kamelopard::Document.instance.tour.last_abs_view
+      l = Kamelopard::DocumentHolder.instance.current_document.tour.last_abs_view
       raise "No current position to zoom out from\n" if l.nil?
       l.range += dist
       Kamelopard::FlyTo.new(l, nil, dur, mode)
@@ -584,4 +584,8 @@
   # Writes actions to a viewsyncrelay config file
   def write_actions_to(filename = 'actions.yml')
     File.open(filename, 'w') do |f| f.write get_actions end
+  end
+
+  def get_doc_holder
+    return Kamelopard::DocumentHolder.instance
   end
