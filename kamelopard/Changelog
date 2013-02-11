@@ -1,3 +1,11 @@
+= 0.0.8
+
+* Move from Github to the Liquid Galaxy Google Code repository
+* Add support for multiple simultaneous documents
+* Add support for viewsyncrelay actions
+* Add default wait at the beginning of each tour, to prevent glitches
+* Fix quite a bit of CDATA handling
+
 = 0.0.7
 
 * Add lots of new helper functions
