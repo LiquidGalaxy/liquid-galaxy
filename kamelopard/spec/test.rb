@@ -5,7 +5,9 @@ require 'kamelopard'
 require "xml"
 require 'tempfile'
 
-# XXX test everything's to_kml(elem), instead of just to_kml(nil)
+Kamelopard.set_logger lambda { |lev, mod, msg|
+    STDERR.puts "#{lev} #{mod}: #{msg}"
+}
 
 # Printing debug information.
 def put_info(str)
@@ -29,7 +31,14 @@ end
 #
 #
 def get_child(node, name)
-    node.children.detect{ |child| child.name == name}
+    a = nil
+    node.children.each { |child|
+        if child.name == name
+            a = child
+            break
+        end
+    }
+    return a
 end
 
 #
@@ -214,7 +223,6 @@ shared_examples_for 'field_producer' do
 end
 
 shared_examples_for 'Kamelopard::Object' do
-
     it 'descends from Kamelopard::Object' do
         @o.kind_of?(Kamelopard::Object).should == true
     end
@@ -238,6 +246,36 @@ shared_examples_for 'Kamelopard::Object' do
         @o.comment = 'Look for << this string'
         k = @o.to_kml
         k.to_s.should =~ /Look for &lt;&lt; this string/
+    end
+
+    it 'responds to master_only' do
+        @o.should respond_to(:master_only)
+        @o.should respond_to(:master_only=)
+        @o.master_only = true
+    end
+
+    it 'returns KML in master mode only when master_only' do
+        pending "write this test"
+#        @o.to_kml.to_s.should_not == ''
+#        @o.master_only = true
+#        @o.to_kml.to_s.should_not == ''
+#        get_document.master_mode = true
+#        @o.to_kml.to_s.should == ''
+#        get_document.master_mode = false
+#        @o.to_kml.to_s.should_not == ''
+    end
+
+    it 'appends itself to arbitrary XML nodes correctly' do
+        # These classes behave differently when XML::Nodes are passed to their to_kml methods
+        skip = %w{Document Feature StyleSelector ColorStyle}
+
+        if ! skip.include?(@o.class.name.gsub(/Kamelopard::/, ''))
+            x = XML::Node.new 'random'
+            count = x.children.size
+            @o.to_kml(x)
+            x.children.size.should == count + 1
+        end
+
     end
 end
 
@@ -785,6 +823,9 @@ describe 'Kamelopard::Point' do
             k = @o.to_kml(nil, true)
             get_child_content(k, 'extrude').should be_nil
             get_child_content(k, 'altitudeMode').should be_nil
+            @o.master_only = true
+            get_child_content(k, 'extrude').should be_nil
+            get_child_content(k, 'altitudeMode').should be_nil
         end
     end
 end
@@ -917,6 +958,10 @@ describe 'Kamelopard::TimeStamp' do
         doc = build_doc_from_node @o
         doc.find("//*/*[when='#{@when}']").should_not be_nil
     end
+
+    it 'adds the correct namespace' do
+        pending 'write this test'
+    end
 end
 
 describe 'Kamelopard::TimeSpan' do
@@ -944,6 +989,10 @@ describe 'Kamelopard::Feature' do
         @fields = []
     end
     it_should_behave_like 'Kamelopard::Feature'
+
+    it 'responds correctly when to_kml() is passed an XML::Node object' do
+        pending 'write this test'
+    end
 end
 
 describe 'Kamelopard::Container' do
@@ -1021,6 +1070,10 @@ describe 'Kamelopard::Document' do
         @o.should respond_to(:get_kml_document)
         @o.get_kml_document.class.should == LibXML::XML::Document
     end
+
+    it 'behaves correctly when to_kml() is passed an XML::Node' do
+        pending 'write this test'
+    end
 end
 
 describe 'Kamelopard::ColorStyle' do
@@ -1036,6 +1089,10 @@ describe 'Kamelopard::ColorStyle' do
         @o.colorMode = :random
         get_obj_child_content(@o, 'color').should == 'deadbeef'
         get_obj_child_content(@o, 'colorMode').should == 'random'
+    end
+
+    it 'responds correctly when to_kml() is passed an XML::Node object' do
+        pending 'write this test'
     end
 end
 
@@ -1297,6 +1354,10 @@ describe 'StyleSelector' do
     end
 
     it_should_behave_like 'StyleSelector'
+
+    it 'responds correctly when to_kml() is passed an XML::Node object' do
+        pending 'write this test'
+    end
 end
 
 describe 'Style' do

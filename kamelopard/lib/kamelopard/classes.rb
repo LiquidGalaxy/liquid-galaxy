@@ -15,6 +15,35 @@ module Kamelopard
 
     @@sequence = 0
     @@id_prefix = ''
+    @@logger = nil
+    LogLevels = {
+        :debug => 0,
+        :info => 1,
+        :notice => 2,
+        :warn => 3,
+        :error => 4,
+        :fatal => 5
+    }
+
+    @@log_level = LogLevels[:notice]
+
+    # Sets a logging callback function. This function should expect three
+    # arguments. The first will be a log level (:debug, :info, :notice, :warn,
+    # :error, or :fatal); the second will be a module, categorizing the log
+    # entries generally; and the third will be the message
+    def Kamelopard.set_logger(l)
+        @@logger = l
+    end
+
+    def Kamelopard.set_log_level(lev)
+        raise "Unknown log level #{lev}" unless LogLevels.has_key? lev
+        @@log_level = LogLevels[lev]
+    end
+
+    def Kamelopard.log(level, mod, msg)
+        raise "Unknown log level #{level} for error message #{msg}" unless LogLevels.has_key? level
+        @@logger.call(level, mod, msg) unless @@logger.nil? or @@log_level > LogLevels[level]
+    end
 
     def Kamelopard.get_document
         DocumentHolder.instance.current_document
@@ -128,6 +157,12 @@ module Kamelopard
         attr_accessor :kml_id
         attr_reader :comment
 
+        # The master_only attribute determines whether this Object should be
+        # included in slave mode KML files, or not. It defaults to false,
+        # indicating the Object should be included in KML files of all types.
+        # Set it to true to ensure it shows up only in slave mode.
+        attr_reader :master_only
+
         # This constructor looks for values in the options hash that match
         # class attributes, and sets those attributes to the values in the
         # hash. So a class with an attribute called :when can be set via the
@@ -135,6 +170,7 @@ module Kamelopard
         # argument to the constructor.
         def initialize(options = {})
             @kml_id = "#{Kamelopard.id_prefix}#{self.class.name.gsub('Kamelopard::', '')}_#{ Kamelopard.get_next_id }"
+            @master_only = false
 
             options.each do |k, v|
                 method = "#{k}=".to_sym
@@ -144,6 +180,62 @@ module Kamelopard
                     raise "Warning: couldn't find attribute for options hash key #{k}"
                 end
             end
+        end
+
+        # If this is a master-only object, this function gets called internally
+        # in place of the object's original to_kml method
+        def _alternate_to_kml(*a)
+            if @master_only and DocumentHolder.instance.current_document.master_mode
+                Kamelopard.log(:info, 'master/slave', "Because this object is master_only, and we're in slave mode, we're not including object #{self.inspect}")
+                return ''
+            end
+
+            # XXX There must be a better way to do this, but I don't know what
+            # it is. Running "@original_to_kml_method.call(a)" when the
+            # original method expects multiple arguments interprets the
+            # argument as an array, not as a list of arguments. This of course
+            # makes sense, but I don't know how to get around it.
+            case @original_to_kml_method.parameters.size
+            when 0
+                return @original_to_kml_method.call
+            when 1
+                # XXX This bothers me, and I'm unconvinced the calls to
+                # functions with more than one parameter actually work. Why
+                # should I have to pass a[0][0] here and just a[0], a[1], etc.
+                # for larger numbers of parameters, if this were all correct?
+                return @original_to_kml_method.call(a[0][0])
+            when 2
+                return @original_to_kml_method.call(a[0], a[1])
+            when 3
+                return @original_to_kml_method.call(a[0], a[1], a[2])
+            else
+                raise "Unsupported number of arguments (#{@original_to_kml_method.arity}) in to_kml function #{@original_to_kml_method}. This is a bug"
+            end
+        end
+
+        # Changes whether this object is available in master style documents
+        # only, or in slave documents as well.
+        #--
+        # Replaces the object's to_kml method with something that checks
+        # whether this object should be included in the KML output, based on
+        # whether it's master-only or not, and in master or slave mode.
+        #++
+        def master_only=(a)
+            # If this object is a master_only object, and we're printing in
+            # slave mode, this object shouldn't be included at all (to_kml
+            # should return an empty string)
+            @master_only = a
+            if a then
+                @original_to_kml_method = public_method(:to_kml)
+                define_singleton_method :to_kml, lambda { |*a| self._alternate_to_kml(a) }
+            else
+                define_singleton_method :to_kml, @original_to_kml_method
+            end
+        end
+
+        # This just makes the Ruby-ism question mark suffix work
+        def master_only?
+            return @master_only
         end
 
         # Adds an XML comment to this node. Handles HTML escaping the comment
@@ -573,8 +665,8 @@ module Kamelopard
                 w = XML::Node.new 'end'
                 w << @end
                 k << w
-                elem << k unless elem.nil?
             end
+            elem << k unless elem.nil?
             k
         end
     end
@@ -777,6 +869,7 @@ module Kamelopard
         end
 
         def styles_to_kml(elem)
+            raise "done here" if elem.class == Array
             @styles.each do |a|
                 a.to_kml(elem) unless a.attached?
             end
@@ -866,10 +959,17 @@ module Kamelopard
     class Document < Container
         attr_accessor :flyto_mode, :folders, :tours, :uses_xal, :vsr_actions
 
+        # Is this KML destined for a master LG node, or a slave? True if this
+        # is a master node. This defaults to true, so tours that don't need
+        # this function, and tours for non-LG targets, work normally.
+        attr_accessor :master_mode
+
         def initialize(options = {})
             @tours = []
             @folders = []
             @vsr_actions = []
+            @master_mode = false
+            Kamelopard.log(:info, 'Document', "Adding myself to the document holder")
             DocumentHolder.instance << self
             super
         end
@@ -995,11 +1095,14 @@ module Kamelopard
         attr_reader :documents
 
         def initialize(doc = nil)
+            Kamelopard.log :debug, 'DocumentHolder', "document holder constructor"
             @documents = []
             @document_index = -1
             if ! doc.nil?
+                Kamelopard.log :info, 'DocumentHolder', "Constructor called with a doc. Adding it."
                 self.documents << doc
             end
+            Kamelopard.log :debug, 'DocumentHolder', "document holder constructor finished"
         end
 
         def document_index
@@ -1013,6 +1116,8 @@ module Kamelopard
         def current_document
             # Automatically create a Document if we don't already have one
             if @documents.size <= 0
+                STDERR.puts  "Here!!"
+                Kamelopard.log :notice, 'Document', "Doc doesn't exist... adding new one"
                 Document.new
                 @document_index = 0
             end
