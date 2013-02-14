@@ -255,14 +255,15 @@ shared_examples_for 'Kamelopard::Object' do
     end
 
     it 'returns KML in master mode only when master_only' do
-        pending "write this test"
-#        @o.to_kml.to_s.should_not == ''
-#        @o.master_only = true
-#        @o.to_kml.to_s.should_not == ''
-#        get_document.master_mode = true
-#        @o.to_kml.to_s.should == ''
-#        get_document.master_mode = false
-#        @o.to_kml.to_s.should_not == ''
+        @o.to_kml.to_s.should_not == ''
+        @o.master_only = true
+        @o.master_only.should be_true
+        @o.to_kml.to_s.should_not == ''
+        get_document.master_mode = true
+        get_document.master_mode.should be_true
+        @o.to_kml.to_s.should == ''
+        get_document.master_mode = false
+        @o.to_kml.to_s.should_not == ''
     end
 
     it 'appends itself to arbitrary XML nodes correctly' do

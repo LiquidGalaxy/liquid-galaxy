@@ -215,21 +215,23 @@ module Kamelopard
 
         # Changes whether this object is available in master style documents
         # only, or in slave documents as well.
-        #--
-        # Replaces the object's to_kml method with something that checks
-        # whether this object should be included in the KML output, based on
-        # whether it's master-only or not, and in master or slave mode.
-        #++
+        #
+        # More specifically, this method replaces the object's to_kml method
+        # with something that checks whether this object should be included in
+        # the KML output, based on whether it's master-only or not, and whether
+        # the document is in master or slave mode.
         def master_only=(a)
             # If this object is a master_only object, and we're printing in
             # slave mode, this object shouldn't be included at all (to_kml
             # should return an empty string)
-            @master_only = a
-            if a then
-                @original_to_kml_method = public_method(:to_kml)
-                define_singleton_method :to_kml, lambda { |*a| self._alternate_to_kml(a) }
-            else
-                define_singleton_method :to_kml, @original_to_kml_method
+            if a != @master_only
+                @master_only = a
+                if a then
+                    @original_to_kml_method = public_method(:to_kml)
+                    define_singleton_method :to_kml, lambda { |*a| self._alternate_to_kml(a) }
+                else
+                    define_singleton_method :to_kml, @original_to_kml_method
+                end
             end
         end
 
