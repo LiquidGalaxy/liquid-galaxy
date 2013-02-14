@@ -1,3 +1,14 @@
+= 0.0.9
+
+* Add master/slave mode to documents, and to objects. Now objects can be
+tagged as "master_only", and will thereby show up only in KML created when the
+Document's master_mode is true. This makes it easier to make tours where the
+master node needs to have various screen overlays or network links, but the
+slaves don't.
+* Added logging feature. Use Kamelopard.set_logger() to set a callback
+function that runs whenever Kamelopard wants to log something. Supports log
+levels. Few log messages exist at this point.
+
 = 0.0.8
 
 * Move from Github to the Liquid Galaxy Google Code repository
