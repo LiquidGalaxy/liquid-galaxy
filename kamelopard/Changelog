@@ -1,3 +1,7 @@
+= 0.0.10
+
+* Bug fix: Untangle reversed logic in slave / master mode handling
+
 = 0.0.9
 
 * Add master/slave mode to documents, and to objects. Now objects can be
