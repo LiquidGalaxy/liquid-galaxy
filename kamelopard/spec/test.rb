@@ -959,8 +959,15 @@ describe 'Kamelopard::TimeStamp' do
         doc.find("//*/*[when='#{@when}']").should_not be_nil
     end
 
+    it 'behaves correctly when to_kml() gets an XML::Node' do
+        a = XML::Node.new 'testnode'
+        @o.to_kml(a)
+        a.children.first.name.should == 'TimeStamp'
+    end
+
     it 'adds the correct namespace' do
-        pending 'write this test'
+        a = @o.to_kml(nil, 'test')
+        a.name.should == 'test:TimeStamp'
     end
 end
 
@@ -985,13 +992,23 @@ end
 
 describe 'Kamelopard::Feature' do
     before(:each) do
-        @o = Kamelopard::Feature.new({ :name => 'Some feature' })
+        @o = Kamelopard::Feature.new('Some feature')
         @fields = []
     end
     it_should_behave_like 'Kamelopard::Feature'
 
     it 'responds correctly when to_kml() is passed an XML::Node object' do
-        pending 'write this test'
+        a = XML::Node.new 'testnode'
+        @o.to_kml(a)
+        a.attributes[:id].should_not be_nil
+        found = false
+        a.children.each do |c|
+            if c.name == 'name'
+                found = true
+                break
+            end
+        end
+        found.should be_true
     end
 end
 
@@ -1070,10 +1087,6 @@ describe 'Kamelopard::Document' do
         @o.should respond_to(:get_kml_document)
         @o.get_kml_document.class.should == LibXML::XML::Document
     end
-
-    it 'behaves correctly when to_kml() is passed an XML::Node' do
-        pending 'write this test'
-    end
 end
 
 describe 'Kamelopard::ColorStyle' do
@@ -1092,7 +1105,21 @@ describe 'Kamelopard::ColorStyle' do
     end
 
     it 'responds correctly when to_kml() is passed an XML::Node object' do
-        pending 'write this test'
+        a = XML::Node.new 'testnode'
+        @o.to_kml(a)
+        a.attributes[:id].should_not be_nil
+        a.children.size.should == 2
+
+        sums = {
+            :color => 0,
+            :colorMode => 0,
+        }
+        a.children.each do |c|
+            sums[c.name.to_sym] += 1
+        end
+        sums.keys.each do |k|
+            sums[k].should == 1
+        end
     end
 end
 
@@ -1356,7 +1383,9 @@ describe 'StyleSelector' do
     it_should_behave_like 'StyleSelector'
 
     it 'responds correctly when to_kml() is passed an XML::Node object' do
-        pending 'write this test'
+        a = XML::Node.new 'testnode'
+        @o.to_kml(a)
+        a.attributes[:id].should_not be_nil
     end
 end
 

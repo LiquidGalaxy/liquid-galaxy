@@ -1116,8 +1116,7 @@ module Kamelopard
         def current_document
             # Automatically create a Document if we don't already have one
             if @documents.size <= 0
-                STDERR.puts  "Here!!"
-                Kamelopard.log :notice, 'Document', "Doc doesn't exist... adding new one"
+                Kamelopard.log :info, 'Document', "Doc doesn't exist... adding new one"
                 Document.new
                 @document_index = 0
             end
