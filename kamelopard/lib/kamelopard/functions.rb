@@ -573,6 +573,7 @@
   # Adds a VSRAction object (a viewsyncrelay action) to the document, for
   # viewsyncrelay configuration
   def do_action(cmd, options = {})
+    # XXX Finish this
   end
 
   # Returns the Document's VSRActions as a YAML string, suitable for writing to

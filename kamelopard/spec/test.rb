@@ -252,18 +252,21 @@ shared_examples_for 'Kamelopard::Object' do
         @o.should respond_to(:master_only)
         @o.should respond_to(:master_only=)
         @o.master_only = true
+        @o.master_only = false
     end
 
     it 'returns KML in master mode only when master_only' do
+        @o.master_only = false
         @o.to_kml.to_s.should_not == ''
         @o.master_only = true
         @o.master_only.should be_true
-        @o.to_kml.to_s.should_not == ''
+        @o.to_kml.to_s.should == ''
         get_document.master_mode = true
         get_document.master_mode.should be_true
-        @o.to_kml.to_s.should == ''
-        get_document.master_mode = false
         @o.to_kml.to_s.should_not == ''
+        get_document.master_mode = false
+        @o.to_kml.to_s.should == ''
+        @o.master_only = false
     end
 
     it 'appends itself to arbitrary XML nodes correctly' do
@@ -827,6 +830,7 @@ describe 'Kamelopard::Point' do
             @o.master_only = true
             get_child_content(k, 'extrude').should be_nil
             get_child_content(k, 'altitudeMode').should be_nil
+            @o.master_only = false
         end
     end
 end

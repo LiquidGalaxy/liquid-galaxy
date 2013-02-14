@@ -185,7 +185,7 @@ module Kamelopard
         # If this is a master-only object, this function gets called internally
         # in place of the object's original to_kml method
         def _alternate_to_kml(*a)
-            if @master_only and DocumentHolder.instance.current_document.master_mode
+            if @master_only and ! DocumentHolder.instance.current_document.master_mode
                 Kamelopard.log(:info, 'master/slave', "Because this object is master_only, and we're in slave mode, we're not including object #{self.inspect}")
                 return ''
             end
