@@ -6,9 +6,6 @@ IDEAS FOR FUTURE DEVELOPMENT
 * Creating master and slave versions of KMZ files for a galaxy is lots of
   busywork. Kamelopard should do it automatically.
 
-* Create function so objects can generate their own <Change>, etc. elements
-  for an AnimatedUpdate
-
 * Improve helper functions, their tests, and their documentation
 
 * Add functions to generate various shapes in one and possibly two dimensions,
