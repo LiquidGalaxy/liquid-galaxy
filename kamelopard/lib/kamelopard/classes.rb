@@ -182,6 +182,14 @@ module Kamelopard
             end
         end
 
+        def change(attributes, values)
+            change = XML::Node.new 'Change'
+            child = XML::Node.new self.class.name
+            child.attributes[:targetId] = @kml_id
+            change << child
+            return change
+        end
+
         # If this is a master-only object, this function gets called internally
         # in place of the object's original to_kml method
         def _alternate_to_kml(*a)
