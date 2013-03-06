@@ -1,3 +1,3 @@
 require 'kamelopard/classes'
-require 'kamelopard/functions'
+require 'kamelopard/helpers'
 require 'kamelopard/geocode'
