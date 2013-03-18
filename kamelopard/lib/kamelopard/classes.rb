@@ -1609,7 +1609,7 @@ module Kamelopard
         attr_accessor :standalone
 
         def initialize(options = {})
-            DocumentHolder.instance.current_document.tour << self unless options[:standalone]
+            DocumentHolder.instance.current_document.tour << self unless options.has_key?(:standalone)
             super
         end
     end

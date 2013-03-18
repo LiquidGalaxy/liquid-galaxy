@@ -122,6 +122,8 @@
   
   # Returns the current Folder object
   def get_folder()
+      f = Kamelopard::DocumentHolder.instance.current_document.folders.last
+      Kamelopard::Folder.new() if f.nil?
       Kamelopard::DocumentHolder.instance.current_document.folders.last
   end
   
