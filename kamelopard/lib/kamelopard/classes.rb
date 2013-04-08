@@ -576,6 +576,10 @@ module Kamelopard
             t
         end
 
+        def to_queries_txt(name = '', planet = 'earth')
+            return "#{planet}@#{name}@flytoview=" + self.to_kml.to_s.gsub(/^\s+/, '').gsub("\n", '')
+        end
+
         def [](a)
             return @viewerOptions[a]
         end

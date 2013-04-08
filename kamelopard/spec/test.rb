@@ -451,6 +451,12 @@ shared_examples_for 'Kamelopard::Camera-like' do
         get_obj_child(@o, 'heading').should_not be_nil
         get_obj_child(@o, 'tilt').should_not be_nil
     end
+
+    it 'creates a queries.txt entry' do
+        q = @o.to_queries_txt('name', 'planet')
+        q.should_not be_nil
+        q.should match /planet@name@flytoview=/
+    end
 end
 
 shared_examples_for "Kamelopard::TimePrimitive" do
