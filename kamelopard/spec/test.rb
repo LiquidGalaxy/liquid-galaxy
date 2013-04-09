@@ -2286,3 +2286,93 @@ describe 'DocumentHolder' do
 
     end
 end
+
+def val_within_range(o, val, expected, perc)
+    res = o.run_function(val)
+    res.should <= expected + perc
+    res.should >= expected - perc
+end
+
+shared_examples_for 'mathematical functions' do
+    # XXX Some test for 'compose' ought to be included here.
+    it 'includes the start and end points, within a margin of error' do
+        val_within_range @o, @o.min, @start_value, @one_perc
+        val_within_range @o, @o.max, @end_value, @one_perc
+    end
+end
+
+describe 'Line function' do
+    before(:each) do
+        @start_value = 100
+        @end_value = 300
+        @one_perc = (@end_value - @start_value).abs / 30.0
+        @o = Kamelopard::Functions::Line.interpolate(@start_value, @end_value)
+    end
+
+    it_should_behave_like 'mathematical functions'
+end
+
+describe 'Quadratic function' do
+    before(:each) do
+        @start_value = 100
+        @end_value = 300
+        @mid_value = 20
+        @one_perc = (@end_value - @mid_value).abs / 30.0
+        @o = Kamelopard::Functions::Quadratic.interpolate(@start_value, @end_value, 0.5, @mid_value)
+    end
+
+    it_should_behave_like 'mathematical functions'
+
+    it 'includes the midpoint' do
+        val_within_range @o, 0.5, @mid_value, @one_perc
+    end
+end
+
+describe 'Cubic function' do
+    before(:each) do
+        @start_value = 70
+        @end_value = 15
+        @x1 = 0.3
+        @y1 = 20
+        @x2 = 0.6
+        @y2 = 25
+        @one_perc = (@end_value - @start_value).abs / 30.0
+        @o = Kamelopard::Functions::Cubic.interpolate(@start_value, @end_value, @x1, @y1, @x2, @y2)
+    end
+
+    it_should_behave_like 'mathematical functions'
+
+    it 'includes the defining points' do
+        val_within_range @o, @x1, @y1, @one_perc
+        val_within_range @o, @x2, @y2, @one_perc
+    end
+end
+
+describe 'make_function_path' do
+    pending "use callback and callback_value right"
+    pending "pause when the pause hash key is included"
+    pending "respects show_placemarks"
+        # latitude, longitude, altitude, heading, tilt, roll, duration, range
+    pending "handles coordinates correctly"
+
+# Sample function:
+#make_function_path(10,
+#    :latitude => Line.interpolate(38.8, 40.3),
+#    :altitude => Line.interpolate(10000, 2000),
+#    :heading => Line.interpolate(0, 90),
+#    :tilt => Line.interpolate(40.0, 90),
+#    :roll => 0,
+#    :show_placemarks => 1,
+#    :duration => Quadratic.interpolate(2.0, 4.0, 0.0, 1.0),
+#) do |a, v|
+#    puts "callback here"
+#    if v.has_key? :callback_value then
+#        v[:callback_value] += 1
+#    else
+#        v[:pause] = 0.01
+#        v[:callback_value] = 1
+#    end
+#    puts v[:callback_value]
+#    v
+#end
+end
