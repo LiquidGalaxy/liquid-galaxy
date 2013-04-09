@@ -71,7 +71,9 @@ module Kamelopard
             end
 
             hash[:callback_value] = callback_value unless callback_value.nil?
-            hash = options[:callback].call(i, hash) if options.has_key? :callback
+            tmp = yield(i, hash)
+            hash = tmp unless tmp.nil?
+            #hash = options[:callback].call(i, hash) if options.has_key? :callback
             callback_value = hash[:callback_value] if hash.has_key? :callback_value
 
             v = make_view_from(hash)
