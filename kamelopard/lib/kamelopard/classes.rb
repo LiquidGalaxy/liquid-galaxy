@@ -1,13 +1,14 @@
 # encoding: utf-8
+#--
 # vim:ts=4:sw=4:et:smartindent:nowrap
-
+#++
 # Classes to manage various KML objects. See
 # http://code.google.com/apis/kml/documentation/kmlreference.html for a
 # description of KML
 
+# Pretty much everything important is in this module
 module Kamelopard
     require 'singleton'
-    require 'kamelopard/pointlist'
     require 'xml'
     require 'yaml'
     require 'erb'
@@ -16,6 +17,14 @@ module Kamelopard
     @@sequence = 0
     @@id_prefix = ''
     @@logger = nil
+
+    # Valid log levels:
+    # * :debug
+    # * :info
+    # * :notice
+    # * :warn
+    # * :error
+    # * :fatal
     LogLevels = {
         :debug => 0,
         :info => 1,
@@ -29,35 +38,37 @@ module Kamelopard
 
     # Sets a logging callback function. This function should expect three
     # arguments. The first will be a log level (:debug, :info, :notice, :warn,
-    # :error, or :fatal); the second will be a module, categorizing the log
-    # entries generally; and the third will be the message
+    # :error, or :fatal); the second will be a text string, categorizing the
+    # log entries generally; and the third will be the log message itself
     def Kamelopard.set_logger(l)
         @@logger = l
     end
 
+    # Sets the current logging level. Valid levels are defined in the LogLevels hash
     def Kamelopard.set_log_level(lev)
         raise "Unknown log level #{lev}" unless LogLevels.has_key? lev
         @@log_level = LogLevels[lev]
     end
 
+    # Logs a message, provided a log level, a text string, and the log message.
+    # See #Kamelopard.set_logger for details.
     def Kamelopard.log(level, mod, msg)
         raise "Unknown log level #{level} for error message #{msg}" unless LogLevels.has_key? level
         @@logger.call(level, mod, msg) unless @@logger.nil? or @@log_level > LogLevels[level]
     end
 
-    def Kamelopard.get_document
-        DocumentHolder.instance.current_document
-    end
-
-    def Kamelopard.get_next_id   # :nodoc
+    def Kamelopard.get_next_id   # :nodoc:
         @@sequence += 1
         @@sequence
     end
 
+    # Sets a prefix for all kml_id values generated from this time forth. Does
+    # not change previously generated kml_ids
     def Kamelopard.id_prefix=(a)
         @@id_prefix = a
     end
 
+    # Returns the current kml_id prefix value. See #Kamelopard.id_prefix=
     def Kamelopard.id_prefix
         @@id_prefix
     end
@@ -73,7 +84,7 @@ module Kamelopard
     #   * if the second element is a proc, call the proc, passing it the KML
     #     object, and let the Proc (presumably) add itself to the KML
     #++
-    def Kamelopard.kml_array(e, m) # :nodoc
+    def Kamelopard.kml_array(e, m) # :nodoc:
         m.map do |a|
             if ! a[0].nil? then
                 if a[1].kind_of? Proc then
@@ -94,7 +105,7 @@ module Kamelopard
     #--
     # Accepts XdX'X.X", XDXmX.XXs, XdXmX.XXs, or X.XXXX with either +/- or N/E/S/W
     #++
-    def Kamelopard.convert_coord(a)    # :nodoc
+    def Kamelopard.convert_coord(a)    # :nodoc:
         a = a.to_s.upcase.strip.gsub(/\s+/, '')
 
         mult = 1
@@ -136,7 +147,7 @@ module Kamelopard
     end
 
     # Helper function for altitudeMode / gx:altitudeMode elements
-    def Kamelopard.add_altitudeMode(mode, e)
+    def Kamelopard.add_altitudeMode(mode, e) # :nodoc:
         return if mode.nil?
         if mode == :clampToGround or mode == :relativeToGround or mode == :absolute then
             t = XML::Node.new 'altitudeMode'
@@ -963,7 +974,7 @@ module Kamelopard
         end
     end
 
-    def get_stack_trace   # :nodoc
+    def get_stack_trace   # :nodoc:
         k = ''
         caller.each do |a| k << "#{a}\n" end
         k
