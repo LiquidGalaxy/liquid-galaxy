@@ -3,6 +3,8 @@
 #++
 # Describes functions that can be calculated to create flight paths
 
+require 'matrix'
+
 #--
 #++
 module Kamelopard
