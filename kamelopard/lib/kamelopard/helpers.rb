@@ -1,4 +1,7 @@
+#--
 # vim:ts=4:sw=4:et:smartindent:nowrap
+#++
+# Various helper functions
 
   # Returns the current Document object
   def get_document()

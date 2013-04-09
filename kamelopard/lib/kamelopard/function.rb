@@ -1,9 +1,16 @@
+#--
 # vim:ts=4:sw=4:et:smartindent:nowrap
+#++
+# Describes functions that can be calculated to create flight paths
 
-# Classes to manage functions
-
+#--
+#++
 module Kamelopard
+    
+    # Classes to manage functions, which can be interpolated into flight paths
+    # and other things
     module Functions
+
         # Abstract class representing a one-dimensional function
         class Function1D
             # min and max describe the function's domain. Values passed to
@@ -109,10 +116,7 @@ module Kamelopard
                 y1 = (ymax.to_f + ymin) / 2.0 if y1.nil?
                 xm = Matrix[[min ** 2, x1 ** 2, max ** 2], [min, x1, max], [1, 1, 1]]
                 ym = Matrix[[ymin, y1, ymax]]
-                p xm
-                p ym
                 m = ym * xm.inverse
-                p m
                 c2 = m[0,0]
                 c1 = m[0,1]
                 c0 = m[0,2]
