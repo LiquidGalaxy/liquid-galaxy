@@ -1154,6 +1154,11 @@ module Kamelopard
             @document_index += 1
         end
 
+        def set_current(a)
+            raise "Must set current document to an existing Document object" unless a.kind_of? Document
+            @document_index = @documents.index(a)
+        end
+
         def [](a)
             return @documents[a]
         end

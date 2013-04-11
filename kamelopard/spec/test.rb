@@ -2285,6 +2285,10 @@ describe 'DocumentHolder' do
         get_document.name.should == 'Second'
 
     end
+
+    it 'supports changing the current document' do
+        pending 'Still need to write this one'
+    end
 end
 
 def val_within_range(o, val, expected, perc)
