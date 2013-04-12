@@ -420,11 +420,12 @@
           [ :longitude, 0 ],
           [ :tilt, 0 ],
           [ :heading, 0 ],
+          [ :extrude, 0 ],
       ].each do |a|
           o[a[0]] = a[1] unless o.has_key? a[0]
       end
   
-      p = point o[:longitude], o[:latitude], o[:altitude], o[:altitudeMode]
+      p = point o[:longitude], o[:latitude], o[:altitude], o[:altitudeMode], o[:extrude]
   
       if o.has_key? :roll then
           view = Kamelopard::Camera.new p

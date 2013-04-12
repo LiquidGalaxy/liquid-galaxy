@@ -2356,8 +2356,10 @@ describe 'make_function_path' do
     pending "use callback and callback_value right"
     pending "pause when the pause hash key is included"
     pending "respects show_placemarks"
+    pending "respects no_flyto"
         # latitude, longitude, altitude, heading, tilt, roll, duration, range
     pending "handles coordinates correctly"
+    pending "handles altitudeMode and extrude correctly"
 
 # Sample function:
 #make_function_path(10,

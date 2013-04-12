@@ -13,15 +13,13 @@ module Kamelopard
     #   points: The number of points in the series
     #   hash: Values used to create the hash, which creates the point in the
     #   series. Keys in this hash include:
-    #     latitude, longitude, altitude, heading, tilt, roll, range, duration
+    #     latitude, longitude, altitude, heading, tilt, roll, range, duration, altitudeMode, extrude
     #       These can be constant numbers, Proc objects, or Function1D objects.
     #       The latter two will be called once for each point in the series.
     #       Proc objects will be passed the number of the point they're
     #       calculating, starting with 0, and the current value of the hash
     #       created for this point. "duration" represents the time in seconds
-    #       spent flying from the last point to this one. "pause" is the amount
-    #       of time in seconds to pause after flying to this point, or nil for
-    #       no pause.
+    #       spent flying from the last point to this one.
     #     callback
     #       This Proc object, if defined, will be called after the above hash
     #       keys have been calculated. It gets passed the number of the point,
@@ -31,9 +29,11 @@ module Kamelopard
     #       A placeholder the callback function can use. It can set it when
     #       it's called one time, and see that value when called the next time.
     #     pause
-    #       The amount of time to pause after flying to this point, if any
+    #       The amount of time to pause after flying to this point, or nil for no pause
     #     show_placemarks
-    #       If true, a placemark object will be created at this point
+    #       If set, a placemark object will be created at this point
+    #     no_flyto
+    #       If set, on flyto objects will be created
 
     def make_function_path(points = 10, options = {})
 
@@ -47,6 +47,8 @@ module Kamelopard
             end
         end
 
+        result_points = []
+
         callback_value = nil
         i = 0
         while (i <= points)
@@ -57,6 +59,8 @@ module Kamelopard
                 :altitude => val(options[:altitude], i, p),
                 :heading => val(options[:heading], i, p),
                 :tilt => val(options[:tilt], i, p),
+                :altitudeMode => val(options[:altitudeMode], i, p),
+                :extrude => val(options[:extrude], i, p),
             }
 
             hash[:show_placemarks] = options[:show_placemarks] if options.has_key? :show_placemarks
@@ -77,13 +81,16 @@ module Kamelopard
             callback_value = hash[:callback_value] if hash.has_key? :callback_value
 
             v = make_view_from(hash)
-            get_folder << placemark(i.to_s, :geometry => point(v.longitude, v.latitude)) if (hash.has_key? :show_placemarks and hash[:show_placemarks])
-            fly_to v, :duration => duration , :mode => :smooth
+            p = point(v.longitude, v.latitude, v.altitude, hash[:altitudeMode], hash[:extrude])
+            get_folder << placemark(i.to_s, :geometry => p) if hash.has_key? :show_placemarks
+            fly_to v, :duration => duration , :mode => :smooth unless hash.has_key? :no_flyto
+            result_points << v
 
             pause hash[:pause] if hash.has_key? :pause
 
             i = i + 1
         end
+        result_points
     end
 
 end

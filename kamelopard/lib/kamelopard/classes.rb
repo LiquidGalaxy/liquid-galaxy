@@ -316,7 +316,8 @@ module Kamelopard
         end
 
         def to_s
-            "Point (#{@longitude}, #{@latitude}, #{@altitude}, mode = #{@altitudeMode}, #{ @extrude ? 'extruded' : 'not extruded' })"
+            p @extrude
+            "Point (#{@longitude}, #{@latitude}, #{@altitude}, mode = #{@altitudeMode}, #{ @extrude == 1 ? 'extruded' : 'not extruded' })"
         end
 
         def to_kml(elem = nil, short = false)
@@ -515,7 +516,7 @@ module Kamelopard
                 else
                     a = point
                 end
-                @point = Point.new a.longitude, a.latitude, a.altitude, :altitudeMode => a.altitudeMode
+                @point = Point.new a.longitude, a.latitude, a.altitude, :altitudeMode => a.altitudeMode, :extrude => a.extrude
             end
         end
 
