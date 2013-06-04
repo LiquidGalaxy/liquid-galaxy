@@ -629,11 +629,13 @@ module Kamelopard
         end
 
         def roll
+            # The roll element doesn't exist in LookAt objects
             raise "The roll element is part of Camera objects, not LookAt objects"
         end
 
-        def roll=
+        def roll=(a)
             # The roll element doesn't exist in LookAt objects
+            raise "The roll element is part of Camera objects, not LookAt objects"
         end
     end
 
