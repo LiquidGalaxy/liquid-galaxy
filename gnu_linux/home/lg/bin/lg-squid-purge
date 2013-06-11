@@ -20,7 +20,7 @@ echo "Killing Squid-related Procs"
 ${HOME}/bin/lg-sudo-bg "killall -9 squidmon.sh; squid3 -k kill" >>${LOG_FILE} 2>>${LOG_FILE}
 echo "Moving Old Cache"
 ${HOME}/bin/lg-sudo-bg "mkdir -v /var/spool/squid3/oldcache; mv -vf /var/spool/squid3/* /var/spool/squid3/oldcache/" >>${LOG_FILE} 2>>${LOG_FILE}
-echo "Waiting for dust to settle" & sleep 3
+echo "Waiting for dust to settle" & sleep 8
 echo "Starting squid with Clean Cache"
 ${HOME}/bin/lg-sudo-bg "service squid3 start" >>${LOG_FILE} 2>>${LOG_FILE}
 echo "Purging \"oldcache\" dir"
