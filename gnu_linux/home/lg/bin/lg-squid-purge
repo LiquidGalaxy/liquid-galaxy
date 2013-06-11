@@ -17,14 +17,14 @@ LOG_FILE="${HOME}/tmp/squid-purge.log"
 echo "Purge: $(date)" >${LOG_FILE}
 
 echo "Killing Squid-related Procs"
-lg-sudo-bg "killall -9 squidmon.sh; squid3 -k kill" >>${LOG_FILE} 2>>${LOG_FILE}
+${HOME}/bin/lg-sudo-bg "killall -9 squidmon.sh; squid3 -k kill" >>${LOG_FILE} 2>>${LOG_FILE}
 echo "Moving Old Cache"
-lg-sudo-bg "mkdir -v /var/spool/squid3/oldcache; mv -vf /var/spool/squid3/* /var/spool/squid3/oldcache/" >>${LOG_FILE} 2>>${LOG_FILE}
+${HOME}/bin/lg-sudo-bg "mkdir -v /var/spool/squid3/oldcache; mv -vf /var/spool/squid3/* /var/spool/squid3/oldcache/" >>${LOG_FILE} 2>>${LOG_FILE}
 echo "Waiting for dust to settle" & sleep 3
 echo "Starting squid with Clean Cache"
-lg-sudo-bg "service squid3 start" >>${LOG_FILE} 2>>${LOG_FILE}
+${HOME}/bin/lg-sudo-bg "service squid3 start" >>${LOG_FILE} 2>>${LOG_FILE}
 echo "Purging \"oldcache\" dir"
-lg-sudo-bg "rm -rf /var/spool/squid3/oldcache" >>${LOG_FILE} 2>>${LOG_FILE}
+${HOME}/bin/lg-sudo-bg "rm -rf /var/spool/squid3/oldcache" >>${LOG_FILE} 2>>${LOG_FILE}
 echo "Starting a new Squid Monitor"
-lg-run-bg "screen -c /dev/null -S squidmon -d -m \${HOME}/bin/squidmon.sh" >>${LOG_FILE} 2>>${LOG_FILE}
+${HOME}/bin/lg-run-bg "screen -c /dev/null -S squidmon -d -m \${HOME}/bin/squidmon.sh" >>${LOG_FILE} 2>>${LOG_FILE}
 
