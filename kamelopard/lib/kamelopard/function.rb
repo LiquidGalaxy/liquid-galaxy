@@ -14,7 +14,7 @@ module Kamelopard
     module Functions
 
         # Abstract class representing a one-dimensional function
-        class Function1D
+        class Function
             # min and max describe the function's domain. Values passed to
             # get_value will only range from 0 to 1; the actual value
             # calculated will be mapped to a percentage of that domain.
@@ -42,7 +42,7 @@ module Kamelopard
             end
 
             def compose=(f)
-                raise "Can only compose another one-dimensional function" unless f.kind_of? Function1D or f.nil?
+                raise "Can only compose another function" unless f.kind_of? Function or f.nil?
                 @compose = f
             end
 
@@ -57,7 +57,7 @@ module Kamelopard
             end
 
             #def append(f)
-            #    raise "Can only append another one-dimensional function" unless f.kind_of? Function1D or f.nil?
+            #    raise "Can only append another one-dimensional function" unless f.kind_of? Function or f.nil?
             #    print STDERR "WARNING: append() isn't actually implemented" unless f.nil?
             #    # XXX
             #    # Gotta implement this. The idea is to have one function for the first
@@ -74,9 +74,29 @@ module Kamelopard
             end
 
             def self.interpolate(a, b)
-                # Creates a new Function1D object between points A and B
+                # Creates a new Function object between points A and B
                 raise "Override this method before calling it, please"
             end
+        end   ## End of Function class
+
+        # get_value and run_function return a single scalar value 
+        class Function1D < Function
+            def compose=(f)
+                raise "Can only compose another one-dimensional function" unless f.kind_of? Function1D or f.nil?
+                @compose = f
+            end
+
+        end
+
+        # get_value and run_function return an array of values
+        class FunctionMultiDim < Function
+            attr_reader :ndims
+
+            def compose=(f)
+                raise "Can only compose another #{@ndims}-dimensional function" unless (f.kind_of? FunctionMultiDim and @ndims = f.ndims) or f.nil?
+                @compose = f
+            end
+
         end
 
         # Represents a cubic equation of the form c3 * x^3 + c2 * x^2 + c1 * x + c0
@@ -105,7 +125,7 @@ module Kamelopard
                 c0 = m[0,3]
                 return Cubic.new(c3, c2, c1, c0, min, max)
             end
-        end
+        end  ## End of Cubic class
 
         # Describes a quadratic equation
         class Quadratic < Cubic
@@ -149,8 +169,11 @@ module Kamelopard
                 return Constant.new((b.to_f - a.to_f) / 0.0)
             end
         end
-    end
-end 
+    end  ## End of Functions sub-module
+end  ## End of Kamelopard module
+
+## Example uses
+
 # include Kamelopard::Functions
 # 
 # l = Line.new 1.0, 0.0
