@@ -108,6 +108,15 @@ module Kamelopard
     def Kamelopard.convert_coord(a)    # :nodoc:
         a = a.to_s.upcase.strip.gsub(/\s+/, '')
 
+        if a =~ /^[+-]?\d+(\.\d+)?$/ then
+            # coord needs no transformation
+            return a 
+        elsif a =~ /^[+-]?\d+\.\d+E?-?\d+/ then
+            # Scientific notation
+            return a
+        end
+        p a
+
         mult = 1
         if a =~ /^-/ then
             mult *= -1
@@ -121,10 +130,7 @@ module Kamelopard
         a = a.sub /[NESW]$/, ''
         a = a.strip
 
-        if a =~ /^\d+(\.\d+)?$/ then
-            # coord needs no transformation
-            1
-        elsif a =~ /^\d+D\d+M\d+(\.\d+)?S$/ then
+        if a =~ /^\d+D\d+M\d+(\.\d+)?S$/ then
             # coord is in dms
             p = a.split /[D"']/
             a = p[0].to_f + (p[2].to_f / 60.0 + p[1].to_f) / 60.0
