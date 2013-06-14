@@ -2360,6 +2360,8 @@ describe 'make_function_path' do
         # latitude, longitude, altitude, heading, tilt, roll, duration, range
     pending "handles coordinates correctly"
     pending "handles altitudeMode and extrude correctly"
+    pending "handles multidim correctly, including running it after direct assignment is complete"
+    pending "yields properly to a code block, and only after other assignments are complete"
 
 # Sample function:
 #make_function_path(10,
@@ -2381,4 +2383,30 @@ describe 'make_function_path' do
 #    puts v[:callback_value]
 #    v
 #end
+end
+
+describe "splines" do
+    pending "test splines"
+#require 'kamelopard'
+#require 'kamelopard/spline'
+#
+#include Kamelopard
+#include Kamelopard::Functions
+#
+#sp = SplineFunction.new(5)
+#sp.add_control_point [4,30,30,10000,234], 10
+#sp.add_control_point [8,40,30,9000,234], 30
+#sp.add_control_point [8,50,50,8000,234], 100
+#sp.add_control_point [4,35,50,7000,234], 10
+#
+#name_document 'Spline test'
+#name_folder 'Spline resources'
+#name_tour 'Spline tour'
+#
+#a = make_function_path(100,
+#    :altitudeMode => :relativeToGround, :tilt => 45, :show_placemarks => 1,
+#    :multidim => [ [ sp, [ nil, :latitude, :longitude, :altitude ] ] ]
+#)
+#
+#write_kml_to
 end
