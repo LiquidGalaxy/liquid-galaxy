@@ -1,5 +1,9 @@
 IDEAS FOR FUTURE DEVELOPMENT
 
+* Make smooth transitions as I cross control points in splines, so speed
+  doesn't suddenly change (after proving speed does, in fact, currently change
+  drastically)
+
 * Collecting a set of tours into one document is difficult. Make it easy to do,
   and to add an index to the whole thing
 
@@ -7,17 +11,6 @@ IDEAS FOR FUTURE DEVELOPMENT
   busywork. Kamelopard should do it automatically.
 
 * Improve helper functions, their tests, and their documentation
-
-* Add functions to generate various shapes in one and possibly two dimensions,
-  and other functions to accept those paths as arguments to create flythroughs.
-  These paths could include regular lines, lines where the points expand or
-  contract geometrically or exponentially, sine and cosine functions (for
-  making circles), etc., and other functions could take these paths as
-  arguments to describe latitude, longitude, altitude, duration, heading, tilt,
-  etc. For instance, a sine path passed to the tilt parameter would rock back
-  and forth. sine and cosine passed to lat and long respectivally would travel
-  in a circle. Adding an exponentially increasing range path would make it a
-  spiral.
 
 * Add a function to get the current camera position, if possible
 
