@@ -401,15 +401,21 @@
   
   # Given a hash of values, this creates an AbstractView object. Possible
   # values in the hash are :latitude, :longitude, :altitude, :altitudeMode,
-  # :tilt, :heading, :roll, and :range. If the hash specifies :roll, a Camera
-  # object will result; otherwise, a LookAt object will result. Specifying both
-  # :roll and :range will still result in a Camera object, and the :range
-  # option will be ignored. :roll and :range have no default; all other values
-  # default to 0 except :altitudeMode, which defaults to :relativeToGround
+  # :tilt, :heading, :roll, :range, :begin, :end, and :when. If the hash
+  # specifies :roll, a Camera object will result; otherwise, a LookAt object
+  # will result. Specifying both :roll and :range will still result in a Camera
+  # object, and the :range option will be ignored.
+  #
+  # :begin, :end, and :when are used to create the view's timestamp or timespan
+  #
+  # :roll, :range, and the timestamp / timespan options have no default; all
+  # other values default to 0 except :altitudeMode, which defaults to
+  # :relativeToGround. 
   def make_view_from(options = {})
       o = {}
       o.merge! options
-      options.each do |k, v| o[k.to_sym] = v unless k.kind_of? Symbol
+      options.each do |k, v|
+          o[k.to_sym] = v unless k.kind_of? Symbol
       end
   
       # Set defaults
@@ -432,8 +438,18 @@
       else
           view = Kamelopard::LookAt.new p
       end
+
+      if o.has_key? :when then
+          o[:timestamp] = Kamelopard::TimeStamp.new(o[:when])
+      elsif o.has_key? :begin or o.has_key? :end then
+          (b, e) = [nil, nil]
+          b = o[:begin] if o.has_key? :begin
+          e = o[:end] if o.has_key? :end
+          o[:timespan] = Kamelopard::TimeSpan.new(b, e)
+      end
   
-      [ :altitudeMode, :tilt, :heading, :timestamp, :timespan, :timestamp, :range, :roll, :viewerOptions ].each do |a|
+      [ :altitudeMode, :tilt, :heading, :timespan, :timestamp, :range, :roll, :viewerOptions ].each do |a|
+          #p o[a] if o.has_key? a and a == :timestamp
           view.method("#{a.to_s}=").call(o[a]) if o.has_key? a
       end
   
@@ -596,3 +612,43 @@
   def get_doc_holder
     return Kamelopard::DocumentHolder.instance
   end
+
+    # Generates a series of points in a path that will simulate Earth's FlyTo in
+    # bounce mode, from one view to another. Note that the view objects must be
+    # the same time: either LookAt, or Camera
+    #--
+    # Fix the limitation that the views must be the same type
+    #++
+    def bounce(a, b, duration, points = 10)
+        # The idea here is just to generate a function; the hard bit is finding
+        # control points.
+        include Kamelopard
+        include Kamelopard::Functions
+
+        max_alt = a.altitude
+        max_alt = b.altitude if b.altitude > max_alt
+
+        opts = {
+            :latitude => Line.interpolate(a.latitude, b.latitude),
+            :longitude => Line.interpolate(a.longitude, b.longitude),
+            :heading => Line.interpolate(a.heading, b.heading),
+            :tilt => Line.interpolate(a.tilt, b.tilt),
+                # XXX This doesn't really work. An actual altitude requires a
+                # value, and a mode, and we ignore the modes because there's no
+                # way for us to figure out absolute altitudes given, say,
+                # :relativeToGround
+            :altitude => Quadratic.interpolate(a.altitude, b.altitude, 0.3 / 1.6, 1.3 * (b.altitude - a.altitude).abs),
+#            def self.interpolate(ymin, ymax, x1, y1, min = -1.0, max = 1.0)
+            :altitudeMode => a.altitudeMode,
+            :duration => duration * 1.0 / points,
+            # XXX make a way to turn this on and off
+            #:no_flyto => true
+        }
+
+        if a.kind_of? Camera then
+            opts[:roll] = Line.interpolate(a.roll, b.roll)
+        else
+            opts[:range] = Line.interpolate(a.range, b.range)
+        end
+        return make_function_path(points, opts)
+    end
