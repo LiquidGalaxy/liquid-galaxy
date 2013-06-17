@@ -101,7 +101,8 @@ module Kamelopard
             f << pl
         end
 
-        # XXX This is what needs serious testing
+        # XXX Change / augment API, so that this function, or a cognate, takes
+        # a view, and returns a view modified for the camera in question
         def self.get_camera(heading, tilt, roll, cam_num, cam_angle, cam_count = nil)
             if cam_angle.nil? then
                 cam_angle = cam_num * 360.0 / cam_count
