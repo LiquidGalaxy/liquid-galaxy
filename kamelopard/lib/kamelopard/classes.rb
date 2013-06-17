@@ -110,10 +110,10 @@ module Kamelopard
 
         if a =~ /^[+-]?\d+(\.\d+)?$/ then
             # coord needs no transformation
-            return a 
+            return a.to_f
         elsif a =~ /^[+-]?\d+\.\d+E?-?\d+/ then
             # Scientific notation
-            return a
+            return a.to_f
         end
         p a
 
@@ -149,7 +149,7 @@ module Kamelopard
         # check that it's within range
         a = a.to_f * mult
         raise "Coordinate #{a} out of range" if a > 180 or a < -180
-        return a
+        return a.to_f
     end
 
     # Helper function for altitudeMode / gx:altitudeMode elements
