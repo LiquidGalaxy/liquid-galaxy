@@ -79,7 +79,9 @@ module Kamelopard
             hash = {}
             [ :latitude, :longitude, :altitude, :heading,
               :tilt, :altitudeMode, :extrude, :when,
-              :roll, :range, :pause, :begin, :end].each do |k|
+              :roll, :range, :pause, :begin, :end, :show_placemarks,
+              :no_flyto, :pause
+            ].each do |k|
                 if options.has_key? k then
                     hash[k] = val(options[k], i, p)
                 end
