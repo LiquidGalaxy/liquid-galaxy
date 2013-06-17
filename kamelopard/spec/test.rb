@@ -2409,4 +2409,35 @@ describe "splines" do
 #)
 #
 #write_kml_to
+
+# Sample with timestamp /timespan
+# require 'time'
+# (views, placemarks) = make_function_path(10,
+#     :latitude => Line.interpolate(38.8, 40.3),
+#     :altitude => Line.interpolate(10000, 2000),
+#     :heading => Line.interpolate(0, 90),
+#     :tilt => Line.interpolate(40.0, 90),
+#     :roll => 0,
+#     :show_placemarks => 1,
+#     :when => l,
+#     :duration => Quadratic.interpolate(2.0, 4.0, 0.0, 1.0),
+# ) do |a, v|
+#     tm = begintime + v[:when] * interval
+#     b = tm
+#     e = tm + 36000
+#     b = b.xmlschema() if Kml_format
+#     e = e.xmlschema() if Kml_format
+#     v.delete :when
+#     v[:begin] = b
+#     v[:end] = e
+#     if v.has_key? :callback_value then
+#         v[:callback_value] += 1
+#     else
+#         v[:pause] = 0.01
+#         v[:callback_value] = 1
+#     end
+#     v
+# end
+
+# Also test the placemark and view arrays make_function_path returns
 end

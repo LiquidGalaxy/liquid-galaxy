@@ -13,7 +13,7 @@ module Kamelopard
     #   points: The number of points in the series
     #   hash: Values used to create the hash, which creates the point in the
     #   series. Keys in this hash include:
-    #     latitude, longitude, altitude, heading, tilt, roll, range, duration, altitudeMode, extrude
+    #     Any option suitable for the make_view_from() function
     #       These can be constant numbers, Proc objects, or Function1D objects.
     #       The latter two will be called once for each point in the series.
     #       Proc objects will be passed the number of the point they're
@@ -69,26 +69,26 @@ module Kamelopard
             end
         end
 
-        result_points = []
+        views = []
+        placemarks = []
 
         callback_value = nil
         i = 0
         while (i <= points)
             p = i.to_f / points.to_f
-            hash = {
-                :latitude => val(options[:latitude], i, p),
-                :longitude => val(options[:longitude], i, p),
-                :altitude => val(options[:altitude], i, p),
-                :heading => val(options[:heading], i, p),
-                :tilt => val(options[:tilt], i, p),
-                :altitudeMode => val(options[:altitudeMode], i, p),
-                :extrude => val(options[:extrude], i, p),
-            }
+            hash = {}
+            [ :latitude, :longitude, :altitude, :heading,
+              :tilt, :altitudeMode, :extrude, :when,
+              :roll, :range, :pause, :begin, :end].each do |k|
+                if options.has_key? k then
+                    hash[k] = val(options[k], i, p)
+                end
+            end
 
             hash[:show_placemarks] = options[:show_placemarks] if options.has_key? :show_placemarks
-            hash[:roll] = val(options[:roll], i, p) if options.has_key? :roll
-            hash[:range] = val(options[:range], i, p) if options.has_key? :range
-            hash[:pause] = val(options[:pause], i, p) if options.has_key? :pause
+            #hash[:roll] = val(options[:roll], i, p) if options.has_key? :roll
+            #hash[:range] = val(options[:range], i, p) if options.has_key? :range
+            #hash[:pause] = val(options[:pause], i, p) if options.has_key? :pause
 
             if options.has_key? :duration
                 duration = val(options[:duration], i, p)
@@ -119,15 +119,19 @@ module Kamelopard
 
             v = make_view_from(hash)
             p = point(v.longitude, v.latitude, v.altitude, hash[:altitudeMode], hash[:extrude])
-            get_folder << placemark(i.to_s, :geometry => p) if hash.has_key? :show_placemarks
+            # XXX Should I add the view's timestamp / timespan, if it exists, to the placemark?
+            pl = placemark(i.to_s, :geometry => p)
+            pl.abstractView = v
+            get_folder << pl if hash.has_key? :show_placemarks
             fly_to v, :duration => duration , :mode => :smooth unless hash.has_key? :no_flyto
-            result_points << v
+            views << v
+            placemarks << pl
 
             pause hash[:pause] if hash.has_key? :pause
 
             i = i + 1
         end
-        result_points
+        [views, placemarks]
     end
 
 end
