@@ -622,7 +622,7 @@
     # XXX Make the direction of change for elements that cycle smart enough to
     #     choose the shortest direction around the circle
     #++
-    def bounce(a, b, duration, points = 10)
+    def bounce(a, b, duration, points, options = {})
         raise "Arguments to bounce() must either be Camera or LookAt objects, and must be the same type" unless
             ((a.kind_of? Kamelopard::Camera and b.kind_of? Kamelopard::Camera) or
              (a.kind_of? Kamelopard::LookAt and b.kind_of? Kamelopard::LookAt))
@@ -647,9 +647,9 @@
 #            def self.interpolate(ymin, ymax, x1, y1, min = -1.0, max = 1.0)
             :altitudeMode => a.altitudeMode,
             :duration => duration * 1.0 / points,
-            # XXX make a way to turn this on and off
-            #:no_flyto => true
         }
+        opts[:no_flyto] = 1 if options.has_key?(:no_flyto)
+        opts[:show_placemarks] = 1 if options.has_key?(:show_placemarks)
 
         if a.kind_of? Camera then
             opts[:roll] = Line.interpolate(a.roll, b.roll)
