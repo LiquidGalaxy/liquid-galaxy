@@ -617,9 +617,15 @@
     # bounce mode, from one view to another. Note that the view objects must be
     # the same time: either LookAt, or Camera
     #--
-    # Fix the limitation that the views must be the same type
+    # XXX Fix the limitation that the views must be the same type
+    # XXX Make the height of the bounce relate to the distance of the travel
+    # XXX Make the direction of change for elements that cycle smart enough to
+    #     choose the shortest direction around the circle
     #++
     def bounce(a, b, duration, points = 10)
+        raise "Arguments to bounce() must either be Camera or LookAt objects, and must be the same type" unless
+            ((a.kind_of? Kamelopard::Camera and b.kind_of? Kamelopard::Camera) or
+             (a.kind_of? Kamelopard::LookAt and b.kind_of? Kamelopard::LookAt))
         # The idea here is just to generate a function; the hard bit is finding
         # control points.
         include Kamelopard
