@@ -1,3 +1,14 @@
+= 0.0.12
+
+* Add function bounce() to simulate flying in bounce mode between two
+AbstractViews
+* Add support for timestamp / timespan in make_function_paths and
+make_view_from
+* Fix convert_coords to return floats, not strings
+* Add multidimensional function API, and spline functions to use it
+* Add code to calculate positions for simulated panoramic cameras, hereafter
+known as "multicam"
+
 = 0.0.11
 
 * Add ability to change the current document easily
