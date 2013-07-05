@@ -1,8 +1,10 @@
 IDEAS FOR FUTURE DEVELOPMENT
 
-* Make smooth transitions as I cross control points in splines, so speed
-  doesn't suddenly change (after proving speed does, in fact, currently change
-  drastically)
+* Add better logging, so, for instance, if a weird movement occurs in my tour,
+  I can turn on debug logging to see where the flyto is being created.
+
+* I suspect speed can change drastically across a spline's control points.
+  Prove or disprove this, and if necessary, fix the problem.
 
 * Collecting a set of tours into one document is difficult. Make it easy to do,
   and to add an index to the whole thing
