@@ -109,8 +109,8 @@
   end
   
   # Inserts a KML gx:Wait element
-  def pause(p)
-      Kamelopard::Wait.new p
+  def pause(p, options = {})
+      Kamelopard::Wait.new p, options
   end
   
   # Returns the current Tour object
@@ -161,8 +161,8 @@
   # Otherwise, it will orbit counter-clockwise. To orbit multiple times, add or
   # subtract 360 from the endHeading. The tilt argument matches the KML LookAt
   # tilt argument
-  def orbit(center, range = 100, tilt = 0, startHeading = 0, endHeading = 360)
-      fly_to Kamelopard::LookAt.new(center, startHeading, tilt, range), 2, nil
+  def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360)
+      am = center.altitudeMode
   
       # We want at least 5 points (arbitrarily chosen value), plus at least 5 for
       # each full revolution
@@ -177,12 +177,14 @@
       step = step * -1 if startHeading > endHeading
   
       lastval = startHeading
+      mode = :bounce
       startHeading.step(endHeading, step) do |theta|
           lastval = theta
-          fly_to Kamelopard::LookAt.new(center, theta, tilt, range), 2, nil, 'smooth'
+          fly_to Kamelopard::LookAt.new(center, :heading => theta, :tilt => tilt, :range => range, :altitudeMode => am), :duration => 2, :mode => mode
+          mode = :smooth
       end
       if lastval != endHeading then
-          fly_to Kamelopard::LookAt.new(center, endHeading, tilt, range), 2, nil, 'smooth'
+          fly_to Kamelopard::LookAt.new(center, :heading => endHeading, :tilt => tilt, :range => range, :altitudeMode => am), :duration => 2, :mode => :smooth
       end
   end
   
@@ -502,9 +504,8 @@
   end
   
   # Pulls the Placemarks from the KML document d and yields each in turn to the caller
-  # k = an XML::Document containing KML
+  # d = an XML::Document containing KML
   def each_placemark(d)
-      i = 0
       d.find('//kml:Placemark').each do |p|
           all_values = {}
   
@@ -618,9 +619,7 @@
     # the same time: either LookAt, or Camera
     #--
     # XXX Fix the limitation that the views must be the same type
-    # XXX Make the height of the bounce relate to the distance of the travel
-    # XXX Make the direction of change for elements that cycle smart enough to
-    #     choose the shortest direction around the circle
+    # XXX Make it slow down a bit toward the end of the run
     #++
     def bounce(a, b, duration, points, options = {})
         raise "Arguments to bounce() must either be Camera or LookAt objects, and must be the same type" unless
@@ -634,17 +633,28 @@
         max_alt = a.altitude
         max_alt = b.altitude if b.altitude > max_alt
 
+        bounce_alt = 1.3 * (b.altitude - a.altitude).abs
+            # 150 is the result of trial-and-error
+        gc = 0.8 * great_circle_distance(a, b) * 150
+        bounce_alt = gc if gc > bounce_alt
+        #raise "wtf: #{a.inspect}, #{b.inspect}"
+
+        latlonfunc = LatLonInterp.new(a, b) do |x, y, z|
+            Line.interpolate(x, y)
+        end
+
         opts = {
             :latitude => Line.interpolate(a.latitude, b.latitude),
             :longitude => Line.interpolate(a.longitude, b.longitude),
+            :multidim => [[ latlonfunc, [ :latitude, :longitude ]]],
             :heading => Line.interpolate(a.heading, b.heading),
             :tilt => Line.interpolate(a.tilt, b.tilt),
                 # XXX This doesn't really work. An actual altitude requires a
                 # value, and a mode, and we ignore the modes because there's no
                 # way for us to figure out absolute altitudes given, say,
                 # :relativeToGround
-            :altitude => Quadratic.interpolate(a.altitude, b.altitude, 0.3 / 1.6, 1.3 * (b.altitude - a.altitude).abs),
-#            def self.interpolate(ymin, ymax, x1, y1, min = -1.0, max = 1.0)
+                                                # ymin,    ymax        x1         y1
+            :altitude => Quadratic.interpolate(a.altitude, b.altitude, 0.5, bounce_alt),
             :altitudeMode => a.altitudeMode,
             :duration => duration * 1.0 / points,
         }
@@ -657,4 +667,21 @@
             opts[:range] = Line.interpolate(a.range, b.range)
         end
         return make_function_path(points, opts)
+    end
+
+    # Returns the great circle distance between two points
+    def great_circle_distance(a, b)
+        # Stolen from http://rosettacode.org/wiki/Haversine_formula#Ruby
+        include Math
+
+        def deg2rad(a)
+          a * PI / 180
+        end
+
+        radius = 6371  # rough radius of the Earth, in kilometers
+        lat1, long1 = [Math::PI * a.latitude / 180.0, Math::PI * a.longitude / 180.0]
+        lat2, long2 = [Math::PI * b.latitude / 180.0, Math::PI * b.longitude / 180.0]
+        d = 2 * radius * asin(sqrt(sin((lat2-lat1)/2)**2 + cos(lat1) * cos(lat2) * sin((long2 - long1)/2)**2))
+       
+        return d
     end
