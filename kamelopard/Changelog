@@ -1,3 +1,7 @@
+= 0.0.13
+
+* Fix the orbit function
+
 = 0.0.12
 
 * Add function bounce() to simulate flying in bounce mode between two
