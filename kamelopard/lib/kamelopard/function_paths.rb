@@ -8,7 +8,8 @@
 module Kamelopard
 
     # This function creates a hash, then uses that hash to create a point in a
-    # tour, using make_view_from() among other things.
+    # tour, using make_view_from() among other things. It will yield to a code
+    # block, if one is provided, as described below.
     # Arguments:
     #   points: The number of points in the series
     #   hash: Values used to create the hash, which creates the point in the
@@ -20,11 +21,6 @@ module Kamelopard
     #       calculating, starting with 0, and the current value of the hash
     #       created for this point. "duration" represents the time in seconds
     #       spent flying from the last point to this one.
-    #     callback
-    #       This Proc object, if defined, will be called after the other hash
-    #       keys have been calculated. It gets passed the number of the point,
-    #       and the current value of the hash for this point. It can modify and
-    #       return that hash as needed.
     #     callback_value
     #       A placeholder the callback function can use. It can set it when
     #       it's called one time, and see that value when called the next time.
@@ -35,7 +31,7 @@ module Kamelopard
     #     no_flyto
     #       If set, on flyto objects will be created
     #     multidim
-    #       An array of hashes. Each array element is an array, containing two
+    #       An array. Each array element is itself an array, containing two
     #       values. The first is associated with a FunctionMultiDim class
     #       representing a multidimensional function. The second is an array of
     #       symbols and nils. Valid symbols include any of the possible
@@ -44,7 +40,8 @@ module Kamelopard
     #       The symbols in the :vals array will be assigned the returned value
     #       corresponding to their position in the :vals array. For instance,
     #       assume the following :multidim argument
-    #          [ { :func => myFunc, :vals = [:latitude, :longitude, nil, :altitude]} ]
+    #          [ [ myFunc, [:latitude, :longitude, nil, :altitude] ],
+    #            [ anotherFunc, [:pause] ] ]
     #       When myFunc is evaluated, assume it returns [1, 2, 3, 4, 5]. Thus,
     #       :latitude will be 1, :longitude 2, and so on. Because :vals[2] is
     #       nil, the corresponding element in the results of myFunc will be
@@ -103,7 +100,7 @@ module Kamelopard
                 options[:multidim].each do |md|
                     r = val(md[0], i, p)
                     md[1].each_index do |ind|
-                        hash[md[1][ind]] = r[0, ind] unless md[1][ind].nil?
+                        hash[md[1][ind]] = r[ind] unless md[1][ind].nil?
                     end
                 end
             end
