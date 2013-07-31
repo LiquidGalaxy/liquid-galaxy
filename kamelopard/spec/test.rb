@@ -2385,6 +2385,11 @@ describe 'make_function_path' do
 #end
 end
 
+describe 'helpers' do
+    pending 'test helper functions here'
+    pending 'test bounce()'
+end
+
 describe "splines" do
     pending "test splines"
 #require 'kamelopard'
