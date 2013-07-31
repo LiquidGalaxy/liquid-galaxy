@@ -115,7 +115,6 @@ module Kamelopard
             # Scientific notation
             return a.to_f
         end
-        p a
 
         mult = 1
         if a =~ /^-/ then
@@ -179,6 +178,12 @@ module Kamelopard
         # indicating the Object should be included in KML files of all types.
         # Set it to true to ensure it shows up only in slave mode.
         attr_reader :master_only
+
+        # Abstract function, designed to take an XML node containing a KML
+        # object of this type, and parse it into a Kamelopard object
+        def self.parse(x)
+            raise "Cannot parse a #{self.class.name}"
+        end
 
         # This constructor looks for values in the options hash that match
         # class attributes, and sets those attributes to the values in the
@@ -1770,6 +1775,15 @@ module Kamelopard
         def initialize(duration = 0, options = {})
             super options
             @duration = duration
+        end
+
+        def self.parse(x)
+            dur = nil
+            id = x.attributes['id'] if x.attributes? 'id'
+            w.find('//gx:duration').each do |d|
+                dur = d.children[0].to_s.to_f
+                return Wait.new(dur, :id => id)
+            end
         end
 
         def to_kml(elem = nil)
