@@ -169,6 +169,53 @@ module Kamelopard
                 return Constant.new((b.to_f - a.to_f) / 0.0)
             end
         end
+
+        # Interpolates between two points, choosing the shortest great-circle
+        # distance between the points.
+        class LatLonInterp < FunctionMultiDim
+            # a and b are points. This function will yield three variables,
+            # twice, expecting the block to return a one-dimensional function
+            # interpolating between the first two variables it was sent. The
+            # third variable yielded is a symbol, either :latitude or
+            # :longitude, to indicate which set of coordinates is being
+            # processed.
+            attr_reader :latfunc, :lonfunc
+
+            def initialize(a, b)
+                super()
+                (lat1, lon1) = [a.latitude, a.longitude]
+                (lat2, lon2) = [b.latitude, b.longitude]
+
+#                if (lat2 - lat1).abs > 90 
+#                    if lat2 > 0
+#                        lat2 = lat2 - 180
+#                    else
+#                        lat2 = lat2 + 180
+#                    end
+#                end
+
+                @latfunc = yield lat1, lat2, :latitude
+
+                if (lon2 - lon1).abs > 180 
+                    if lon2 > 0
+                        lon2 = lon2 - 360
+                    else
+                        lon2 = lon2 + 360
+                    end
+                end
+
+                @lonfunc = yield lon1, lon2, :longitude
+            end
+
+            def run_function(x)
+                (lat, lon) = [@latfunc.run_function(x), @lonfunc.run_function(x)]
+                lat = lat - 180 if lat > 90
+                lat = lat + 180 if lat < -90
+                lon = lon - 360 if lon > 180
+                lon = lon + 360 if lon < -180
+                return [lat, lon]
+            end
+        end ## End of LatLonInterp
     end  ## End of Functions sub-module
 end  ## End of Kamelopard module
 
