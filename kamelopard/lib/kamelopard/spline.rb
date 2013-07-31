@@ -82,7 +82,7 @@ module Kamelopard
                 ]
 
                 p = Matrix[[1, u, u**2, u**3]] * h * cps
-                return p
+                return p.row(0)
             end
         end   ## End of SplineFunction class
     end   ## End of Function module
