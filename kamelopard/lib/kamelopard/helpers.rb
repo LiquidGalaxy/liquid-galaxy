@@ -161,7 +161,7 @@
   # Otherwise, it will orbit counter-clockwise. To orbit multiple times, add or
   # subtract 360 from the endHeading. The tilt argument matches the KML LookAt
   # tilt argument
-  def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360)
+  def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360, duration = 0)
       am = center.altitudeMode
   
       # We want at least 5 points (arbitrarily chosen value), plus at least 5 for
@@ -178,9 +178,14 @@
   
       lastval = startHeading
       mode = :bounce
+      if duration != 0
+        dur = duration.to_f / den
+      else
+        dur = 2
+      end
       startHeading.step(endHeading, step) do |theta|
           lastval = theta
-          fly_to Kamelopard::LookAt.new(center, :heading => theta, :tilt => tilt, :range => range, :altitudeMode => am), :duration => 2, :mode => mode
+          fly_to Kamelopard::LookAt.new(center, :heading => theta, :tilt => tilt, :range => range, :altitudeMode => am), :duration => dur, :mode => mode
           mode = :smooth
       end
       if lastval != endHeading then
