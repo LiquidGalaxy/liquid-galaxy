@@ -101,8 +101,6 @@ module Kamelopard
             f << pl
         end
 
-        # XXX Change / augment API, so that this function, or a cognate, takes
-        # a view, and returns a view modified for the camera in question
         def self.get_camera(heading, tilt, roll, cam_num, cam_angle, cam_count = nil)
             if cam_angle.nil? then
                 cam_angle = cam_num * 360.0 / cam_count
@@ -119,6 +117,14 @@ module Kamelopard
             (h, t, r) = vector_to_camera(matrix * camera, matrix * up)
             # XXX What am I getting wrong, to require the negated roll?
             return [h, t, -1 * r]
+        end
+
+        def self.get_camera_view(v, cam_num, cam_angle, cam_count = nil)
+            (h, t, r) = get_camera(v.heading, v.tilt, v.roll, cam_num, cam_angle, cam_count)
+            v.heading = h
+            v.tilt = t
+            v.roll = r
+            v
         end
 
         def self.test(kml_name = 'multicam_test.kml')
