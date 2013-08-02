@@ -12,6 +12,13 @@
   def set_flyto_mode_to(mode)
       Kamelopard::DocumentHolder.instance.current_document.flyto_mode = mode
   end
+
+    # Clears out the document_holder
+    def clear_documents
+        dh = get_doc_holder
+        dh.delete_current_doc while dh.documents.size > 0
+    end
+
   
   # Shows or hides the popup balloon for Placemark and ScreenOverlay objects.
   # Arguments are the object; 0 or 1 to hide or show the balloon, respectively;
@@ -621,7 +628,9 @@
 
     # Generates a series of points in a path that will simulate Earth's FlyTo in
     # bounce mode, from one view to another. Note that the view objects must be
-    # the same time: either LookAt, or Camera
+    # the same time: either LookAt, or Camera. Options include :no_flyto and
+    # :show_placemarks, and match make_function_path's meanings for those
+    # options
     #--
     # XXX Fix the limitation that the views must be the same type
     # XXX Make it slow down a bit toward the end of the run
@@ -686,7 +695,12 @@
         radius = 6371  # rough radius of the Earth, in kilometers
         lat1, long1 = [Math::PI * a.latitude / 180.0, Math::PI * a.longitude / 180.0]
         lat2, long2 = [Math::PI * b.latitude / 180.0, Math::PI * b.longitude / 180.0]
-        d = 2 * radius * asin(sqrt(sin((lat2-lat1)/2)**2 + cos(lat1) * cos(lat2) * sin((long2 - long1)/2)**2))
+        d = 2 * radius * 
+            Math.asin( Math.sqrt(
+                Math.sin((lat2-lat1)/2)**2 +
+                Math.cos(lat1) * Math.cos(lat2) *
+                Math.sin((long2 - long1)/2)**2
+            ))
        
         return d
     end

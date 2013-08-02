@@ -5,9 +5,20 @@ require 'kamelopard'
 require "xml"
 require 'tempfile'
 
+include Kamelopard
+include Kamelopard::Functions
+
 Kamelopard.set_logger lambda { |lev, mod, msg|
     STDERR.puts "#{lev} #{mod}: #{msg}"
 }
+
+# Namespace array for find_first
+NS = [ 
+        "xmlns:http://www.opengis.net/kml/2.2",
+        "gx:http://www.google.com/kml/ext/2.2",
+        "kml:http://www.opengis.net/kml/2.2",
+        "atom:http://www.w3.org/2005/Atom"
+    ]
 
 # Printing debug information.
 def put_info(str)
@@ -76,7 +87,7 @@ end
 # node need to belong to a proper libxml document, so we need a proper xml.
 #
 def build_doc_from_node(node)
-    kml =<<XXXX
+    kml =<<DOCFROMENODE
     <kml xmlns="http://www.opengis.net/kml/2.2"
     xmlns:gx="http://www.google.com/kml/ext/2.2"
     xmlns:kml="http://www.opengis.net/kml/2.2"
@@ -84,7 +95,7 @@ def build_doc_from_node(node)
     xmlns:xal="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
       #{node.to_kml.to_s}
     </kml>
-XXXX
+DOCFROMENODE
     doc = XML::Document.string(kml)
 end
 
@@ -364,20 +375,20 @@ shared_examples_for 'Kamelopard::AbstractView' do
         @o[:historicalimagery] = true
         doc = build_doc_from_node(@o)
         v = doc.find("//ViewerOptions | //gx:ViewerOptions")
-        v.should_not be_nil
-        v.find(".//gx:option[@name='sunlight',@enabled='true']").should_not be_nil
-        v.find(".//gx:option[@name='streetview',@enabled='true']").should_not be_nil
-        v.find(".//gx:option[@name='historicalimagery',@enabled='true']").should_not be_nil
+        v.size.should_not == 0
+        v.find(".//gx:option[@name='sunlight',@enabled='true']").should_not == 0
+        v.find(".//gx:option[@name='streetview',@enabled='true']").should_not == 0
+        v.find(".//gx:option[@name='historicalimagery',@enabled='true']").should_not == 0
 
         @o[:streetview] = false
         @o[:sunlight] = false
         @o[:historicalimagery] = false
         doc = build_doc_from_node(@o)
         v = doc.find("//ViewerOptions | //gx:ViewerOptions")
-        v.should_not be_nil
-        v.find(".//gx:option[@name='sunlight',@enabled='true']").should_not be_nil
-        v.find(".//gx:option[@name='streetview',@enabled='true']").should_not be_nil
-        v.find(".//gx:option[@name='historicalimagery',@enabled='true']").should_not be_nil
+        v.should_not == 0
+        v.find(".//gx:option[@name='sunlight',@enabled='true']").should_not == 0
+        v.find(".//gx:option[@name='streetview',@enabled='true']").should_not == 0
+        v.find(".//gx:option[@name='historicalimagery',@enabled='true']").should_not == 0
     end
 
     it 'whines when a strange option is provided' do
@@ -975,8 +986,9 @@ describe 'Kamelopard::LookAt' do
 
     it 'contains the right KML attributes' do
         @o.range = 10
-        doc = build_doc_from_node @o
-        doc.find('*[range=10]').should_not be_nil
+        get_folder << placemark('test', :geometry => @o)
+        get_kml.find_first('//range').should_not be_nil
+        get_obj_child_content(@o, 'range').should == '10'
     end
 end
 
@@ -994,7 +1006,7 @@ describe 'Kamelopard::TimeStamp' do
 
     it 'has the right KML elements' do
         doc = build_doc_from_node @o
-        doc.find("//*/*[when='#{@when}']").should_not be_nil
+        doc.find("//*/*[when='#{@when}']").should_not == 0
     end
 
     it 'behaves correctly when to_kml() gets an XML::Node' do
@@ -2283,11 +2295,16 @@ describe 'DocumentHolder' do
         get_document.name.should == 'First'
         get_doc_holder.document_index = j
         get_document.name.should == 'Second'
-
     end
 
-    it 'supports changing the current document' do
-        pending 'Still need to write this one'
+    it 'can delete the current document' do
+        get_folder << placemark('test')
+        get_kml.find_first('//Placemark').should_not be_nil
+
+        dh = get_doc_holder
+        dh.delete_current_doc while dh.documents.size > 0
+
+        get_kml.find_first('//Placemark').should be_nil
     end
 end
 
@@ -2298,7 +2315,6 @@ def val_within_range(o, val, expected, perc)
 end
 
 shared_examples_for 'mathematical functions' do
-    # XXX Some test for 'compose' ought to be included here.
     it 'includes the start and end points, within a margin of error' do
         val_within_range @o, @o.min, @start_value, @one_perc
         val_within_range @o, @o.max, @end_value, @one_perc
@@ -2353,7 +2369,24 @@ describe 'Cubic function' do
 end
 
 describe 'make_function_path' do
-    pending "use callback and callback_value right"
+    it 'handles callback_value properly' do
+        i = 0
+        make_function_path(10,
+            :latitude => 1,
+            :altitude => 1,
+            :heading => 1,
+            :tilt => 1,
+            :roll => 0,
+            :show_placemarks => 1,
+            :duration => 1,
+        ) do |a, v|
+            v[:callback_value].should == i - 1 if i > 0
+            v[:callback_value] = i
+            i = i + 1
+            v
+        end
+    end
+
     pending "pause when the pause hash key is included"
     pending "respects show_placemarks"
     pending "respects no_flyto"
@@ -2415,9 +2448,284 @@ describe 'make_function_path' do
 # end
 end
 
-describe 'helpers' do
-    pending 'test helper functions here'
-    pending 'test bounce()'
+describe 'helper functions' do
+    before :each do
+        @view1 = make_view_from( :latitude => 1, :longitude => 1 )
+        @view2 = make_view_from( :latitude => 2, :longitude => 2 )
+    end
+
+    it 'can get_document' do
+        nm = 'test document'
+        name_document nm
+        get_document.name.should == nm
+    end
+
+    it 'can set flyto_mode' do
+        set_flyto_mode_to :smooth
+        a = fly_to @view1
+        a.mode.should == :smooth
+    end
+
+    it 'toggle_balloon_for' do
+        pending 'Need to write this'
+    end
+
+    it 'hide_balloon_for' do
+        pending 'Need to write this'
+    end
+
+    it 'show_balloon_for' do
+        pending 'Need to write this'
+    end
+
+    it 'fade_balloon_for' do
+        pending 'Need to write this'
+    end
+
+    it 'fade_out_balloon_for' do
+        pending 'Need to write this'
+    end
+
+    it 'fade_in_balloon_for' do
+        pending 'Need to write this'
+    end
+
+    it 'has working point function' do
+        p = point(10, 20, 30, :relativeToGround)
+        p.longitude.should == 10
+        p.latitude.should == 20
+        p.altitude.should == 30
+        p.altitudeMode.should == :relativeToGround
+    end
+
+    it 'has working placemark function' do
+        placemark('name').class.should == Kamelopard::Placemark
+    end
+
+    it 'get_kml' do
+        pending 'Need to write this'
+    end
+
+    it 'has working clear_documents' do
+        Kamelopard::Document.new 'a'
+        Kamelopard::Document.new 'b'
+        Kamelopard::Document.new 'c'
+        clear_documents
+        get_document.name.should == ''
+    end
+
+    it 'get_kml_string' do
+        clear_documents
+        name_document 'a'
+        get_folder << placemark('a placemark')
+        get_kml.find_first('//Document/name').should_not be_nil
+        get_kml.find_first('//Placemark/name').should_not be_nil
+        clear_documents
+        get_kml.find_first('//Document/name').should_not be_nil
+        get_kml.find_first('//Placemark/name').should be_nil
+    end
+
+    it 'pause' do
+        pause 10, :kml_id => 1
+          # XXX Hack! I have no idea why I can't just get_kml.find_first, but it doesn't work
+        doc = XML::Document.string(get_kml.to_s)
+        doc.find_first('//gx:Wait[@id=1]', NS).should_not be_nil
+    end
+
+    it 'get_tour' do
+        pending 'Need to write this'
+    end
+
+    it 'name_tour' do
+        pending 'Need to write this'
+    end
+
+    it 'get_folder' do
+        pending 'Need to write this'
+    end
+
+    it 'folder' do
+        pending 'Need to write this'
+    end
+
+    it 'name_folder' do
+        pending 'Need to write this'
+    end
+
+    it 'name_document' do
+        pending 'Need to write this'
+    end
+
+    it 'zoom_out' do
+        pending 'Need to write this'
+    end
+
+    it 'orbit' do
+        pending 'Need to write this'
+    end
+
+    it 'sound_cue' do
+        pending 'Need to write this'
+    end
+
+    it 'set_prefix_to' do
+        pending 'Need to write this'
+    end
+
+    it 'write_kml_to' do
+        pending 'Need to write this'
+    end
+
+    it 'fade_overlay' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.get_heading' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.get_dist2' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.get_dist3' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.get_tilt' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.get_roll' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.fix_coord' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.add_flyto' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.options=' do
+        pending 'Need to write this'
+    end
+
+    it 'TelemetryProcessor.normalize_points' do
+        pending 'Need to write this'
+    end
+
+    it 'tour_from_points' do
+        pending 'Need to write this'
+    end
+
+    it 'make_view_from' do
+        pending 'Need to write this'
+    end
+
+    it 'screenoverlay' do
+        pending 'Need to write this'
+    end
+
+    it 'xy' do
+        xy.class.should == Kamelopard::XY
+    end
+
+    define 'handles styles' do
+        before :each do
+            @l = labelstyle 
+            @ihref = 'test'
+            @i = iconstyle @ihref
+            @btext = 'text'
+            @b = balloonstyle @btext
+            @s = style :icon => @i, :label => @l, :balloon => @b
+        end
+
+        it 'with iconstyle' do
+            @i.class.should == Kamelopard::IconStyle
+            @i.href.should == @ihref
+        end
+
+        it 'with labelstyle' do
+            @l.class.should == Kamelopard::LabelStyle
+        end
+
+        it 'with balloonstyle' do
+            @b.class.should == Kamelopard::BalloonStyle
+            @b.text.should == @btext
+        end
+
+        it 'with style' do
+            @s.class.should == Kamelopard::Style
+            @s.icon.should == @i
+            @s.balloon.should == @b
+            @s.label.should == @l
+        end
+    end
+
+    it 'look_at' do
+        l = look_at @view1
+        l.longitude.should == @view1.longitude
+    end
+
+    it 'camera' do
+        c = camera @view1
+        c.longitude.should == @view1.longitude
+    end
+
+    it 'fly_to' do
+        pending 'Need to write this'
+    end
+
+    it 'each_placemark' do
+        pending 'Need to write this'
+    end
+
+    it 'make_tour_index' do
+        pending 'Need to write this'
+    end
+
+    it 'show_hide_balloon' do
+        pending 'Need to write this'
+    end
+
+    it 'cdata' do
+        a = cdata 'a'
+        a.cdata?.should be_true
+    end
+
+    it 'do_action' do
+        pending 'Need to write this'
+    end
+
+    it 'great_circle_distance' do
+        pending 'Need to write this'
+    end
+
+    it 'can get the document holder' do
+        get_doc_holder.class.should == Kamelopard::DocumentHolder
+    end
+
+    it 'can bounce' do
+        get_doc_holder.delete_current_doc
+        get_obj_child(get_document, 'Placemark').should be_nil
+        get_obj_child(get_document, 'LookAt').should be_nil
+
+        get_doc_holder.delete_current_doc
+        bounce(@view1, @view2, 10, 10)
+        get_obj_child(get_document, 'Placemark').should be_nil
+        get_kml.find_first('//LookAt').should_not be_nil
+
+        get_doc_holder.delete_current_doc
+        bounce(@view1, @view2, 10, 10, :no_flyto => 1)
+        get_obj_child(get_document, 'Placemark').should be_nil
+        get_kml.find_first('//LookAt').should be_nil
+
+        get_doc_holder.delete_current_doc
+        bounce(@view1, @view2, 10, 10, :show_placemarks => 1)
+        get_kml.find_first('//Placemark').should_not be_nil
+    end
 end
 
 describe "splines" do
