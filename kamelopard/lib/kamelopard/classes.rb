@@ -622,6 +622,7 @@ module Kamelopard
     class Camera < AbstractView
         def initialize(point = nil, options = {})
             super('Camera', point, options)
+            @roll = 0 if @roll.nil?
         end
 
         def range
@@ -637,6 +638,7 @@ module Kamelopard
     class LookAt < AbstractView
         def initialize(point = nil, options = {})
             super('LookAt', point, options)
+            @range = 0 if @range.nil?
         end
 
         def roll
@@ -1003,7 +1005,7 @@ module Kamelopard
         # this function, and tours for non-LG targets, work normally.
         attr_accessor :master_mode
 
-        def initialize(options = {})
+        def initialize(name = '', options = {})
             @tours = []
             @folders = []
             @vsr_actions = []
@@ -1087,6 +1089,21 @@ module Kamelopard
 
         def get_kml_document
             k = XML::Document.new
+
+#            # XXX Should this be add_namespace instead?
+#            ns_arr = [
+#                ['', 'http://www.opengis.net/kml/2.2'],
+#                ['gx', 'http://www.google.com/kml/ext/2.2'],
+#                ['kml', 'http://www.opengis.net/kml/2.2'],
+#                ['atom', 'http://www.w3.org/2005/Atom'],
+#                ['test', 'http://test.com']
+#            ]
+#            ns_arr.each do |a|
+#                nm = 'xmlns'
+#                nm = a[0] if a[0] != ''
+#                k.context.register_namespace(nm, a[1])
+#            end
+
             # XXX fix this
             #k << XML::XMLDecl.default
             k.root = XML::Node.new('kml')
@@ -1094,11 +1111,12 @@ module Kamelopard
             if @uses_xal then
                 r.attributes['xmlns:xal'] = "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0"
             end
-    # XXX Should this be add_namespace instead?
+            # XXX Should this be add_namespace instead?
             r.attributes['xmlns'] = 'http://www.opengis.net/kml/2.2'
             r.attributes['xmlns:gx'] = 'http://www.google.com/kml/ext/2.2'
             r.attributes['xmlns:kml'] = 'http://www.opengis.net/kml/2.2'
             r.attributes['xmlns:atom'] = 'http://www.w3.org/2005/Atom'
+
             r << self.to_kml
             k
         end
@@ -1150,6 +1168,15 @@ module Kamelopard
 
         def document_index=(a)
             @document_index = a
+        end
+
+        def delete_current_doc
+            @documents.delete_at @document_index unless @document_index == -1
+            if @documents.size > 0
+                @document_index = @documents.size - 1
+            else
+                @document_index = -1
+            end
         end
 
         def current_document
@@ -1655,7 +1682,7 @@ module Kamelopard
 
         def initialize(view = nil, options = {})
             @duration = 0
-            @mode = :bounce
+            @mode = Kamelopard::DocumentHolder.instance.current_document.flyto_mode
             super options
             self.view= view unless view.nil?
         end
@@ -1679,6 +1706,8 @@ module Kamelopard
         def to_kml(elem = nil)
             k = XML::Node.new 'gx:FlyTo'
             super k
+
+            #k.namespaces.namespace = XML::Namespaces.new(k, 'gx', 'http://www.google.com/kml/ext/2.2')
             Kamelopard.kml_array(k, [
                 [ @duration, 'gx:duration' ],
                 [ @mode, 'gx:flyToMode' ]
