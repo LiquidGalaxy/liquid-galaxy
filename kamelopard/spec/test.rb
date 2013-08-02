@@ -2387,15 +2387,52 @@ describe 'make_function_path' do
         end
     end
 
-    pending "pause when the pause hash key is included"
-    pending "respects show_placemarks"
-    pending "respects no_flyto"
-        # latitude, longitude, altitude, heading, tilt, roll, duration, range
-    pending "handles coordinates correctly"
-    pending "handles altitudeMode and extrude correctly"
+    it 'pauses when told to' do
+        clear_documents
+        make_function_path( 2, :latitude => 1, :pause => 10 )
+        doc = XML::Document.string(get_kml.to_s)
+        doc.find("//gx:Wait/gx:duration/text()='10'", NS).should be_true
+    end
+
+    it "handles coordinates correctly" do
+        make_function_path(10, :latitude => Line.interpolate(0, 1)) do |i, h|
+            h[:latitude].should == i/10.0
+            h
+        end
+    end
+
+    it "handles altitudeMode and extrude correctly" do
+        (v, pl) = make_function_path(10, :latitude => 10, :altitudeMode => :relativeToSeaFloor, :extrude => 1)
+        pl.each do |p|
+            p.geometry.extrude.should == 1
+            p.altitudeMode.should == :relativeToSeaFloor
+        end
+    end
+
     pending "handles multidim correctly, including running it after direct assignment is complete"
-    pending "yields properly to a code block, and only after other assignments are complete"
-    pending "Returns placemark and view arrays properly"
+
+    it "yields properly to a code block, only after other assignments are complete" do
+        pt = 0
+        make_function_path(5, :latitude => 10, :longitude => 10 ) do |i, h|
+            i.should == pt
+            pt = pt + 1
+            h[:latitude].should == 10
+            h[:longitude].should == 10
+            h
+        end
+    end
+
+    it 'returns placemark and view arrays' do
+        (v, p) = make_function_path(10, :longitude => 10)
+        v.each do |view|
+            view.is_a?(Kamelopard::AbstractView).should be_true
+        end
+        p.each do |placemark|
+            placemark.is_a?(Kamelopard::Placemark).should be_true
+        end
+        v.size.should == 10
+        p.size.should == 10
+    end
 
 # Sample function:
 #make_function_path(10,
@@ -2503,7 +2540,7 @@ describe 'helper functions' do
     end
 
     it 'get_kml' do
-        pending 'Need to write this'
+        get_kml.class.should == XML::Document
     end
 
     it 'has working clear_documents' do
@@ -2533,27 +2570,34 @@ describe 'helper functions' do
     end
 
     it 'get_tour' do
-        pending 'Need to write this'
+        get_tour.class.should == Kamelopard::Tour
     end
 
     it 'name_tour' do
-        pending 'Need to write this'
+        name_tour 'this is a tour'
+        get_tour.name.should == 'this is a tour'
     end
 
     it 'get_folder' do
-        pending 'Need to write this'
+        get_folder.class.should == Kamelopard::Folder
     end
 
     it 'folder' do
-        pending 'Need to write this'
+        name_folder 'test'
+        folder 'test2'
+        get_folder.name.should == 'test2'
     end
 
     it 'name_folder' do
-        pending 'Need to write this'
+        name_folder 'test'
+        get_folder.name.should == 'test'
     end
 
     it 'name_document' do
-        pending 'Need to write this'
+        name_document 'a'
+        get_document.name.should == 'a'
+        name_document 'b'
+        get_document.name.should == 'b'
     end
 
     it 'zoom_out' do
@@ -2565,11 +2609,19 @@ describe 'helper functions' do
     end
 
     it 'sound_cue' do
-        pending 'Need to write this'
+        s = sound_cue('href')
+        s.class.should == Kamelopard::SoundCue
+        s.href.should == 'href'
     end
 
     it 'set_prefix_to' do
-        pending 'Need to write this'
+        old_prefix = Kamelopard.id_prefix
+        set_prefix_to 'random_prefix'
+        p = point(10, 10)
+        p.kml_id.should =~ /random_prefix/
+        set_prefix_to old_prefix
+        p = point(10, 10)
+        p.kml_id =~ /\d/
     end
 
     it 'write_kml_to' do
@@ -2621,11 +2673,51 @@ describe 'helper functions' do
     end
 
     it 'make_view_from' do
-        pending 'Need to write this'
+        def compare(hash, view)
+            fields = {
+                :begin => 1, :end => 1, :when => 1
+            }
+            hash.each do |k, val|
+                if fields.has_key? k then
+                    if k == :when then
+                        view.timestamp.when.should == val
+                    else
+                        view.timespan.method(k).call.should == val
+                    end
+                else
+                    view.method(k).call.should == val
+                end
+            end
+        end
+
+        hash = {
+            :latitude  => 10,
+            :longitude => 20,
+            :altitude  => 30,
+            :altitudeMode => :absolute,
+            :heading => 40,
+            :tilt => 50,
+            :roll => 60,
+            :begin => '2013-01-01',
+            :end => '2013-02-02'
+        }
+        view = make_view_from hash
+        view.class.should == Kamelopard::Camera
+        compare(hash, view)
+
+        [:begin, :end, :roll].each do |k| hash.delete k end
+        hash.merge!({
+            :when => '2013-03-03',
+            :range => 1000
+        })
+        view = make_view_from hash
+        view.class.should == Kamelopard::LookAt
+        compare(hash, view)
     end
 
-    it 'screenoverlay' do
-        pending 'Need to write this'
+    it 'screenoverlay works' do
+        s = screenoverlay :rotation => xy
+        s.class.should == Kamelopard::ScreenOverlay
     end
 
     it 'xy' do
@@ -2675,7 +2767,9 @@ describe 'helper functions' do
     end
 
     it 'fly_to' do
-        pending 'Need to write this'
+        f = fly_to @view1, :duration => 10
+        f.class.should == Kamelopard::FlyTo
+        f.duration.should == 10
     end
 
     it 'each_placemark' do

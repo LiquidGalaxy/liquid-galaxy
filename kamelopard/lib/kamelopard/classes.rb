@@ -499,7 +499,8 @@ module Kamelopard
 
     # Abstract class corresponding to KML's AbstractView object
     class AbstractView < Object
-        attr_accessor :timestamp, :timespan, :viewerOptions, :heading, :tilt, :roll, :range, :altitudeMode
+        attr_accessor :timestamp, :timespan, :viewerOptions, :heading, :tilt,
+        :roll, :range, :altitudeMode
         attr_reader :className, :point
 
         def initialize(className, point, options = {})

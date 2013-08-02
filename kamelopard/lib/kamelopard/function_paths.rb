@@ -25,9 +25,9 @@ module Kamelopard
     #       A placeholder the callback function can use. It can set it when
     #       it's called one time, and see that value when called the next time.
     #     pause
-    #       The amount of time to pause after flying to this point, or nil for no pause
+    #       The amount of time to pause after flying to each point, or nil for no pause
     #     show_placemarks
-    #       If set, a placemark object will be created at this point
+    #       If set, a placemark object will be created at each point
     #     no_flyto
     #       If set, on flyto objects will be created
     #     multidim
@@ -71,13 +71,13 @@ module Kamelopard
 
         callback_value = nil
         i = 0
-        while (i <= points)
+        while (i < points)
             p = i.to_f / points.to_f
             hash = {}
             [ :latitude, :longitude, :altitude, :heading,
               :tilt, :altitudeMode, :extrude, :when,
               :roll, :range, :pause, :begin, :end, :show_placemarks,
-              :no_flyto, :pause
+              :no_flyto
             ].each do |k|
                 if options.has_key? k then
                     hash[k] = val(options[k], i, p)
