@@ -1,6 +1,8 @@
 IDEAS FOR FUTURE DEVELOPMENT
 
-* Ensure libxml-ruby gets installed as a dependency
+* Style attaching needs tests (commit ebf7eebf6209364578787cefd84d84abac4c8a2a)
+
+* Ensure libxml-ruby gets installed as a dependency. Other dependencies, too
 
 * Make a way to set and change the current tour
 
