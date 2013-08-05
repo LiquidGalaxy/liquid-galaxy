@@ -1224,6 +1224,7 @@ module Kamelopard
 
         def initialize(color = nil, options = {})
             super options
+            @set_colormode = false
             @color = color unless color.nil?
         end
 
@@ -1233,6 +1234,7 @@ module Kamelopard
 
         def colorMode=(a)
             validate_colorMode a
+            @set_colormode = true
             @colorMode = a
         end
 
@@ -1274,9 +1276,11 @@ module Kamelopard
             e = XML::Node.new 'color'
             e << @color
             k << e
-            e = XML::Node.new 'colorMode'
-            e << @colorMode
-            k << e
+            if @set_colorMode then
+                e = XML::Node.new 'colorMode'
+                e << @colorMode
+                k << e
+            end
             k
         end
     end
