@@ -1,5 +1,7 @@
 IDEAS FOR FUTURE DEVELOPMENT
 
+* Ensure libxml-ruby gets installed as a dependency
+
 * Make a way to set and change the current tour
 
 * Add better logging, so, for instance, if a weird movement occurs in my tour,
