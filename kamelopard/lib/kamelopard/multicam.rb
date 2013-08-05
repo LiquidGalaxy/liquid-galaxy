@@ -84,7 +84,7 @@ module Kamelopard
             # the camera vector.
             transformed_up = rot_z(heading) * rot_x(tilt) * Vector[0,1,0]
             if cross_product(up_vec, transformed_up).r == 0
-                negate = not(same_quadrant(up_vec, transformed_up))
+                negate = ! (same_quadrant(up_vec, transformed_up))
             else
                 negate = same_quadrant(vec, cross_product(up_vec, transformed_up))
             end
