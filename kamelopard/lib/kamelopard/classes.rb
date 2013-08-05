@@ -911,9 +911,10 @@ module Kamelopard
         end
 
         def styles_to_kml(elem)
+            # XXX Remove this
             raise "done here" if elem.class == Array
             @styles.each do |a|
-                a.to_kml(elem) unless a.attached?
+                a.to_kml(elem) # unless a.attached?
             end
         end
     end
