@@ -160,50 +160,70 @@
       l.range += dist
       Kamelopard::FlyTo.new(l, nil, dur, mode)
   end
+
+    # Translates a heading into something between 0 and 360
+    def convert_heading(heading)
+        if heading > 360 then
+            step = -360
+        else
+            step = 360
+        end
+        while heading < 0 or heading > 360 do
+            heading = heading + step
+        end
+        heading
+    end
   
-  # Creates a list of FlyTo elements to orbit and look at a given point (center),
-  # at a given range (in meters), starting and ending at given angles (in
-  # degrees) from the center, where 0 and 360 (and -360, and 720, and -980, etc.)
-  # are north. To orbit clockwise, make startHeading less than endHeading.
-  # Otherwise, it will orbit counter-clockwise. To orbit multiple times, add or
-  # subtract 360 from the endHeading. The tilt argument matches the KML LookAt
-  # tilt argument
-  def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360, duration = 0)
-      am = center.altitudeMode
+    # Creates a list of FlyTo elements to orbit and look at a given point (center),
+    # at a given range (in meters), starting and ending at given angles (in
+    # degrees) from the center, where 0 and 360 (and -360, and 720, and -980, etc.)
+    # are north. To orbit multiple times, add or subtract 360 from the
+    # endHeading. 
+    # The tilt argument matches the KML LookAt tilt argument
+    def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360, duration = 0, step = nil)
+        am = center.altitudeMode
   
-      # We want at least 5 points (arbitrarily chosen value), plus at least 5 for
-      # each full revolution
-  
-      # When I tried this all in one step, ruby told me 360 / 10 = 1805. I'm sure
-      # there's some reason why this is a feature and not a bug, but I'd rather
-      # not look it up right now.
-      num = (endHeading - startHeading).abs
-      den = ((endHeading - startHeading) / 360.0).to_i.abs * 5 + 5
-      step = num / den
-      step = 1 if step < 1
-      step = step * -1 if startHeading > endHeading
-  
-      lastval = startHeading
-      mode = :bounce
-      if duration != 0
-        dur = duration.to_f / den
-      else
+        if (endHeading - startHeading > 0 and step < 0) or (endHeading - startHeading < 0 and step > 0) then
+          raise "Given start = #{startHeading}, end = #{endHeading}, and step = #{step}, this will be an infinite loop"
+        end
+    
+        # We want at least 5 points (arbitrarily chosen value), plus at least 5 for
+        # each full revolution
+    
+        # When I tried this all in one step, ruby told me 360 / 10 = 1805. I'm sure
+        # there's some reason why this is a feature and not a bug, but I'd rather
+        # not look it up right now.
         dur = 2
-      end
-      startHeading.step(endHeading, step) do |theta|
-          lastval = theta
-          fly_to Kamelopard::LookAt.new(center, :heading => theta, :tilt => tilt, :range => range, :altitudeMode => am), :duration => dur, :mode => mode
-          mode = :smooth
-      end
-      if lastval != endHeading then
-          fly_to Kamelopard::LookAt.new(center, :heading => endHeading, :tilt => tilt, :range => range, :altitudeMode => am), :duration => 2, :mode => :smooth
-      end
-  end
-  
-  # Adds a SoundCue object.
-  def sound_cue(href, ds = nil)
-      Kamelopard::SoundCue.new href, ds
-  end
+        if step.nil? then
+          num = (endHeading - startHeading).abs
+          den = ((endHeading - startHeading) / 360.0).to_i.abs * 5 + 5
+          step = num / den
+          step = 1 if step < 1
+          step = step * -1 if startHeading > endHeading
+          if duration != 0
+            dur = duration.to_f / den
+          end
+        else
+          dur = duration * 1.0 / ((endHeading - startHeading) * 1.0 / step) if duration != 0
+        end
+    
+        lastval = startHeading
+        mode = :bounce
+        startHeading.step(endHeading, step) do |theta|
+            lastval = theta
+            heading = convert_heading theta
+            fly_to Kamelopard::LookAt.new(center, :heading => heading, :tilt => tilt, :range => range, :altitudeMode => am), :duration => dur, :mode => mode
+            mode = :smooth
+        end
+        if lastval != endHeading then
+            fly_to Kamelopard::LookAt.new(center, :heading => convert_heading(endHeading), :tilt => tilt, :range => range, :altitudeMode => am), :duration => dur, :mode => :smooth
+        end
+    end
+    
+    # Adds a SoundCue object.
+    def sound_cue(href, ds = nil)
+        Kamelopard::SoundCue.new href, ds
+    end
   
   # XXX This implementation of orbit is trying to do things the hard way, but the code might be useful for other situations where the hard way is the only possible one
   # def orbit(center, range = 100, startHeading = 0, endHeading = 360)
