@@ -183,8 +183,10 @@
     def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360, duration = 0, step = nil)
         am = center.altitudeMode
   
-        if (endHeading - startHeading > 0 and step < 0) or (endHeading - startHeading < 0 and step > 0) then
-          raise "Given start = #{startHeading}, end = #{endHeading}, and step = #{step}, this will be an infinite loop"
+        if not step.nil? then
+            if (endHeading - startHeading > 0 and step < 0) or (endHeading - startHeading < 0 and step > 0) then
+                raise "Given start = #{startHeading}, end = #{endHeading}, and step = #{step}, this will be an infinite loop"
+            end
         end
     
         # We want at least 5 points (arbitrarily chosen value), plus at least 5 for
