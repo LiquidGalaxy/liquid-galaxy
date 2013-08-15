@@ -180,7 +180,17 @@
     # are north. To orbit multiple times, add or subtract 360 from the
     # endHeading. 
     # The tilt argument matches the KML LookAt tilt argument
-    def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360, duration = 0, step = nil)
+    # already_there, if true, means we've already flown to the initial point
+    # The options hash can contain:
+    #   :duration   The total duration of the orbit. Defaults to 0, which means it will take 2 seconds per step
+    #   :step       How much to change the heading for each flyto. Defaults to some strange value >= 5
+    #   :already_there
+    #               Default false. Indicates that we've already flown to the initial position
+    def orbit(center, range = 100, tilt = 90, startHeading = 0, endHeading = 360, options = {})
+        duration = options.has_key?(:duration) ? options[:duration] : 0
+        step = options.has_key?(:step) ? options[:step] : nil
+        already_there = options.has_key?(:already_there) ? options[:already_there] : false
+
         am = center.altitudeMode
   
         if not step.nil? then
@@ -198,19 +208,25 @@
         dur = 2
         if step.nil? then
           num = (endHeading - startHeading).abs
-          den = ((endHeading - startHeading) / 360.0).to_i.abs * 5 + 5
-          step = num / den
+          num_steps = ((endHeading - startHeading) / 360.0).to_i.abs * 5 + 5
+          step = num / num_steps
           step = 1 if step < 1
           step = step * -1 if startHeading > endHeading
+          if already_there
+             num_steps = num_steps - 1
+             startHeading = startHeading + step
+          end
           if duration != 0
-            dur = duration.to_f / den
+            dur = duration.to_f / num_steps
           end
         else
           dur = duration * 1.0 / ((endHeading - startHeading) * 1.0 / step) if duration != 0
+          startHeading = startHeading + step if already_there
         end
     
         lastval = startHeading
         mode = :bounce
+        mode = :smooth if already_there
         startHeading.step(endHeading, step) do |theta|
             lastval = theta
             heading = convert_heading theta
