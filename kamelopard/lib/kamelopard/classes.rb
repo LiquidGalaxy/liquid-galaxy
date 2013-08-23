@@ -327,7 +327,6 @@ module Kamelopard
         end
 
         def to_s
-            p @extrude
             "Point (#{@longitude}, #{@latitude}, #{@altitude}, mode = #{@altitudeMode}, #{ @extrude == 1 ? 'extruded' : 'not extruded' })"
         end
 
