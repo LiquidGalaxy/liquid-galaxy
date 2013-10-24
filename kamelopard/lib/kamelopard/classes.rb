@@ -1224,7 +1224,7 @@ module Kamelopard
 
         def initialize(color = nil, options = {})
             super options
-            @set_colormode = false
+            @set_colorMode = false
             @color = color unless color.nil?
         end
 
@@ -1234,7 +1234,7 @@ module Kamelopard
 
         def colorMode=(a)
             validate_colorMode a
-            @set_colormode = true
+            @set_colorMode = true
             @colorMode = a
         end
 

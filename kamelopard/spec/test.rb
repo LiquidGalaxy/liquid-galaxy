@@ -1148,15 +1148,14 @@ describe 'Kamelopard::ColorStyle' do
     before(:each) do
         @new_value = '11111111'
         @attr_name = :color
-        @o = Kamelopard::ColorStyle.new 'ffffffff'
+        @o = Kamelopard::ColorStyle.new 'deadbeef'
+        @o.colorMode = :random
     end
 
     it_should_behave_like 'Kamelopard::ColorStyle'
     it_should_behave_like 'KML_root_name'
 
     it 'should return the right KML' do
-        @o.color = 'deadbeef'
-        @o.colorMode = :random
         get_obj_child_content(@o, 'color').should == 'deadbeef'
         get_obj_child_content(@o, 'colorMode').should == 'random'
     end
