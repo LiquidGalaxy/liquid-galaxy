@@ -2520,29 +2520,29 @@ describe 'helper functions' do
         a.mode.should == :smooth
     end
 
-    it 'toggle_balloon_for' do
-        pending 'Need to write this'
-    end
-
-    it 'hide_balloon_for' do
-        pending 'Need to write this'
-    end
-
-    it 'show_balloon_for' do
-        pending 'Need to write this'
-    end
-
-    it 'fade_balloon_for' do
-        pending 'Need to write this'
-    end
-
-    it 'fade_out_balloon_for' do
-        pending 'Need to write this'
-    end
-
-    it 'fade_in_balloon_for' do
-        pending 'Need to write this'
-    end
+#    it 'toggle_balloon_for' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'hide_balloon_for' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'show_balloon_for' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'fade_balloon_for' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'fade_out_balloon_for' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'fade_in_balloon_for' do
+#        pending 'Need to write this'
+#    end
 
     it 'has working point function' do
         p = point(10, 20, 30, :relativeToGround)
