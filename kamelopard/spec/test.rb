@@ -2408,7 +2408,25 @@ describe 'make_function_path' do
         end
     end
 
-    pending "handles multidim correctly, including running it after direct assignment is complete"
+    it "handles multidim correctly, and multidim overrides individual settings" do
+        class TestMultiDim < Kamelopard::Functions::FunctionMultiDim
+            def run_function(x)
+                return [1, 1, 1, 1, 1]
+            end
+        end
+
+        a = Kamelopard.make_function_path(100,
+            :altitudeMode => :relativeToGround, :tilt => 45, :show_placemarks => 1, :heading => 10,
+            :multidim => [ [ TestMultiDim.new, [ :heading, :latitude, :longitude, nil, :altitude ] ] ]
+        ) do |i, h| 
+            # "multidim overrides individual settings" means that even though
+            # :heading shows up as an individual constant (10), it gets its
+            # final value from the multidim it's also in. Therefore, its final
+            # value is 1, from the TestMultiDim class.
+            [:heading, :latitude, :longitude, :altitude].each { |s| h[s].should == 1 }
+            h
+        end
+    end
 
     it "yields properly to a code block, only after other assignments are complete" do
         pt = 0
