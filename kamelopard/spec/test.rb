@@ -2789,8 +2789,55 @@ describe 'helper functions' do
         f.duration.should == 10
     end
 
-    it 'each_placemark' do
-        pending 'Need to write this'
+    it 'each_placemark works correctly' do
+        kml = %[<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+  <Document id="Document_3">
+    <name/>
+    <visibility>1</visibility>
+    <open>0</open>
+    <Folder id="Folder_4">
+      <visibility>1</visibility>
+      <open>0</open>
+      <Placemark id="Placemark_2">
+        <name>1</name>
+        <visibility>1</visibility>
+        <open>0</open>
+        <Point id="Point_1">
+          <coordinates>1.0, -23.0, 0</coordinates>
+          <extrude>0</extrude>
+          <altitudeMode>clampToGround</altitudeMode>
+        </Point>
+      </Placemark>
+      <Placemark id="Placemark_6">
+        <name>2</name>
+        <visibility>1</visibility>
+        <open>0</open>
+        <Point id="Point_5">
+          <coordinates>-164.0, -76.0, 0</coordinates>
+          <extrude>0</extrude>
+          <altitudeMode>clampToGround</altitudeMode>
+        </Point>
+      </Placemark>
+      <Placemark id="Placemark_8">
+        <name>3</name>
+        <visibility>1</visibility>
+        <open>0</open>
+        <Point id="Point_7">
+          <coordinates>-168.0, -18.0, 0</coordinates>
+          <extrude>0</extrude>
+          <altitudeMode>clampToGround</altitudeMode>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>]
+        placemarks = []
+        each_placemark(XML::Document.string(kml)) do |p|
+            STDERR.puts p.to_s
+            placemarks << p
+        end
+        placemarks.size.should == 3
     end
 
     it 'make_tour_index' do
