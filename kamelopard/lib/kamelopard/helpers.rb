@@ -724,10 +724,9 @@
     # Returns the great circle distance between two points
     def great_circle_distance(a, b)
         # Stolen from http://rosettacode.org/wiki/Haversine_formula#Ruby
-        include Math
 
         def deg2rad(a)
-          a * PI / 180
+          a * Math::PI / 180
         end
 
         radius = 6371  # rough radius of the Earth, in kilometers
