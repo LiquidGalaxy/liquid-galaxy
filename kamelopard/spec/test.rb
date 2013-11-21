@@ -2531,7 +2531,8 @@ describe 'helper functions' do
         # XXX Why doesn't this catch the exception?
         #toggle_balloon_for(a, 0).should raise_exception(RuntimeError)
     end
-#
+
+# NB! Commented out on the grounds that balloons suck and we hate them.
 #    it 'hide_balloon_for' do
 #        pending 'Need to write this'
 #    end
@@ -2625,9 +2626,10 @@ describe 'helper functions' do
         get_document.name.should == 'b'
     end
 
-    it 'zoom_out' do
-        pending 'Need to write this'
-    end
+# NB! Commented out on the grounds that no one actually uses zoom_out
+#    it 'zoom_out' do
+#        pending 'Need to write this'
+#    end
 
     it 'orbit' do
         pending 'Need to write this'
