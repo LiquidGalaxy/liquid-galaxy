@@ -2520,9 +2520,17 @@ describe 'helper functions' do
         a.mode.should == :smooth
     end
 
-#    it 'toggle_balloon_for' do
-#        pending 'Need to write this'
-#    end
+    it 'toggle_balloon_for' do
+        f = get_folder
+        a = placemark 'place', :description => 'place', :geometry => point(1, 1), :kml_id => 'test_placemark'
+        toggle_balloon_for a, 0
+        toggle_balloon_for a, 1
+        d = build_doc_from_node(get_document)
+        d.find("//kml:Placemark[@targetId='test_placemark']").size.should == 2
+        a = point(1, 1)
+        # XXX Why doesn't this catch the exception?
+        #toggle_balloon_for(a, 0).should raise_exception(RuntimeError)
+    end
 #
 #    it 'hide_balloon_for' do
 #        pending 'Need to write this'
