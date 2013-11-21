@@ -1,4 +1,5 @@
 # vim:ts=4:sw=4:et:smartindent:nowrap
+require 'bundler/setup'
 require 'matrix'
 
 # Basic support for splines

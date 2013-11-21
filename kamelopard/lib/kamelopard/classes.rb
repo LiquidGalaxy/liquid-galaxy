@@ -8,6 +8,7 @@
 
 # Pretty much everything important is in this module
 module Kamelopard
+    require 'bundler/setup'
     require 'singleton'
     require 'xml'
     require 'yaml'
@@ -629,7 +630,7 @@ module Kamelopard
             raise "The range element is part of LookAt objects, not Camera objects"
         end
 
-        def range=
+        def range=(a)
             # The range element doesn't exist in Camera objects
         end
     end

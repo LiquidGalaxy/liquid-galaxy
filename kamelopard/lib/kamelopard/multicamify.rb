@@ -5,6 +5,7 @@
 
 #require 'rubygems'
 $LOAD_PATH << './lib'
+require 'bundler/setup'
 require 'kamelopard'
 require 'libxml'
 

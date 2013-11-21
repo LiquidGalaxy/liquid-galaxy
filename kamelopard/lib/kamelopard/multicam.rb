@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'matrix'
 
 module Kamelopard

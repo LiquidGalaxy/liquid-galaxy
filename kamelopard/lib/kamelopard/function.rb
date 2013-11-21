@@ -3,6 +3,7 @@
 #++
 # Describes functions that can be calculated to create flight paths
 
+require 'bundler/setup'
 require 'matrix'
 
 #--
