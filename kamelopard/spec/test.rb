@@ -2645,11 +2645,12 @@ describe 'helper functions' do
         doc.find('//gx:FlyTo').size.should == 21
     end
 
-    it 'sound_cue' do
-        s = sound_cue('href')
-        s.class.should == Kamelopard::SoundCue
-        s.href.should == 'href'
-    end
+# NB! Sound cues are Windoze/Mac only. So they're not too useful for our Galaxies.
+#    it 'sound_cue' do
+#        s = sound_cue('href')
+#        s.class.should == Kamelopard::SoundCue
+#        s.href.should == 'href'
+#    end
 
     it 'set_prefix_to' do
         old_prefix = Kamelopard.id_prefix
