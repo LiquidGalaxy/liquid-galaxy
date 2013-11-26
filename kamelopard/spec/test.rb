@@ -2860,7 +2860,6 @@ describe 'helper functions' do
 </kml>]
         placemarks = []
         each_placemark(XML::Document.string(kml)) do |p|
-            STDERR.puts p.to_s
             placemarks << p
         end
         placemarks.size.should == 3
