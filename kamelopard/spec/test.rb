@@ -2663,7 +2663,11 @@ describe 'helper functions' do
     end
 
     it 'write_kml_to' do
-        pending 'Need to write this'
+        filename = 'kamelopard_test.kml.tmp'
+        name_folder 'test_writing'
+        write_kml_to filename
+        d = XML::Document.file filename
+        d.find("//kml:Folder/kml:name/text()='test_writing'").should be_true
     end
 
     it 'fade_overlay' do
