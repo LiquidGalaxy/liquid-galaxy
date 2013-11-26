@@ -2632,7 +2632,17 @@ describe 'helper functions' do
 #    end
 
     it 'orbit' do
-        pending 'Need to write this'
+        d = Document.new 'orbit test'
+        p = point(10, 10)
+        orbit p, 100, 90, 0, 360, { :duration => 10, :already_there => 1 }
+        doc = build_doc_from_node(d)
+        doc.find('//gx:FlyTo').size.should == 10
+        doc.find("//gx:FlyTo/kml:LookAt/kml:heading/text()='36'").should be_true
+        doc.find("//gx:FlyTo/kml:LookAt/kml:heading/text()='37'").should be_false
+        doc.find("//gx:FlyTo/kml:LookAt/kml:heading/text()='72'").should be_true
+        orbit p, 100, 90, 0, 360, { :duration => 10 }
+        doc = build_doc_from_node(d)
+        doc.find('//gx:FlyTo').size.should == 21
     end
 
     it 'sound_cue' do
