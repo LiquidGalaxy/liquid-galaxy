@@ -2674,41 +2674,42 @@ describe 'helper functions' do
         pending 'Need to write this'
     end
 
-    it 'TelemetryProcessor.get_heading' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.get_dist2' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.get_dist3' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.get_tilt' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.get_roll' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.fix_coord' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.add_flyto' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.options=' do
-        pending 'Need to write this'
-    end
-
-    it 'TelemetryProcessor.normalize_points' do
-        pending 'Need to write this'
-    end
+# NB! Not really worth testing this unless it gets used with any frequency at all
+#    it 'TelemetryProcessor.get_heading' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.get_dist2' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.get_dist3' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.get_tilt' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.get_roll' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.fix_coord' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.add_flyto' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.options=' do
+#        pending 'Need to write this'
+#    end
+#
+#    it 'TelemetryProcessor.normalize_points' do
+#        pending 'Need to write this'
+#    end
 
     it 'tour_from_points' do
         pending 'Need to write this'
