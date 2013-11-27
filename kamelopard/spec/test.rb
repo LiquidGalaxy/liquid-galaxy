@@ -541,8 +541,7 @@ shared_examples_for 'Kamelopard::Feature' do
 
     it 'handles extended address stuff correctly' do
         @o.addressDetails = 'These are some extended details'
-        k = Kamelopard::DocumentHolder.instance.current_document.get_kml_document
-        k.root['xmlns:xal'].should == 'urn:oasis:names:tc:ciq:xsdschema:xAL:2.0'
+        (get_kml_string =~ /xmlns:xal/).should be_true
         get_obj_child_content(@o, 'xal:AddressDetails').should == @o.addressDetails
     end
 

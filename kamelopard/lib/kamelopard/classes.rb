@@ -1134,14 +1134,24 @@ module Kamelopard
             #k << XML::XMLDecl.default
             k.root = XML::Node.new('kml')
             r = k.root
-            if @uses_xal then
-                r.attributes['xmlns:xal'] = "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0"
+#            # XXX Should this be add_namespace instead?
+#            r.attributes['xmlns'] = 'http://www.opengis.net/kml/2.2'
+#            r.attributes['xmlns:gx'] = 'http://www.google.com/kml/ext/2.2'
+#            r.attributes['xmlns:kml'] = 'http://www.opengis.net/kml/2.2'
+#            r.attributes['xmlns:atom'] = 'http://www.w3.org/2005/Atom'
+            ns_values = [
+                [nil, 'http://www.opengis.net/kml/2.2'],
+                ['gx', 'http://www.google.com/kml/ext/2.2'],
+                ['kml', 'http://www.opengis.net/kml/2.2'],
+                ['atom', 'http://www.w3.org/2005/Atom'],
+            ]
+            if @uses_xal
+                ns_values << ['xal', "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0"]
             end
-            # XXX Should this be add_namespace instead?
-            r.attributes['xmlns'] = 'http://www.opengis.net/kml/2.2'
-            r.attributes['xmlns:gx'] = 'http://www.google.com/kml/ext/2.2'
-            r.attributes['xmlns:kml'] = 'http://www.opengis.net/kml/2.2'
-            r.attributes['xmlns:atom'] = 'http://www.w3.org/2005/Atom'
+            ns_values.each do |ns|
+                n = XML::Namespace.new(r, ns[0], ns[1])
+                r.namespaces.namespace = n if ns[0].nil?
+            end
 
             r << self.to_kml
             k
