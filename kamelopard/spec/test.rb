@@ -2877,7 +2877,26 @@ describe 'helper functions' do
     end
 
     it 'make_tour_index' do
-        pending 'Need to write this'
+        # Make sure there's some tour already
+        %w[A B C].each do |i|
+            Kamelopard::Tour.new "Tour #{i}"
+            pause 10
+        end
+        make_tour_index nil, :kml_id => 'my_index'
+        make_tour_index nil, :kml_id => 'my_index2'
+        index_text = %{<html>
+                    <body>
+                        Something custom here.
+                        <ul><% @tours.each do |t| %>
+                            <li><a href="#<%= t.kml_id %>;flyto"><% end %></a></li>
+                        <% end %></ul>
+                    </body>
+                </html>}
+        d = build_doc_from_node get_document
+        ['', '2'].each do |i|
+            d.find("//kml:ScreenOverlay[@id='my_index#{i}']").should be_true
+        end
+        d.find("//kml:ScreenOverlay[@id='my_index2' and contains(description, 'Something custom here')]").should be_true
     end
 
     it 'show_hide_balloon' do
