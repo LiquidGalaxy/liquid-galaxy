@@ -1812,6 +1812,8 @@ module Kamelopard
             @duration = duration
         end
 
+        # Accepts an XML node representing a gx:Wait KML object, and turns it
+        # into a Kamelopard::Wait object
         def self.parse(x)
             dur = nil
             id = x.attributes['id'] if x.attributes? 'id'
