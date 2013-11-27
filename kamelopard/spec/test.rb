@@ -2671,7 +2671,18 @@ describe 'helper functions' do
     end
 
     it 'fade_overlay' do
-        pending 'Need to write this'
+        o = Kamelopard::ScreenOverlay.new({
+            :href => 'test',
+            :name => 'something',
+            :size => xy,
+            :rotation => 10,
+            :overlayXY => xy,
+            :screenXY => xy,
+            :rotationXY => xy
+        })
+        fade_overlay o, false, :duration => 123
+        d = build_doc_from_node get_document
+        d.find("//gx:AnimatedUpdate[gx:duration/text()='123' and kml:Update/kml:Change/kml:ScreenOverlay[@targetId='#{o.kml_id}']]").should be_true
     end
 
 # NB! Not really worth testing this unless it gets used with any frequency at all
