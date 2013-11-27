@@ -2894,16 +2894,16 @@ describe 'helper functions' do
             pause 10
         end
         make_tour_index nil, :kml_id => 'my_index'
-        make_tour_index nil, :kml_id => 'my_index2'
         index_text = %{<html>
                     <body>
                         Something custom here.
                         <ul><% @tours.each do |t| %>
-                            <li><a href="#<%= t.kml_id %>;flyto"><% end %></a></li>
+                            <li><a href="#<%= t.kml_id %>;flyto"></a></li>
                         <% end %></ul>
                     </body>
                 </html>}
-        d = build_doc_from_node get_document
+        make_tour_index index_text, :kml_id => 'my_index2'
+        d = XML::Document.string(get_kml_string)
         ['', '2'].each do |i|
             d.find("//kml:ScreenOverlay[@id='my_index#{i}']").should be_true
         end
