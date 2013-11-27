@@ -794,8 +794,8 @@ module Kamelopard
         end
 
         def description=(a)
-            b = CGI.escapeHTML(a)
-            if b != a then
+            b = CGI.escapeHTML(a) if b.is_a? String
+            if (! a.is_a? XML::Node) and b != a then
                 @description = XML::Node.new_cdata a
             else
                 @description = a
