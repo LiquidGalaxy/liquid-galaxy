@@ -823,6 +823,17 @@ describe 'Kamelopard::Point' do
     it_should_behave_like 'Kamelopard::Geometry'
     it_should_behave_like 'field_producer'
 
+    it 'parses itself correctly' do
+        Kamelopard::Document.new('point_translate_test')
+        p = point(1, 2, 3, :clampToGround, 0)
+        new_p = Kamelopard::Point.parse(build_doc_from_node(p))
+        new_p.latitude.should == p.latitude
+        new_p.longitude.should == p.longitude
+        new_p.altitude.should == p.altitude
+        new_p.altitudeMode.should == p.altitudeMode
+        new_p.extrude.should == p.extrude
+    end
+
     it 'accepts different coordinate formats' do
         coords = [ [ '123D30m12.2s S', '34D56m24.4s E' ],
                    [ '32d10\'23.10" N', -145.3487 ],

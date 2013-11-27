@@ -319,6 +319,30 @@ module Kamelopard
             @altitude = altitude unless altitude.nil?
         end
 
+        # Converts an XML::Node to a Kamelopard::Point
+        def self.parse(p)
+            begin
+                altmode = p.find('//kml:Point/kml:altitudeMode').first.first.to_sym
+            rescue NoMethodError
+                STDERR.puts "altmode rescue"
+                altmode = :clampToGround
+            end
+            begin
+                extrude = p.find('//kml:Point/kml:extrude').first.first.to_i
+            rescue NoMethodError
+                extrude = 0
+            end
+            begin
+                coords = p.find('//kml:Point/kml:coordinates').first.first.to_s || '0, 0, 0'
+                (lon, lat, alt) = coords.split(/,\s+/).collect { |a| a.to_f }
+            rescue NoMethodError
+                lon = 0
+                lat = 0
+                alt = 0
+            end
+            return Point.new(lon, lat, alt, :altitudeMode => altmode, :extrude => extrude)
+        end
+
         def longitude=(long)
             @longitude = Kamelopard.convert_coord(long)
         end
