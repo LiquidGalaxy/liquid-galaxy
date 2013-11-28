@@ -823,7 +823,6 @@ describe 'Kamelopard::Point' do
     it_should_behave_like 'field_producer'
 
     it 'parses itself correctly' do
-        Kamelopard::Document.new('point_translate_test')
         p = point(1, 2, 3, :clampToGround, true)
         new_p = Kamelopard::Point.parse(build_doc_from_node(p))
         new_p.latitude.should == p.latitude
