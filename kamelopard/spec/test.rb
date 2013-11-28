@@ -824,7 +824,7 @@ describe 'Kamelopard::Point' do
 
     it 'parses itself correctly' do
         Kamelopard::Document.new('point_translate_test')
-        p = point(1, 2, 3, :clampToGround, 0)
+        p = point(1, 2, 3, :clampToGround, true)
         new_p = Kamelopard::Point.parse(build_doc_from_node(p))
         new_p.latitude.should == p.latitude
         new_p.longitude.should == p.longitude

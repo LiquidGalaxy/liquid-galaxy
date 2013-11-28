@@ -58,6 +58,26 @@ module Kamelopard
         @@logger.call(level, mod, msg) unless @@logger.nil? or @@log_level > LogLevels[level]
     end
 
+    def Kamelopard.xml_to_hash(node, fields)
+        result = {}
+        fields.each do |field|
+            begin
+                if field =~ /:/
+                    xmlfield = field
+                else
+                    xmlfield = "kml:#{field}"
+                end
+                my_f = node.find("//#{xmlfield}").first
+                if ! my_f.nil?
+                    result[field.to_sym] = my_f.first.to_s
+                end
+            rescue NoMethodError
+                log(:debug, 'xml-to-hash', "Error getting field #{field} (#{xmlfileld}) from node")
+            end
+        end
+        result
+    end
+
     def Kamelopard.get_next_id   # :nodoc:
         @@sequence += 1
         @@sequence
@@ -321,26 +341,9 @@ module Kamelopard
 
         # Converts an XML::Node to a Kamelopard::Point
         def self.parse(p)
-            begin
-                altmode = p.find('//kml:Point/kml:altitudeMode').first.first.to_sym
-            rescue NoMethodError
-                STDERR.puts "altmode rescue"
-                altmode = :clampToGround
-            end
-            begin
-                extrude = p.find('//kml:Point/kml:extrude').first.first.to_i
-            rescue NoMethodError
-                extrude = 0
-            end
-            begin
-                coords = p.find('//kml:Point/kml:coordinates').first.first.to_s || '0, 0, 0'
-                (lon, lat, alt) = coords.split(/,\s+/).collect { |a| a.to_f }
-            rescue NoMethodError
-                lon = 0
-                lat = 0
-                alt = 0
-            end
-            return Point.new(lon, lat, alt, :altitudeMode => altmode, :extrude => extrude)
+            a = Kamelopard.xml_to_hash(p, %w[altitudeMode extrude coordinates])
+            (lon, lat, alt) = a[:coordinates].split(/,\s+/).collect { |a| a.to_f }
+            return Point.new(lon, lat, alt, :altitudeMode => a[:altitudeMode].to_sym, :extrude => a[:extrude].to_i)
         end
 
         def longitude=(long)
@@ -355,6 +358,10 @@ module Kamelopard
             "Point (#{@longitude}, #{@latitude}, #{@altitude}, mode = #{@altitudeMode}, #{ @extrude == 1 ? 'extruded' : 'not extruded' })"
         end
 
+        def extrude=(a)
+            @extrude = ((a and a != 0) ? 1 : 0)
+        end
+
         def to_kml(elem = nil, short = false)
             e = XML::Node.new 'Point'
             super(e)
@@ -365,7 +372,7 @@ module Kamelopard
 
             if not short then
                 c = XML::Node.new 'extrude'
-                c << ( @extrude ? 1 : 0 ).to_s
+                c << @extrude.to_s
                 e << c
 
                 Kamelopard.add_altitudeMode(@altitudeMode, e)
