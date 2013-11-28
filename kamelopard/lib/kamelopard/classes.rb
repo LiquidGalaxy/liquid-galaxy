@@ -673,6 +673,36 @@ module Kamelopard
             @range = 0 if @range.nil?
         end
 
+        def self.parse(la)
+            # TimePrimitive
+#<!-- inherited from AbstractView element -->
+#<TimePrimitive>...</TimePrimitive>  <!-- gx:TimeSpan or gx:TimeStamp -->
+            # ViewerOptions
+#<gx:ViewerOptions>
+#<option> name=" " type="boolean">     <!-- name="streetview", "historicalimagery", "sunlight", or "groundnavigation" -->
+#</option>
+#</gx:ViewerOptions>
+            fields = %w[
+                longitude latitude altitude heading
+                tilt range altitudeMode
+                gx:TimeStamp gx:TimeSpan gx:ViewerOptions
+            ]
+            b = Kamelopard.xml_to_hash(la, fields)
+            a = {}
+            b.each do |k, v|
+                if k == :altitudeMode
+                    a[k] = v.to_s.to_sym
+                else
+                    a[k] = v.to_s.to_f
+                end
+            end
+            return LookAt.new(
+                Point.new( a[:longitude], a[:latitude], a[:altitude], :altitudeMode => a[:altitudeMode]),
+                :heading => a[:heading],
+                :tilt => a[:tilt],
+                :range => a[:range])
+        end
+
         def roll
             # The roll element doesn't exist in LookAt objects
             raise "The roll element is part of Camera objects, not LookAt objects"

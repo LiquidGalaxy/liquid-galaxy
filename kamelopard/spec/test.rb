@@ -999,6 +999,19 @@ describe 'Kamelopard::LookAt' do
         get_kml.find_first('//range').should_not be_nil
         get_obj_child_content(@o, 'range').should == '10'
     end
+
+    it 'parses itself correctly' do
+        # XXX Include tests for gx:TimeSpan, gx:TimeStamp, and ViewerOptions elements
+        l = Kamelopard::LookAt.new(point(12, 12, 12), :heading => 14, :tilt => 13, :range => 11)
+        new_l = Kamelopard::LookAt.parse(build_doc_from_node(l))
+        new_l.latitude.should == l.latitude
+        new_l.longitude.should == l.longitude
+        new_l.altitude.should == l.altitude
+        new_l.altitudeMode.should == l.altitudeMode
+        new_l.heading.should == l.heading
+        new_l.tilt.should == l.tilt
+        new_l.range.should == l.range
+    end
 end
 
 describe 'Kamelopard::TimeStamp' do
