@@ -69,7 +69,7 @@ module Kamelopard
                 end
                 my_f = node.find("//#{xmlfield}").first
                 if ! my_f.nil?
-                    result[field.to_sym] = my_f.first.to_s
+                    result[field.to_sym] = my_f.first
                 end
             rescue NoMethodError
                 log(:debug, 'xml-to-hash', "Error getting field #{field} (#{xmlfileld}) from node")
@@ -342,8 +342,8 @@ module Kamelopard
         # Converts an XML::Node to a Kamelopard::Point
         def self.parse(p)
             a = Kamelopard.xml_to_hash(p, %w[altitudeMode extrude coordinates])
-            (lon, lat, alt) = a[:coordinates].split(/,\s+/).collect { |a| a.to_f }
-            return Point.new(lon, lat, alt, :altitudeMode => a[:altitudeMode].to_sym, :extrude => a[:extrude].to_i)
+            (lon, lat, alt) = a[:coordinates].to_s.split(/,\s+/).collect { |a| a.to_f }
+            return Point.new(lon, lat, alt, :altitudeMode => a[:altitudeMode].to_s.to_sym, :extrude => a[:extrude].to_s.to_i)
         end
 
         def longitude=(long)
