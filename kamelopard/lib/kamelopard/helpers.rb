@@ -555,6 +555,7 @@
   
   # Pulls the Placemarks from the KML document d and yields each in turn to the caller
   # d = an XML::Document containing KML
+  # XXX This currently expects Placemarks to contain LookAt or Camera objects. It should do something useful with placemarks based on Points, or other objects
   def each_placemark(d)
       d.find('//kml:Placemark').each do |p|
           all_values = {}
