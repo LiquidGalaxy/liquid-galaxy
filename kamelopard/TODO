@@ -2,13 +2,6 @@ IDEAS FOR FUTURE DEVELOPMENT
 
 * Style attaching needs tests (commit ebf7eebf6209364578787cefd84d84abac4c8a2a)
 
-* Ensure libxml-ruby gets installed as a dependency. Other dependencies, too
-
-* Make a way to set and change the current tour
-
-* Add better logging, so, for instance, if a weird movement occurs in my tour,
-  I can turn on debug logging to see where the flyto is being created.
-
 * I suspect speed can change drastically across a spline's control points.
   Prove or disprove this, and if necessary, fix the problem.
 
@@ -17,8 +10,6 @@ IDEAS FOR FUTURE DEVELOPMENT
 
 * Creating master and slave versions of KMZ files for a galaxy is lots of
   busywork. Kamelopard should do it automatically.
-
-* Improve helper functions, their tests, and their documentation
 
 * Add a function to get the current camera position, if possible
 
