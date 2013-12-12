@@ -1,3 +1,19 @@
+= 0.0.14
+
+* Added lots and lots of tests, and removed some for features that aren't ever
+used anymore
+* Began adding self.parse() functions for different objects, to allow objects
+to create themselves from KML
+* Several bug fixes
+* Use Bundler properly
+* Added basic (slow) support for "regionating" placemarks
+* Add step parameter to orbit function
+* Add LatLonInterp to interpolate latitude and longitude in Function objects,
+dealing with wraparound and meaningful ranges of values
+* Swap out geocoders, as Yahoo's is no longer free
+* Add get_camera_view() for easier multicam
+* Make orbit() handle different durations
+
 = 0.0.13
 
 * Fix the orbit function
