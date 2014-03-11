@@ -62,6 +62,7 @@ done
 function _grab_screen {
   [ $verbose -gt 0 ] && echo "grabbing: ${1} ${2} ${3}"
   rm -f ${3}
+  screen_status=$(grep -w ${1} /tmp/screens_status 2>/dev/null | awk -F '|' {'print $2 $3'} | sed s/'|'/'\n'/g | sed s/','/'\n'/g)
   ssh -fqx lg@${1} "(
 upSeconds=\$(</proc/uptime)
 upSeconds=\${upSeconds%%.*}
@@ -75,6 +76,7 @@ then
    echo -en \"\${days}d \"
 fi
 echo -en \"\${hours}h \${mins}m\"
+echo -en \"${screen_status}\"
 ) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img-${2##*.};
 echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img-${2##*.};
 xwd -display ${2} -root -silent | composite -gravity north -geometry +0+3 miff:/tmp/header-img-${2##*.} xwd:- -resize ${resize} miff:- | composite -gravity south -geometry +0+3 miff:/tmp/footer-img-${2##*.} miff:- miff:- | convert -bordercolor 'black' -border 5x0 miff:- miff:-
