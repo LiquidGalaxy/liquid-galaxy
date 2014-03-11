@@ -75,7 +75,7 @@ if [ \"\${days}\" -ne \"0\" ]
 then
    echo -en \"\${days}d \"
 fi
-echo -en \"\${hours}h \${mins}m\"
+echo -en \"\${hours}h \${mins}m\n\"
 echo -en \"${screen_status}\"
 ) | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/header-img-${2##*.};
 echo -en \"GPID: \$( pgrep googleearth-bin ). SQPID: \$( pgrep -f sbin\/squid3 ).\nCRASH: \$( ls -1 ~/.googleearth/crashlogs/ | wc -l ). MEMF: \$( awk '/^MemFree/ {print \$2\$3}' /proc/meminfo ).\" | convert -pointsize 18 -background '#00000080' -fill white text:- -trim -bordercolor '#00000080' -border 5x5 miff:/tmp/footer-img-${2##*.};
