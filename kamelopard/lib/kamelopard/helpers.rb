@@ -552,6 +552,36 @@
   def fly_to(view = nil, options = {})
       Kamelopard::FlyTo.new view, options
   end
+
+  # Pulls the flyTo's from the KML document d and yields each in turn to the caller
+  # d = an XML::Document containing KML
+  def each_flyto(d)
+      d.find('//gx:FlyTo').each do |p|
+          all_values = {}
+  
+          # These fields are part of the abstractview
+          view_fields = %w{ latitude longitude heading range tilt roll altitude altitudeMode gx:altitudeMode coordinates}
+          # These are other field I'm interested in
+          other_fields = %w{ description name }
+          all_fields = view_fields.clone
+          all_fields.concat(other_fields.clone)
+          all_fields.each do |k|
+              if k == 'gx:altitudeMode' then
+                  ix = k
+                  next unless p.find_first('kml:altitudeMode').nil?
+              else
+                  ix = "kml:#{k}"
+              end
+              r = k == "gx:altitudeMode" ? :altitudeMode : k.to_sym 
+              tmp = p.find_first("descendant::#{ix}")
+              next if tmp.nil?
+              all_values[k == "gx:altitudeMode" ? :altitudeMode : k.to_sym ] = tmp.content
+          end
+          view_values = {}
+          view_fields.each do |v| view_values[v.to_sym] = all_values[v.to_sym].clone if all_values.has_key? v.to_sym end
+          yield make_view_from(view_values), all_values
+      end
+  end
   
   # Pulls the Placemarks from the KML document d and yields each in turn to the caller
   # d = an XML::Document containing KML
