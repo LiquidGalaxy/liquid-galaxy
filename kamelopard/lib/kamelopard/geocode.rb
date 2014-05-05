@@ -31,10 +31,35 @@ class MapquestGeocoder < Geocoder
         super()
         @proto = 'http'
         @host = 'www.mapquestapi.com'
-        @path = '/geocoding/v1/address'
+        @path = {
+            :address => '/geocoding/v1/address',
+            :batch => '/geocoding/v1/batch'
+        }
         @api_key = key
         @response_format = response_format
         @params['key'] = @api_key
+    end
+
+    def getURL(args, type)
+        raise "Type (#{type}) must be one of #{ @path.keys.map { |a| ":#{a}" }.join(', ')}" unless @path.has_key? type
+
+        params = @params.map { |k, v| processParam(v, k) }.concat(args).join('&')
+
+        http = Net::HTTP.new(@host)
+        u = URI::HTTP.build([nil, @host, nil, @path[type], params, nil])
+
+        resp = Net::HTTP.get u
+        parse_response resp
+    end
+
+    def processParam(value, key = 'location')
+        return ["#{key}=#{value}"] if key == 'key'
+        if value.kind_of? Hash then
+            p = value.map { |k, v| "#{CGI.escape(k)}=#{CGI.escape(v)}" }
+        else
+            p = ["#{CGI.escape(key)}=#{CGI.escape(value)}"]
+        end
+        return p
     end
 
     # Returns an object built from the JSON result of the lookup, or an exception
@@ -42,17 +67,12 @@ class MapquestGeocoder < Geocoder
         # The argument can be a string, in which case PlaceFinder does the parsing
         # The argument can also be a hash, with several possible keys. See the PlaceFinder documentation for details
         # http://developer.yahoo.com/geo/placefinder/guide/requests.html
-        http = Net::HTTP.new(@host)
-        if address.kind_of? Hash then
-            p = @params.merge address
-        else
-            p = @params.merge( { 'location' => address } )
-        end
-        q = p.map { |k,v| "#{ k == 'key' ? k : CGI.escape(k) }=#{ k == 'key' ? v : CGI.escape(v) }" }.join('&')
-        u = URI::HTTP.build([nil, @host, nil, @path, q, nil])
+        return getURL(processParam(address), :address)
+    end
 
-        resp = Net::HTTP.get u
-        parse_response resp
+    def lookupBatch(addresses)
+        # The argument should be an array of the same sorts of values that can be fed to lookup()
+        return getURL(addresses.map { |k| processParam(k) }.flatten(1), :batch)
     end
 
     def parse_response(r)
