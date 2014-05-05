@@ -8,6 +8,10 @@
       Kamelopard::DocumentHolder.instance.current_document
   end
 
+  def get_doc_holder
+    return Kamelopard::DocumentHolder.instance
+  end
+
   # Changes the default FlyTo mode. Possible values are :smooth and :bounce
   def set_flyto_mode_to(mode)
       Kamelopard::DocumentHolder.instance.current_document.flyto_mode = mode
@@ -286,6 +290,13 @@
           File.open(actions_file, 'w') do |f| f.write get_document.get_actions end
       end
       #File.open(file, 'w') do |f| f.write get_kml.to_s.gsub(/balloonVis/, 'gx:balloonVis') end
+  end
+
+  def write_documents
+    get_doc_holder.documents.each do |d|
+        get_doc_holder.set_current d
+        write_kml_to d.filename
+    end
   end
 
   # Fades a screen overlay in or out. The show argument is boolean; true to
@@ -689,10 +700,6 @@
   # Writes actions to a viewsyncrelay config file
   def write_actions_to(filename = 'actions.yml')
     File.open(filename, 'w') do |f| f.write get_actions end
-  end
-
-  def get_doc_holder
-    return Kamelopard::DocumentHolder.instance
   end
 
     # Generates a series of points in a path that will simulate Earth's FlyTo in

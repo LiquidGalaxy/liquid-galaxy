@@ -1061,7 +1061,7 @@ module Kamelopard
 
     # Represents KML's Document class.
     class Document < Container
-        attr_accessor :flyto_mode, :folders, :tours, :uses_xal, :vsr_actions
+        attr_accessor :flyto_mode, :folders, :tours, :uses_xal, :vsr_actions, :filename
 
         # Is this KML destined for a master LG node, or a slave? True if this
         # is a master node. This defaults to true, so tours that don't need
@@ -1073,9 +1073,18 @@ module Kamelopard
             @folders = []
             @vsr_actions = []
             @master_mode = false
+            @filename = 'doc.kml'
             Kamelopard.log(:info, 'Document', "Adding myself to the document holder")
             DocumentHolder.instance << self
             super
+        end
+
+        def make_current
+            Kamelopard::DocumentHolder.instance.set_current self
+        end
+
+        def activate
+            make_current
         end
 
         # Returns viewsyncrelay actions as a hash
