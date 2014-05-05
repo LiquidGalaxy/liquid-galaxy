@@ -950,6 +950,16 @@ describe 'Kamelopard::LinearRing' do
     end
 end
 
+describe "Polygon" do
+    before(:each) do
+        @skip_change = true
+        @l = Kamelopard::LinearRing.new([[1,2,3],[2,3,4],[3,4,5]])
+        @o = Kamelopard::Polygon.new(@l, :inner => [@l])
+    end
+
+    it_should_behave_like 'Kamelopard::Geometry'
+end
+
 describe 'Kamelopard::Camera' do
     before(:each) do
         @skip_change = true
