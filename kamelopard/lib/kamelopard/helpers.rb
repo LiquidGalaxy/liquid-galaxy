@@ -494,7 +494,7 @@
           o[a[0]] = a[1] unless o.has_key? a[0]
       end
 
-      p = point o[:longitude], o[:latitude], o[:altitude], o[:altitudeMode], o[:extrude]
+      p = point o[:longitude].to_f, o[:latitude].to_f, o[:altitude].to_f, o[:altitudeMode], o[:extrude].to_i
 
       if o.has_key? :roll then
           view = Kamelopard::Camera.new p
@@ -511,9 +511,14 @@
           o[:timespan] = Kamelopard::TimeSpan.new(b, e)
       end
 
-      [ :altitudeMode, :tilt, :heading, :timespan, :timestamp, :range, :roll, :viewerOptions ].each do |a|
+      [ :altitudeMode, :timespan, :timestamp, :viewerOptions ].each do |a|
           #p o[a] if o.has_key? a and a == :timestamp
           view.method("#{a.to_s}=").call(o[a]) if o.has_key? a
+      end
+
+      [ :tilt, :heading, :range, :roll].each do |a|
+          #p o[a] if o.has_key? a and a == :timestamp
+          view.method("#{a.to_s}=").call(o[a].to_f) if o.has_key? a
       end
 
       view
@@ -778,4 +783,37 @@
             ))
 
         return d
+    end
+
+    # Accepts an XML::Document object containing some placemarks. Creates a
+    # spline between those placemarks and flies along it.
+    #
+    # d: The XML::Document object
+    # num_points: The number of points to include on the final flight path
+    # ctrl_point_dur: Default duration for each control point. Overridden by
+    #   the return value of ctrl_point_cb
+    # ctrl_point_cb: Callback function accepting a control point view and a
+    #   sequence number, which returns the duration for this control point
+    #
+    # Yields each fly_to object and a sequence number, in case the user wants
+    # to manipulate them further.
+
+    def fly_placemarks(d, num_points = 30, ctrl_point_dur = 1, ctrl_point_cb = nil)
+        i = 0
+        sp = Kamelopard::Functions::ViewSpline.new
+
+        each_placemark(d) do |p, v|
+            dur = ctrl_point_dur
+            if ! ctrl_point_cb.nil?
+                dur = ctrl_point_cb.call(p, i)
+            end
+            raise "The control point duration cannot be nil" if dur.nil?
+            sp.add_control_point(p, dur)
+            i += 1
+        end
+
+        (1..num_points).each do |i|
+            f = fly_to sp.run_function(i.to_f/30.0), :duration => 0.8, :mode => :smooth
+            yield f, i if block_given?
+        end
     end
