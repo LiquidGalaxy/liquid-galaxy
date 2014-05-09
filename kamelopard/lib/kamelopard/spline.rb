@@ -86,5 +86,56 @@ module Kamelopard
                 return p.row(0)
             end
         end   ## End of SplineFunction class
+
+        ## Spline that takes LookAts as control points
+        class ViewSpline < SplineFunction
+            attr_reader :viewtype, :first_control_point
+
+            def initialize(tension = 0.5)
+                @control_points = []
+                @first_control_point = nil
+                @total_dur = 0
+                @tension = tension
+                @fields = [:latitude, :longitude, :altitude, :heading, :tilt, :roll, :range]
+                super(@fields.length, tension)
+            end
+
+            def add_control_point(point, dur)
+                raise "Control points for ViewSplines must be AbstractViews" unless point.kind_of? AbstractView
+                if @first_control_point.nil?
+                    @first_control_point = point
+                elsif @first_control_point.class == point.class
+                else
+                    raise "Control points for ViewSplines must be the same class type (#{@first_control_point.class} vs #{point.class})"
+                end
+
+                super((
+                    @fields.collect { |f|
+                        begin
+                            point.method(f).call
+                        rescue
+                            0
+                        end
+                     }), dur)
+            end
+
+            def run_function(x)
+                res = super(x)
+                h = {}
+                @fields.each_index do |i|
+                    h[@fields[i]] = res[i]
+                end
+
+                if @first_control_point.is_a? Kamelopard::LookAt
+                    h.delete :roll
+                elsif @first_control_point.is_a? Kamelopard::Camera
+                    h.delete :range
+                else
+                    raise "Unknown control point type #{@first_control_point.class.name}. ViewSplines only support LookAts and Cameras"
+                end
+
+                return make_view_from h
+            end
+        end  ## end of ViewSpline class
     end   ## End of Function module
 end   ## End of Kamelopard module
