@@ -2993,3 +2993,7 @@ describe "splines" do
 #        )
     end
 end
+
+describe "viewsplines" do
+    pending "Write tests for ViewSplines"
+end
