@@ -87,15 +87,36 @@ module Kamelopard
             end
         end   ## End of SplineFunction class
 
-        ## Spline that takes LookAts as control points
-        class ViewSpline < SplineFunction
+        ## Spline that takes Points as control points
+        class PointSplineFunction < SplineFunction
+            def initialize(tension = 0.5)
+                @fields = [:longitude, :latitude, :altitude]
+                super(@fields.length, tension)
+            end
+
+            def add_control_point(point, dur)
+                super((
+                    @fields.collect { |f|
+                        begin
+                            point.method(f).call
+                        rescue
+                            0
+                        end
+                     }), dur)
+            end
+
+            def run_function(x)
+                res = super(x)
+                return point(h[0], h[1], h[2], @first_control_point.altitudeMode)
+            end
+        end
+
+        ## Spline that takes LookAts or Cameras as control points
+        class ViewSplineFunction < SplineFunction
             attr_reader :viewtype, :first_control_point
 
             def initialize(tension = 0.5)
-                @control_points = []
                 @first_control_point = nil
-                @total_dur = 0
-                @tension = tension
                 @fields = [:latitude, :longitude, :altitude, :heading, :tilt, :roll, :range]
                 super(@fields.length, tension)
             end
@@ -104,7 +125,7 @@ module Kamelopard
                 raise "Control points for ViewSplines must be AbstractViews" unless point.kind_of? AbstractView
                 if @first_control_point.nil?
                     @first_control_point = point
-                elsif @first_control_point.class == point.class
+                elsif point.kind_of? @first_control_point.class
                 else
                     raise "Control points for ViewSplines must be the same class type (#{@first_control_point.class} vs #{point.class})"
                 end
