@@ -278,26 +278,54 @@
       Kamelopard.id_prefix = a
   end
 
-  # Writes KML output (and if applicable, viewsyncrelay configuration) to files.
-  # Include a file name for the actions_file argument to get viewsyncrelay
-  # configuration output as well. Note that this configuration includes only the
-  # actions section; users are responsible for creating appropriate linkages,
-  # inputs and outputs, and transformations, on their own, presumably in a
-  # separate file.
-  def write_kml_to(file = 'doc.kml', actions_file = 'actions.yml')
-      File.open(file, 'w') do |f| f.write get_kml.to_s end
-      if (get_document.vsr_actions.size > 0) then
-          File.open(actions_file, 'w') do |f| f.write get_document.get_actions end
-      end
-      #File.open(file, 'w') do |f| f.write get_kml.to_s.gsub(/balloonVis/, 'gx:balloonVis') end
-  end
+    # Writes KML output (and if applicable, viewsyncrelay configuration) to files.
+    # Include a file name for the actions_file argument to get viewsyncrelay
+    # configuration output as well. Note that this configuration includes only the
+    # actions section; users are responsible for creating appropriate linkages,
+    # inputs and outputs, and transformations, on their own, presumably in a
+    # separate file.
+    #
+    # If the filename ends in .kmz, it will create a KMZ file archive instead,
+    # with this file as doc.kml in that archive.
+    # TODO: Get it to add any other files it depends on (images, etc.) automatically
+    def write_kml_to(filename = 'doc.kml', actions_file = 'actions.yml')
+        if filename =~ /\.kmz$/
+            # Require rubyzip here so that we don't write to doc.kml and then
+            # leave it there when we die later finding out we don't have
+            # rubyzip
+            require 'zip'
+            require 'tempfile'
 
-  def write_documents
-    get_doc_holder.documents.each do |d|
-        get_doc_holder.set_current d
-        write_kml_to d.filename
+            kmlfile = Tempfile.new("kamelopard-#{filename}")
+            make_kmz = true
+        else
+            make_kmz = false
+            kmlfile = File.open(filename, 'w')
+        end
+
+        begin
+            kmlfile.write get_kml.to_s
+            if (get_document.vsr_actions.size > 0) then
+                File.open(actions_file, 'w') do |f| f.write get_document.get_actions end
+            end
+
+            if make_kmz
+                Zip::File.open(filename, Zip::File::CREATE) do |zipfile|
+                    zipfile.add('doc.kml', kmlfile.path)
+                end
+            end
+        ensure
+            kmlfile.close unless kmlfile.closed?
+            kmlfile.unlink if make_kmz
+        end
     end
-  end
+
+    def write_documents
+        get_doc_holder.documents.each do |d|
+            get_doc_holder.set_current d
+            write_kml_to d.filename
+        end
+    end
 
   # Fades a screen overlay in or out. The show argument is boolean; true to
   # show the overlay, or false to hide it. The fade will happen smoothly (as
@@ -800,7 +828,7 @@
 
     def fly_placemarks(d, num_points = 30, ctrl_point_dur = 1, ctrl_point_cb = nil)
         i = 0
-        sp = Kamelopard::Functions::ViewSpline.new
+        sp = Kamelopard::Functions::ViewSplineFunction.new
 
         each_placemark(d) do |p, v|
             dur = ctrl_point_dur

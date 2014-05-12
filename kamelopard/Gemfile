@@ -6,3 +6,5 @@ gem "libxml-ruby"
 
 gem "json"
 gem "hierclust"
+
+gem "rubyzip"
