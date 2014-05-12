@@ -1211,6 +1211,12 @@ module Kamelopard
             #! These get printed out in the call to super, in Feature.to_kml()
             #@styles.map do |a| d << a.to_kml unless a.attached? end
 
+            # then misc
+            @features.each do |f|
+                next if f.is_a? Folder or f.is_a? Style or f.is_a? Tour
+                f.to_kml d
+            end
+
             # then folders
             @folders.map do |a|
                 a.to_kml(d) unless a.has_parent?
