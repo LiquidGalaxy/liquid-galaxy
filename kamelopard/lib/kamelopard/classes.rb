@@ -2383,6 +2383,8 @@ module Kamelopard
             }.each do |k, v|
                 d = XML::Node.new k.to_s
                 d << v.to_s
+                    # Don't escape links, because Earth doesn't like that.
+                d.first.output_escaping = false
                 x << d
             end
             Kamelopard.kml_array(x, [
