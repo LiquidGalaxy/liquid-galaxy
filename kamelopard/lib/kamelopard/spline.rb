@@ -5,7 +5,25 @@ require 'matrix'
 module Kamelopard
     module Functions
 
-        # Basic support for splines
+        # Provides basic support for Catmul-Rom splines, or in other words,
+        # calculating a nice smooth path through a series of "control points".
+        # You'll create a spline, add a bunch of control points, and then call
+        # run_function for a series of values between 0 and 1 to get the
+        # calculated points on the path.
+        #
+        # Mathematically, what this code calls a "point" is in fact a vector, a
+        # set of related numbers. Each number in the set represents one
+        # "dimension", the spline supports any number of dimensions, but each
+        # control point must have the same number. The returned vectors will
+        # also have that number of dimensions. Dimensions can represent
+        # whatever the user wants. For instance, the first might be "latitude",
+        # the second "longitude", and the third "altitude" (though common cases
+        # like that are already taken care of with SplineFunction descendants
+        # like PointSplineFunction and ViewSplineFunction).
+        #
+        # The tension value controls how tight the function's curves are. The
+        # usual resources (Google, Wikipedia, etc.) should provide sufficient
+        # discussion of Catmul-Rom splines to answer any detailed questions.
         class SplineFunction < FunctionMultiDim
             attr_reader :control_points, :total_dur, :tension
 
@@ -23,11 +41,18 @@ module Kamelopard
             # :dur are in whatever units the user wants; a spline with three
             # control points with durations of 0, 10, and 20 will be identical
             # to one with durations of 0, 1, and 2.
+            #--
+            # XXX: Raise an exception if the control point dimensionality
+            # doesn't match @ndims
+            #++
             def add_control_point(point, dur)
                 @total_dur = @total_dur + dur if @control_points.size > 0
                 @control_points << [ point, dur ]
             end
 
+            # Evaluates the spline function at a given value, which should be
+            # between 0 and 1. Returns an array of the same number of
+            # dimensions as each of the control points.
             def run_function(x)
                 # X will be between 0 and 1
                 # Find which control points I should am using for the point in

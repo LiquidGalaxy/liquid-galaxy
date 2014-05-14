@@ -108,7 +108,8 @@ def point(lo, la, alt=0, mode=nil, extrude = false)
 end
 
 # Creates a Placemark with the given name. Other Placemark attributes are set
-# in the options hash.
+# in the options hash. The note under the Kamelopard::Placemark class applies
+# equally to the results of this function.
 def placemark(name = nil, options = {})
     Kamelopard::Placemark.new name, options
 end

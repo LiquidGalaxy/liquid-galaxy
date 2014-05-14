@@ -1,5 +1,7 @@
 #!env ruby
 
+# :stopdoc:
+
 # The idea here is to ingest one tour from one KML document, and make it
 # multicamera-ish
 

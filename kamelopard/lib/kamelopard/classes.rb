@@ -2,11 +2,53 @@
 #--
 # vim:ts=4:sw=4:et:smartindent:nowrap
 #++
-# Classes to manage various KML objects. See
-# http://code.google.com/apis/kml/documentation/kmlreference.html for a
-# description of KML
 
-# Pretty much everything important is in this module
+# == Description
+# Kamelopard is a gem to create and manipulate Keyhole Markup Language, or KML.
+# See http://code.google.com/apis/kml/documentation/kmlreference.html for a
+# reference on the subject. Within the Kamelopard module are several classes
+# which represent KML objects. To use Kamelopard to create a KML document from
+# scratch, you'll eventually want to create instances of these classes. You can
+# manipulate these instances' attributes and connections to other classes, and
+# in the end, write the result to a KML file. Here's a simple example which
+# creates one placemark in a file called doc.kml:
+#
+#  require 'rubygems'
+#  require 'kamelopard'
+#
+#  f = Kamelopard::Folder.new('Some Folder Name')
+#  f << Kamelopard::Placemark('My placemark',
+#       :geometry => Kamelopard::Point(1, 2, 3))
+#  write_kml_to 'doc.kml'
+#
+# Kamelopard operates as a sort of state machine, with a concept of the
+# "current" document. Newly created objects are appended to the current
+# document. See the DocumentHolder class to learn about switching around
+# between different documents. Note also that whereas tour elements such as
+# FlyTo and Wait are always kept in the order in which they were created, other
+# elements like Styles and Folders might show up in different orders. Since in
+# the final output this doesn't matter (or shouldn't, anyway), this isn't
+# considered a bug, and in fact it makes it easier sometimes, because you don't
+# have to figure out the structure of your document in the proper order at run
+# time.
+#
+# Kamelopard comes with a set of helper functions which it puts in the default
+# namespace. Experienced users will probably choose use these functions to
+# create Kamelopard objects rather than instantiating these classes directly.
+#
+# Objects' attributes are often undocumented, when they correspond directly to
+# a similarly named attribute in the KML object they represent. Refer to the
+# KML reference linked above for more details about these undocumented
+# attributes. Most objects' constructors accept a hash of options you can use
+# to set these attributes, such as the :geometry option used in the sample code
+# above. Kamelopard will complain if you try to set an option it doesn't
+# recognize.
+#
+# Most objects also include a to_kml() method, which returns an XML::Node
+# containing the KML this object represents, including any other objects nested
+# inside. The write_kml_to helper function used above, and other helper
+# functions involved in KML output, generally wrap this method so it rarely
+# gets called directly.
 module Kamelopard
     require 'bundler/setup'
     require 'singleton'
@@ -58,7 +100,7 @@ module Kamelopard
         @@logger.call(level, mod, msg) unless @@logger.nil? or @@log_level > LogLevels[level]
     end
 
-    def Kamelopard.xml_to_hash(node, fields)
+    def Kamelopard.xml_to_hash(node, fields) # :nodoc:
         result = {}
         fields.each do |field|
             begin
@@ -1700,7 +1742,10 @@ module Kamelopard
     end
 
     # Corresponds to KML's Placemark objects. The geometry attribute requires a
-    # descendant of Geometry
+    # descendant of Geometry. *Note:* whereas most objects implicitly add
+    # themselves to the end of the current Document, Placemarks do not. They
+    # must be explicitly added to the Document or other Container they live in,
+    # typically with the Container's << operator.
     class Placemark < Feature
         attr_accessor :name, :geometry, :balloonVisibility
 
