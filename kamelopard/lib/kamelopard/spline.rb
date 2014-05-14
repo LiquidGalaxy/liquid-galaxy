@@ -2,9 +2,10 @@
 require 'bundler/setup'
 require 'matrix'
 
-# Basic support for splines
 module Kamelopard
     module Functions
+
+        # Basic support for splines
         class SplineFunction < FunctionMultiDim
             attr_reader :control_points, :total_dur, :tension
 
