@@ -7,11 +7,23 @@ require 'uri'
 require 'cgi'
 require 'json'
 
-# Geocoder base class
+# Geocoder base class. You should use a subclass. It is your responsibility to
+# ensure you comply with all API licensing and usage requirements. Kamelopard
+# won't do it for you.
 class Geocoder
     attr_accessor :host, :path, :params
     def initialize
         @params = {}
+    end
+
+    def processParam(value, key = 'location')
+        return ["#{key}=#{value}"] if key == 'key'
+        if value.kind_of? Hash then
+            p = value.map { |k, v| "#{CGI.escape(k)}=#{CGI.escape(v)}" }
+        else
+            p = ["#{CGI.escape(key)}=#{CGI.escape(value)}"]
+        end
+        return p
     end
 
     def parse_response(r)
@@ -19,10 +31,29 @@ class Geocoder
     end
 end
 
-# Some specific geocoding API classes follow.  Google's would seem most
-# obvious, but since it requires you to display results on a map, ... I didn't
-# want to have to evaluate other possible restrictions, or require that they be
-# imposed on Kamelopard users.
+class GoogleGeocoder < Geocoder
+    attr_reader :api_key, :response_format
+
+    def initialize(key, response_format = 'json')
+        super()
+        @proto = 'http'
+        @host = 'maps.googleapis.com'
+        @path = '/maps/api/geocode'
+        @api_key = key
+        @response_format = response_format
+    end
+
+    def getURL(params)
+        http = Net::HTTP.new(@host)
+        u = URI::HTTP.build([nil, @host, nil, "#{@path}/#{@response_format}", params, nil])
+
+        JSON.parse(Net::HTTP.get u)
+    end
+
+    def lookup(address)
+        getURL(processParam(address, 'address').join('&'))
+    end
+end
 
 class MapquestGeocoder < Geocoder
     attr_reader :api_key, :response_format
@@ -50,16 +81,6 @@ class MapquestGeocoder < Geocoder
 
         resp = Net::HTTP.get u
         parse_response resp
-    end
-
-    def processParam(value, key = 'location')
-        return ["#{key}=#{value}"] if key == 'key'
-        if value.kind_of? Hash then
-            p = value.map { |k, v| "#{CGI.escape(k)}=#{CGI.escape(v)}" }
-        else
-            p = ["#{CGI.escape(key)}=#{CGI.escape(value)}"]
-        end
-        return p
     end
 
     # Returns an object built from the JSON result of the lookup, or an exception
