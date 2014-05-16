@@ -1,3 +1,18 @@
+= 0.0.15
+
+* Several bug fixes and little nice-to-have features, lots of documentation
+updates
+* Added classes for the Google geocoder, and the Mapquest geocoder in batch
+mode
+* Added PointSplineFunction and ViewSplineFunction classes, to accept Points
+and Views as control points
+* New helper function to ingest KML and create a tour flying through the
+placemarks therein
+* Another new helper function to return each LookAt in a KML document, similar
+to each_placemark
+* Greatly improved handling of multiple documents, including giving each
+document a :filename property and the ability to write KMZ files automatically
+
 = 0.0.14
 
 * Added lots and lots of tests, and removed some for features that aren't ever
