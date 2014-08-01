@@ -46,7 +46,7 @@ uninstall:
 rpm::
 	test -d ${HOME}/rpmbuild/SOURCES/ || mkdir -p ${HOME}/rpmbuild/SOURCES/
 	test -d ${HOME}/rpmbuild/SPECS/ || mkdir -p ${HOME}/rpmbuild/SPECS/
-	cd ..;tar cvfz xiv-${VERSION}.tgz --exclude=.svn xiv-${VERSION}
+	cd ..;tar cvfz xiv-${VERSION}.tgz --exclude=.svn --exclude=.git xiv-${VERSION}
 	cp ../xiv-${VERSION}.tgz ${HOME}/rpmbuild/SOURCES/
 	cp ../xiv-${VERSION}/xiv.spec ${HOME}/rpmbuild/SPECS/xiv-${VERSION}.spec
 	cd ${HOME}; rpmbuild -bb ${HOME}/rpmbuild/SPECS/xiv-${VERSION}.spec

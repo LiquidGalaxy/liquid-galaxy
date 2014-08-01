@@ -13,7 +13,7 @@ to be consumed by Google Earth. Place everything into a WebServer's Docroot.
 
 == ON THE SYSTEM ==
 
-NOTE: with SVN, it is up to the client to handle symlinks. If your client
+NOTE: with Git, it is up to the client to handle symlinks. If your client
 doesn't handle symlinks, you might end up with some duplicate files with
 various names, but things should still work fine.
 
