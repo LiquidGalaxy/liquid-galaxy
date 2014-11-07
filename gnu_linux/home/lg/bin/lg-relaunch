@@ -63,3 +63,6 @@ else
   ${HOME}/bin/lg-sudo-bg "$RELAUNCH_CMD"
 fi
 
+if [ -f ~/bin/lg-submit-event ]; then
+  ~/bin/lg-submit-event -t lg-relaunch -w "Manually relaunched $(hostname)" -d "uptime: $(uptime)"
+fi
