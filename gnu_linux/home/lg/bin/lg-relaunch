@@ -64,5 +64,9 @@ else
 fi
 
 if [ -f ~/bin/lg-submit-event ]; then
-  ~/bin/lg-submit-event -t lg-relaunch -w "Manually relaunched $(hostname)" -d "uptime: $(uptime)"
+  ~/bin/lg-submit-event -t lg-relaunch \
+    -w "Manually relaunched $(hostname)"\
+    -d "uptime = $(uptime) \n \
+    ssh-fingerprint(s) of user: $(ssh-add -l | awk {'print $2'} | sed\
+    ':a;N;$!ba;s/\n/\\n/g')"
 fi
