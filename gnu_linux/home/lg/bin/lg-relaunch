@@ -70,3 +70,12 @@ if [ -f ~/bin/lg-submit-event ]; then
     ssh-fingerprint(s) of user: $(ssh-add -l | awk {'print $2'} | sed\
     ':a;N;$!ba;s/\n/\\n/g')"
 fi
+
+if [ -f ~/bin/flowdock_event ]; then
+  ~/bin/flowdock_event --config=/home/galadmin/etc/flowdock.cfg \
+    --source=lg-relaunch \
+    --from-address=lg@endpoint.com \
+    --subject=Relaunch \
+    --content="Relaunch performed on <b>$(cat /etc/ssh_hostname)</b><br><b>ssh-fingerprint(s)</b>: $(ssh-add -l | awk {'print $2'}) <br><b>uptime</b> = $(uptime)" \
+    --tags=relaunch,lg
+fi
