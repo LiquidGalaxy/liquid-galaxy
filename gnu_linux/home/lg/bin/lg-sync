@@ -46,7 +46,7 @@ for lg in $LG_FRAMES; do
     else
         echo
         echo "Syncing \"$specified_source\" to \"lg@$lg:${specified_destination}\": "
-        rsync $RSYNCOPTS $specified_source lg@${lg}:${specified_destination}
+        rsync $RSYNCOPTS -L $specified_source lg@${lg}:${specified_destination}
     fi
 done
 
