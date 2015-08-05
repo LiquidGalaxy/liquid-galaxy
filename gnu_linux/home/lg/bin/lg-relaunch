@@ -57,9 +57,16 @@ fi
 "
 
 FINGERPRINT=`ssh-add -l | awk {'print $2'} | sed ':a;N;$!ba;s/\n/\\n/g'`
-USER=''
-if [ -f ~/bin/lg-fingerprint ]; then
-  USER=`/home/galadmin/bin/lg-fingerprint ${FINGERPRINT}`
+if [ -z "${FINGERPRINT}" ]; then
+  USER="automatically"
+else
+  USER="by user with fingerprint: ${FINGERPRINT}"
+  if [ -f ~/bin/lg-fingerprint ]; then
+    USERID=`/home/galadmin/bin/lg-fingerprint ${FINGERPRINT}`
+    if [ -n "${USERID}" ]; then
+      USER="by user: ${USERID}"
+    fi
+  fi
 fi
 
 if test "$frame"; then
@@ -73,7 +80,7 @@ if [ -f ~/bin/lg-submit-event ]; then
   ~/bin/lg-submit-event -t lg-relaunch \
     -w "Manually relaunched $(hostname)"\
     -d "uptime = $(uptime) \n \
-    user: ${USER}"
+    ${USER}"
 fi
 
 if [ -f ~/bin/flowdock_event ]; then
@@ -81,6 +88,6 @@ if [ -f ~/bin/flowdock_event ]; then
     --source=lg-relaunch \
     --from-address=lg@endpoint.com \
     --subject=Relaunch \
-    --content="Relaunch performed on <b>$(cat /etc/ssh_hostname)</b><br><b>by user</b>: ${USER} <br><b>uptime</b> = $(uptime)" \
+    --content="Relaunch performed on <b>$(cat /etc/ssh_hostname)</b><br><b> ${USER}, </b><br><b>uptime</b> = $(uptime)" \
     --tags=relaunch,lg
 fi
