@@ -24,13 +24,13 @@
 			<NetworkLink>
 				<name>Master KML</name>
 				<Link>
-					<href>http://##LG_PHPIFACE##/kml/master.kml</href>
+					<href>##LG_PHPIFACE##/kml/master.kml</href>
 				</Link>
 			</NetworkLink>
 			<NetworkLink>
 				<name>KML Update</name>
 				<Link>
-					<href>http://##LG_PHPIFACE##/sync_nlc.php</href>
+					<href>##LG_PHPIFACE##/sync_nlc.php</href>
 					<refreshMode>onInterval</refreshMode>
 					<refreshInterval>1</refreshInterval>
 				</Link>
